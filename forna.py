@@ -7,6 +7,7 @@ import itertools as it
 import json
 import math
 import numpy as np
+import RNA
 
 import sys
 from optparse import OptionParser
@@ -16,46 +17,22 @@ def bg_to_json(bg):
     Convert a BulgeGraph to a json file containing a graph layout designed
     to create a nice force-directed graph using the d3 library.
     '''
-
-def main():
-    usage = """
-    python cg_to_d3_bp.py x.cg
-
-    Create a json file specifying a d3 force-directed graph for this
-    secondary structure.
-    """
-    num_args= 1
-    parser = OptionParser(usage=usage)
-
-    #parser.add_option('-o', '--options', dest='some_option', default='yo', help="Place holder for a real option", type='str')
-    #parser.add_option('-u', '--useless', dest='uselesss', default=False, action='store_true', help='Another useless option')
-
-    (options, args) = parser.parse_args()
-
-    if len(args) < num_args:
-
-        parser.print_help()
-        sys.exit(1)
-
-    bg = fgb.BulgeGraph(args[0])
-    #bg = fgb.BulgeGraph(dotbracket_str='((...((((...))))....))')
-    #bg = fgb.BulgeGraph(dotbracket_str='((((...((((....))))..((((((((((....)))))))))).))))')
-    #bg = fgb.BulgeGraph(dotbracket_str='((((((((()))))))))')
-    bp_string = bg.to_dotbracket_string()
-    import RNA
-    coords = RNA.get_xy_coordinates(bp_string)
     
+    # the json structure that will hold everything
     struct = {}
     struct["nodes"] = []
     struct["links"] = []
 
+    # the initial width and height of the screen
     scr_width=800.
     scr_height=800.
 
+    # the X and Y coordinates of each nucleotide as returned by RNAplot
+    coords = RNA.get_xy_coordinates(bp_string)
     xs = np.array([coords.get(i).X for i in range(bg.seq_length)])
     ys = np.array([coords.get(i).Y for i in range(bg.seq_length)])
 
-    
+    # center the structure on the screen
     center_x = np.mean(xs)
     center_y = np.mean(ys)
 
@@ -239,6 +216,32 @@ def main():
 
     print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
     #print json.dumps(struct)
+
+def main():
+    usage = """
+    python cg_to_d3_bp.py x.cg
+
+    Create a json file specifying a d3 force-directed graph for this
+    secondary structure.
+    """
+    num_args= 1
+    parser = OptionParser(usage=usage)
+
+    #parser.add_option('-o', '--options', dest='some_option', default='yo', help="Place holder for a real option", type='str')
+    #parser.add_option('-u', '--useless', dest='uselesss', default=False, action='store_true', help='Another useless option')
+
+    (options, args) = parser.parse_args()
+
+    if len(args) < num_args:
+
+        parser.print_help()
+        sys.exit(1)
+
+    bg = fgb.BulgeGraph(args[0])
+    #bg = fgb.BulgeGraph(dotbracket_str='((...((((...))))....))')
+    #bg = fgb.BulgeGraph(dotbracket_str='((((...((((....))))..((((((((((....)))))))))).))))')
+    #bg = fgb.BulgeGraph(dotbracket_str='((((((((()))))))))')
+    bp_string = bg.to_dotbracket_string()
 
 if __name__ == '__main__':
     main()
