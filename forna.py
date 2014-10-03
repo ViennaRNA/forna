@@ -193,12 +193,28 @@ def bg_to_json(bg):
     print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
     #print json.dumps(struct)
 
+def fasta_to_json(fasta_text):
+    '''
+    Create the d3 compatible graph representation from a dotbracket string
+    formatted like so:
+
+        >id
+        ACCCGGGG
+        (((..)))
+
+    @param fasta_text: The fasta string.
+    '''
+    bg = fgb.BulgeGraph()
+    bg.from_fasta(fasta_text)
+    return bg_to_json(bg)
+
 def main():
     usage = """
-    python cg_to_d3_bp.py x.cg
+    python cg_to_d3_bp.py x.fa
 
     Create a json file specifying a d3 force-directed graph for this
-    secondary structure.
+    secondary structure. If the specified argument is '-', then the
+    input is read from stdin.
     """
     num_args= 1
     parser = OptionParser(usage=usage)
@@ -213,11 +229,12 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    bg = fgb.BulgeGraph(args[0])
-    #bg = fgb.BulgeGraph(dotbracket_str='((...((((...))))....))')
-    #bg = fgb.BulgeGraph(dotbracket_str='((((...((((....))))..((((((((((....)))))))))).))))')
-    #bg = fgb.BulgeGraph(dotbracket_str='((((((((()))))))))')
-    bg_to_json(bg)
+    if args[0] == '-':
+        text = sys.stdin.read()
+    else:
+        with open(args[0], 'r') as f: text = f.read()
+
+    fasta_to_json(text)
 
 if __name__ == '__main__':
     main()

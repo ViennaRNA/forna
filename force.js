@@ -35,7 +35,7 @@ d3.json("bp.json", function(error, graph) {
     .enter().append("line")
       .attr("class", "link")
       .style("stroke-width", function(d) { 
-            return Math.sqrt(d.value); 
+            //return Math.sqrt(d.value); 
           if (d.value != 1) return 0; else return Math.sqrt(d.value); });
 
   domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
