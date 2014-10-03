@@ -50,7 +50,6 @@ def bg_to_json(bg):
         # use the centered coordinates for each nucleotide
         x = new_xs[i]
         y = new_ys[i]
-        fud.pv('x, y')
 
         # create the nodes with initial positions
         # the  node_name comes from the forgi representation
@@ -190,8 +189,7 @@ def bg_to_json(bg):
 
             prev_f, prev_t = f,t
 
-    print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
-    #print json.dumps(struct)
+    return struct
 
 def fasta_to_json(fasta_text):
     '''
@@ -234,7 +232,8 @@ def main():
     else:
         with open(args[0], 'r') as f: text = f.read()
 
-    fasta_to_json(text)
+    struct = fasta_to_json(text)
+    print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':
     main()
