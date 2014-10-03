@@ -39,11 +39,6 @@ def bg_to_json(bg):
     center_width = scr_width / 2.
     center_height = scr_height / 2.
 
-    fud.pv('center_x')
-    fud.pv('center_y')
-    fud.pv('center_width')
-    fud.pv('center_height')
-
     new_xs = (xs - center_x) + center_width
     new_ys = (ys - center_y) + center_height
 
@@ -51,14 +46,15 @@ def bg_to_json(bg):
     colors = {'s':2, 'i':8, 'm':3, 'f':4, 't':9, 'h': 0, 'x':-1}
 
     for i in range(bg.seq_length):
-
+        # use the centered coordinates for each nucleotide
         x = new_xs[i]
         y = new_ys[i]
         fud.pv('x, y')
 
-        node = bg.get_node_from_residue_num(i+1)
-        # create the nodes
-        node = {"group": 1, "elem": node, "name": i+1, "id": i+1, 
+        # create the nodes with initial positions
+        # the  node_name comes from the forgi representation
+        node_name = bg.get_node_from_residue_num(i+1)
+        node = {"group": 1, "elem": node_name, "name": i+1, "id": i+1, 
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node[0]]}
 
         #node = {"group": 1, "name": i+1, "id": i+1}
@@ -76,19 +72,29 @@ def bg_to_json(bg):
     num_nodes = len(struct["nodes"])
 
     def create_loop_node(ds, res_list, node_id):
+        '''
+        Create a pseudo-node in the middle of each loop. This node
+        will be the center of the circular arrangement of the loop
+        nodes.
+        '''
+        # get the coordinates of the nodes which are part of this loop
         xs = np.array([coords.get(r).X for r in res_list])
         ys = np.array([coords.get(r).Y for r in res_list])
 
+        # center them on the viewport
         x_pos = np.mean(xs) - center_x + center_width
         y_pos = np.mean(ys) - center_y + center_height
 
-        # create a fake node for each of the loops
-        struct["nodes"] += [{"group": 1, "name": node_id, "id": node_id, "x": x_pos, "y": y_pos, "px":x_pos, "py":y_pos, "color": colors['x']}]
+        # create a pseudo node for each of the loops
+        struct["nodes"] += [{"group": 1, "name": node_id, "id": node_id, 
+                             "x": x_pos, "y": y_pos, "px":x_pos, "py":y_pos, 
+                             "color": colors['x']}]
 
+        # some geometric calculations for deciding how long to make
+        # the links between alternating nodes
         num_residues = len(res_list)
         angle = (num_residues - 2) * math.pi / (2 * num_residues)
         width = 0.5 / math.cos(angle)
-        #fud.pv('num_residues, angle, width')
 
         for d in ds:
             centers_radii[d] = (node_id, width)
@@ -102,6 +108,7 @@ def bg_to_json(bg):
             fri = j
             tri = (j+num_residues/2)
             struct["links"] += [{"source": res_list[fri]-1, "target": res_list[tri]-1, "value":width*2}]
+
         for j in range(0, num_residues, 1):
             # link every other node in the loop
             ia = ((num_residues - 2) * math.pi) / (num_residues)
@@ -111,6 +118,7 @@ def bg_to_json(bg):
             tri = (j+2) % (num_residues)
             struct["links"] += [{"source": res_list[fri]-1, "target": res_list[tri]-1, "value":c}]
 
+    # Create the loop pseudo-nodes for hairpins and interior loops
     num_nodes = len(struct["nodes"])
     for i,d in enumerate(it.chain(bg.iloop_iterator(), 
                                   bg.hloop_iterator())):
@@ -118,6 +126,7 @@ def bg_to_json(bg):
                 list(bg.define_residue_num_iterator(d, adjacent=True)),
                 num_nodes + i)
 
+    # create the loop pseudo-nodes for multiloops
     num_nodes = len(struct["nodes"])
     for i,m in enumerate(bg.find_multiloop_loops()):
         loop_elems = [d for d in m if d[0] == 'm']
@@ -128,29 +137,7 @@ def bg_to_json(bg):
         residue_list.sort()
         create_loop_node(loop_elems, residue_list, num_nodes + i)
 
-    fud.pv('centers_radii')
-
-        #fud.pv('loop_elems')
-        #fud.pv('residue_list')
-
-    for s in bg.stem_iterator():
-        # Link the centers of the loops
-        continue
-        fud.pv('s, bg.edges[s]')
-        if len(bg.edges[s]) < 2:
-            # the first stem may not be connected to two elements
-            continue
-
-        (c1, c2) = sorted(list(bg.edges[s]))[:2]
-
-        (center1, radius1) = centers_radii[c1]
-        (center2, radius2) = centers_radii[c2]
-
-        link_length = 1.0 * ((bg.stem_length(s) - 1) + radius1 + radius2)
-        fud.pv('s, bg.stem_length(s), radius1, radius2, link_length')
-        #struct["links"] += [{"source": center1, "target": center2, "value": link_length}]
-
-
+    # link the nodes that are in stems
     for i in range(0, bg.seq_length-2):
         # create triangles between semi-adjacent nucleotides
         node1 = bg.get_node_from_residue_num(i+1)
@@ -158,6 +145,10 @@ def bg_to_json(bg):
         node2 = bg.get_node_from_residue_num(i+3)
 
         def create_stem_loop_link(node1, node2):
+            '''
+            Create a link between the second-to-last node on a stem
+            and the second-to-last node on a loop.
+            '''
             res_list = list(bg.define_residue_num_iterator(node2, adjacent=True))
             num_residues = len(res_list)
             ia = ((num_residues - 2) * math.pi) / (num_residues)
@@ -169,11 +160,9 @@ def bg_to_json(bg):
             else:
                 x = 2.
 
-            #fud.pv('node2, i, num_residues, ia, angle1, angle2, x')
-            
-
             struct["links"] += [{"source": i, "target": i+2, "value": x}]
 
+        # actually make the stem-loop links
         if node1[0] == 's' and node2[0] == 's' and node1 == node2:
             struct["links"] += [{"source": i, "target": i+2, "value": 2}]
 
@@ -185,15 +174,8 @@ def bg_to_json(bg):
 
             pass
 
-        '''
-
-        if node1[0] == 's' and node2[0] == 's' and node1 == node2:
-            # create long link between stem nodes
-            struct["links"] += [{"source": i, "target": i+2, "value":width * 2}]
-        '''
-        
+    # link paired nucleotides
     num_nodes = len(struct["nodes"])
-    # used for cross-linking base-pairs
     for d in bg.stem_iterator():
         prev_f, prev_t = None, None
 
@@ -206,13 +188,6 @@ def bg_to_json(bg):
                 struct["links"] += [{"source": t-1, "target": prev_f-1, "value":1 * math.sqrt(2)}]
 
             prev_f, prev_t = f,t
-
-    '''
-    for s1,d,s2 in bg.adjacent_stem_pairs_iterator():
-        cr = bg.get_connected_residues(s1, s2)
-        for r1, r2 in cr:
-            struct["links"] += [{"source": r1-1, "target": r2-1, "value":0}]
-    '''
 
     print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
     #print json.dumps(struct)
