@@ -1,12 +1,96 @@
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>D3 Test</title>
-        <script src="d3/d3.js"></script>
-    </head>
-    <body>
-<div class='gallery' id='chart'> </div><link href='force.css' rel='stylesheet' type='text/css' /><script src='force.js' type='text/javascript'> </script>
-    </body>
-</html>  
+<!DOCTYPE html> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <title>RNAplot.js</title>
 
+  <!-- CSS -->
+  <!-- Bootstrap: http://getbootstrap.com/ -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <!-- force CSS -->
+  <link href='css/force.css' rel='stylesheet' type='text/css' />
+  <!-- custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
 
+  <!-- Java Script -->
+  <!-- Get jQuery -- use local if unavailable -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript">/* <![CDATA[ */
+    !window.jQuery && document.write('<script type="text/javascript" src="js/jquery.js"><\/script>')
+  /* ]]> */</script>
+  <!-- Knockout: http://knockoutjs.com/downloads/index.html -->
+  <script type="text/javascript" src="js/knockout-3.1.0.js"></script>
+  <!-- Bootstrap Javascript Plugins: http://getbootstrap.com/ -->
+  <script type='text/javascript' src="js/bootstrap.min.js"></script>
+  <!-- D3 -->
+  <!--<script type='text/javascript' src="js/d3.js"></script>
+  <script type='text/javascript' src=js/force.js></script>-->
+</head>
+<body>
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">RNAplot.js</a>
+      </div>
+    </div>
+  </nav>
+    <div class="container" role="main" id="main" style="padding: 20px;">
+      <form role="form">
+        <div class="form-group">
+          <label for="Input">Sequence and Structure</label>
+          <textarea type="email" class="form-control" id="Input" placeholder="" data-bind="value: input" rows="2"></textarea>
+        </div>
+        <button data-bind="click: submit" type="submit" class="btn btn-default">Submit</button>
+      </form>
+      
+      <div class="gallery" data-bind="html: svg" id='chart'> </div>
+  </div>
+  
+  
+  
+  <script type="text/javascript">
+    
+    serverURL = "127.0.0.1:5000";
+    
+    // custom ajax call
+    ajax = function(uri, method, data) {
+      var request = {
+        url: uri,
+        type: method,
+        contentType: "application/json",
+        accepts: "application/json",
+        cache: false,
+        dataType: 'json',
+        data: data,
+        error: function(jqXHR) {
+            console.log("ajax error " + jqXHR.status);
+        }
+      };
+      return $.ajax(request);
+    }
+    
+    // Knockout view model for RNA
+    function RNAViewModel() {
+      var self = this;
+      
+      self.input = ko.observable('');
+      self.seq = 'AAA';
+      self.struct = '(.)';
+      
+      self.svg = ko.observable('');
+      self.json = '';
+      
+      self.submit = function() {
+        ajax(serverURL + '/struct_graph/', 'POST', JSON.stringify( {SEQ: self.seq, STRUCT: self.struct} )).success( function(data) {
+          self.json(data.SVG);
+        });
+      }
+    }
+    
+    // bind the model to the ui
+    ko.applyBindings(new RNAViewModel());
+    
+  </script>
+</body>
+</html>
