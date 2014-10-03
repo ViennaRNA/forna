@@ -28,6 +28,7 @@ def bg_to_json(bg):
     scr_height=800.
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
+    bp_string =  bg.to_dotbracket_string()
     coords = RNA.get_xy_coordinates(bp_string)
     xs = np.array([coords.get(i).X for i in range(bg.seq_length)])
     ys = np.array([coords.get(i).Y for i in range(bg.seq_length)])
@@ -55,7 +56,7 @@ def bg_to_json(bg):
         # the  node_name comes from the forgi representation
         node_name = bg.get_node_from_residue_num(i+1)
         node = {"group": 1, "elem": node_name, "name": i+1, "id": i+1, 
-                "x": x, "y": y, "px": x, "py": y, "color": colors[node[0]]}
+                "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]]}
 
         #node = {"group": 1, "name": i+1, "id": i+1}
         struct["nodes"] += [node]
@@ -216,7 +217,7 @@ def main():
     #bg = fgb.BulgeGraph(dotbracket_str='((...((((...))))....))')
     #bg = fgb.BulgeGraph(dotbracket_str='((((...((((....))))..((((((((((....)))))))))).))))')
     #bg = fgb.BulgeGraph(dotbracket_str='((((((((()))))))))')
-    bp_string = bg.to_dotbracket_string()
+    bg_to_json(bg)
 
 if __name__ == '__main__':
     main()
