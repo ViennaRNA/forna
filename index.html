@@ -10,8 +10,6 @@
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <!-- force CSS -->
   <link href='css/force.css' rel='stylesheet' type='text/css' />
-  <!-- custom CSS -->
-  <link rel="stylesheet" href="css/style.css">
 
   <!-- Java Script -->
   <!-- Get jQuery -- use local if unavailable -->
@@ -31,7 +29,7 @@
   <nav class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
       <div class="navbar-header">
-        <a class="navbar-brand" href="#">RNAplot.js</a>
+        <a class="navbar-brand" href="#">forna</a>
       </div>
     </div>
   </nav>
@@ -44,14 +42,14 @@
         <button data-bind="click: submit" type="submit" class="btn btn-default">Submit</button>
       </form>
       
-      <div class="gallery" data-bind="html: svg" id='chart'> </div>
+      <div class="gallery" id='chart'> </div>
   </div>
   
   
   
   <script type="text/javascript">
     
-    serverURL = "127.0.0.1:5000";
+    serverURL = "";
     
     // custom ajax call
     ajax = function(uri, method, data) {
@@ -75,15 +73,13 @@
       var self = this;
       
       self.input = ko.observable('');
-      self.seq = 'AAA';
-      self.struct = '(.)';
-      
-      self.svg = ko.observable('');
-      self.json = '';
+      self.ss = ko.computed(function() {
+        return this.input().split("\n");
+      }, this);
       
       self.submit = function() {
-        ajax(serverURL + '/struct_graph/', 'POST', JSON.stringify( {SEQ: self.seq, STRUCT: self.struct} )).success( function(data) {
-          self.json(data.SVG);
+        ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
+          draw(data);
         });
       }
     }

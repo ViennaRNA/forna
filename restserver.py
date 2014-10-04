@@ -2,23 +2,23 @@ from flask import Flask, request, jsonify, abort
 
 import forna
 import sys
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='')
 
-tasks = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
-        'done': False
-    }
-]
+# serving static files for developmental purpose
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
+@app.route('/js/<path:path>')
+def static_js(path):
+    return app.send_static_file(os.path.join('js', path))
+
+@app.route('/css/<path:path>')
+def static_css(path):
+    return app.send_static_file(os.path.join('css', path))
+# end serving static files
 
 @app.route('/struct_graph', methods=['POST'])
 def create_task():
