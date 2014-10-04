@@ -3,6 +3,37 @@ var w = 800,
     h = 600,
     fill = d3.scale.category20();
 
+var xScale = d3.scale.linear()
+    .domain([0,w]);
+var yScale = d3.scale.linear()
+    .domain([0,h]);
+
+function setSize() {
+    var svgStyles = window.getComputedStyle(svg.node());
+    var svgW = parseInt(svgStyles["width"]);
+    var svgH = parseInt(svgStyles["height"]);
+    console.log("setting size", svgW, svgH)
+    
+    //Set the output range of the scales
+    xScale.range([0, svgW]);
+    yScale.range([0, svgH]);
+    
+    //re-attach the scales to the zoom behaviour
+    zoomer.x(xScale)
+          .y(yScale);
+    
+    //resize the background
+    rect.attr("width", svgW)
+            .attr("height", svgH);
+   
+    //console.log(xScale.range(), yScale.range());
+    //redraw();
+}
+
+//adapt size to window changes:
+window.addEventListener("resize", setSize, false)
+
+
   function dragstarted(d) {
       d3.event.sourceEvent.stopPropagation();
       d3.select(this).classed("dragging", true);
@@ -16,17 +47,24 @@ var w = 800,
       d3.select(this).classed("dragging", false);
   }
 
-var graph = d3.select("body")
-  .append("svg:svg")
-  .attr("width", w)
-  .attr("height", h)
-  .append('svg:g')
-  .call(d3.behavior.zoom().scaleExtent([0.1, 10]).on("zoom", redraw))
+zoomer = d3.behavior.zoom().
+        scaleExtent([0.1,10]).
+        on("zoom", redraw);
+
+var svg = d3.select("body")
+          .append("svg:svg")
+      .attr("width", w)
+      .attr("height", h);
+
+var graph = svg.append('svg:g')
+  .call(zoomer);
 
 var rect = graph.append('svg:rect')
     .attr('width', w)
     .attr('height', h)
-    .attr('fill', 'grey')
+    .attr('stroke-width', 1)
+    .attr('fill', 'white')
+    .attr('stroke', 'grey')
     .attr("pointer-events", "all");
 
 
@@ -110,4 +148,6 @@ d3.json("bp.json", function(error, json) {
         .attr("cy", function(d) { return d.y; });
   });
 
+
+  setSize();
 });

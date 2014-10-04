@@ -7,3 +7,14 @@ line.link {
   stroke: #999;
   stroke-opacity: .6;
 }
+
+svg { 
+    display:block; /* required for firefox to give valid
+    height and width used values for getComputedStyle()
+    see https://bugzilla.mozilla.org/show_bug.cgi?id=874919 
+                    */
+    border: solid 1px gray;
+    margin:1em;
+    height:calc(100% - 2em);
+    width: calc(100% - 2em);
+}
