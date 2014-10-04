@@ -3,14 +3,6 @@ var w = 800,
     h = 600,
     fill = d3.scale.category20();
 
-    var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 10])
-    .on("zoom", zoomed);
-
-
-function zoomed() {
-      container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  }
   function dragstarted(d) {
       d3.event.sourceEvent.stopPropagation();
       d3.select(this).classed("dragging", true);
@@ -24,19 +16,21 @@ function zoomed() {
       d3.select(this).classed("dragging", false);
   }
 
-var vis = d3.select("body")
+var graph = d3.select("body")
   .append("svg:svg")
-    .attr("width", w)
-    .attr("height", h)
-    .attr("pointer-events", "all")
+  .attr("width", w)
+  .attr("height", h)
   .append('svg:g')
-    .call(d3.behavior.zoom().on("zoom", redraw))
-  .append('svg:g');
+  .call(d3.behavior.zoom().scaleExtent([0.1, 10]).on("zoom", redraw))
 
-vis.append('svg:rect')
+var rect = graph.append('svg:rect')
     .attr('width', w)
     .attr('height', h)
-    .attr('fill', 'white');
+    .attr('fill', 'grey')
+    .attr("pointer-events", "all");
+
+
+var vis = graph.append("svg:g");
 
 function redraw() {
   console.log("here", d3.event.translate, d3.event.scale);
