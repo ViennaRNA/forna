@@ -1,4 +1,6 @@
 
+function draw(json) {
+
 var w = 800,
     h = 600,
     fill = d3.scale.category20();
@@ -51,6 +53,8 @@ zoomer = d3.behavior.zoom().
         scaleExtent([0.1,10]).
         on("zoom", redraw);
 
+d3.select("#chart").select("svg").remove()
+
 var svg = d3.select("#chart")
           .append("svg:svg")
       .attr("width", w)
@@ -78,7 +82,6 @@ function redraw() {
       + " scale(" + d3.event.scale + ")");
 }
 
-function draw(json) {
   var force = d3.layout.force()
       .charge(-20)
       .linkDistance(function(d) { return 15 * d.value; })
