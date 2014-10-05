@@ -1,11 +1,17 @@
 circle.node {
   stroke: #fff;
   stroke-width: 1.5px;
+  opacity: 0.5;
 }
 
 line.link {
   stroke: #999;
   stroke-opacity: .6;
+}
+
+text.node-label {
+    font-weight: bold;
+    font-family: "sans-serif";
 }
 
 svg { 
