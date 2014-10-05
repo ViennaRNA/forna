@@ -77,7 +77,7 @@ function redraw() {
       + " scale(" + d3.event.scale + ")");
 }
 
-d3.json("bp.json", function(error, json) {
+function draw(json) {
   var force = d3.layout.force()
       .charge(-20)
       .linkDistance(function(d) { return 15 * d.value; })
@@ -150,4 +150,4 @@ d3.json("bp.json", function(error, json) {
 
 
   setSize();
-});
+}
