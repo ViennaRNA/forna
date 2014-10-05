@@ -51,10 +51,11 @@ zoomer = d3.behavior.zoom().
         scaleExtent([0.1,10]).
         on("zoom", redraw);
 
-var svg = d3.select("body")
+var svg = d3.select("#chart")
           .append("svg:svg")
       .attr("width", w)
       .attr("height", h);
+console.log('svg', svg.node())
 
 var graph = svg.append('svg:g')
   .call(zoomer);
