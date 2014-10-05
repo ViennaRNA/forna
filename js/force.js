@@ -146,7 +146,7 @@ function draw(json) {
                         return "";
                     } else { return d.name; }})
                     .attr('text-anchor', 'middle')
-                    .attr('font-size', 5.5)
+                    .attr('font-size', 6.0)
                     .attr('y', 2)
                     .attr('class', 'node-label');
 

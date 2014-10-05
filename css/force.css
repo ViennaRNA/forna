@@ -10,8 +10,8 @@ line.link {
 }
 
 text.node-label {
-    font-weight: bold;
-    font-family: "sans-serif";
+    //font-weight: bold;
+    font-family: Tahoma, Geneva, sans-serif;
 }
 
 svg { 
