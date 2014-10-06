@@ -90,7 +90,7 @@ function draw(json) {
                 .linkStrength(function(d) { return 8; })
                 .nodes(json.nodes)
                 .links(json.links)
-                .gravity(0.005)
+                .gravity(0.001)
                 .chargeDistance(250)
                 .friction(.970)
                 .size([w, h])
@@ -132,22 +132,15 @@ function draw(json) {
                     var node = gnodes.append("svg:circle")
                     .attr("class", "node")
                     .attr("r", 6)
-                    .style("stroke", function(d) { if (domain.indexOf(d.color) == -1) {
-                        return "transparent";
-                    }
-                    else {return 'white';}
-                    })
-                    .style("fill", function(d) { if (domain.indexOf(d.color) == -1) {
-                        return 'transparent';
-                    } else {return colors(d.color); }});
+                    .style("stroke", "white")
+                    .style("fill", function(d) { console.log(d.color); return d.color });
 
                     var labels = gnodes.append("text")
-                    .text(function(d) { if (domain.indexOf(d.color) == -1) {
-                        return "";
-                    } else { return d.name; }})
+                    .text(function(d) { return d.name })
                     .attr('text-anchor', 'middle')
                     .attr('font-size', 6.0)
-                    .attr('y', 2)
+                    .attr('y', 2.5)
+                    .attr('fill', d3.rgb(50,50,50))
                     .attr('class', 'node-label');
 
                     node.append("svg:title")

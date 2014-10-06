@@ -1,7 +1,7 @@
 circle.node {
   stroke: #fff;
   stroke-width: 1.5px;
-  opacity: 0.5;
+  opacity: 1.;
 }
 
 line.link {
@@ -10,8 +10,9 @@ line.link {
 }
 
 text.node-label {
-    //font-weight: bold;
+    font-weight: bold;
     font-family: Tahoma, Geneva, sans-serif;
+    color: rgb(100,100,100);
 }
 
 svg { 

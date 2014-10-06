@@ -44,7 +44,7 @@ def bg_to_json(bg):
     new_ys = (ys - center_y) + center_height
 
     # corresponds to the colors in d3's category10 color scale
-    colors = {'s':2, 'i':8, 'm':3, 'f':4, 't':9, 'h': 0, 'x':-1}
+    colors = {'s':'lightgreen', 'm':'#ff9896', 'i':'#dbdb8d', 'f':'lightsalmon', 't':'lightcyan', 'h': 'lightblue', 'x':'transparent'}
 
     for i in range(bg.seq_length):
         # use the centered coordinates for each nucleotide
@@ -86,7 +86,7 @@ def bg_to_json(bg):
         y_pos = np.mean(ys) - center_y + center_height
 
         # create a pseudo node for each of the loops
-        struct["nodes"] += [{"group": 1, "name": node_id, "id": node_id, 
+        struct["nodes"] += [{"group": 1, "name": "", "id": node_id, 
                              "x": x_pos, "y": y_pos, "px":x_pos, "py":y_pos, 
                              "color": colors['x']}]
 
