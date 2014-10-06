@@ -20,7 +20,7 @@ svg {
     height and width used values for getComputedStyle()
     see https://bugzilla.mozilla.org/show_bug.cgi?id=874919 
                     */
-    border: solid 1px gray;
+    //border: solid 1px gray;
     margin:1em;
     height:calc(100% - 10em);
     width: calc(100% - 2em);
