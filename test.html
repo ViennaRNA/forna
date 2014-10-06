@@ -1,0 +1,12 @@
+<body>
+  <link href='css/force.css' rel='stylesheet' type='text/css' />
+    <div id='chart'>
+    </div>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript">
+      d3.json("bp.json", function(error, graph) {
+                draw(graph)
+              });
+  </script>
+  <script type="text/javascript" src="js/force.js"></script>
+</body>
