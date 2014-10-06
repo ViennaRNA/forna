@@ -22,6 +22,6 @@ svg {
                     */
     border: solid 1px gray;
     margin:1em;
-    height:calc(100% - 2em);
+    height:calc(100% - 10em);
     width: calc(100% - 2em);
 }
