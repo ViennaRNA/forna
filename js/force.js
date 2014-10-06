@@ -60,7 +60,8 @@ function draw(json) {
             var svg = d3.select("#chart")
             .append("svg:svg")
             .attr("width", w)
-            .attr("height", h);
+            .attr("height", h)
+            .attr("id", 'plotting-area')
             console.log('svg', svg.node())
 
                 var graph = svg.append('svg:g')

@@ -2,6 +2,38 @@
   <link href='css/force.css' rel='stylesheet' type='text/css' />
     <div id='chart'>
     </div>
+    <button class="btn btn-success" id="save_as_svg" value="">
+                    Save as SVG</button>
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        <script type="text/javascript">
+$(document).ready(function() {
+        $("#save_as_svg").click(function() { 
+                console.log("hello"); 
+                var svg = document.getElementById('plotting-area');
+
+                //get svg source.
+                var serializer = new XMLSerializer();
+                var source = serializer.serializeToString(svg);
+
+                //add name spaces.
+                if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+                    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+                    }
+                    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+                        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+                        }
+
+                        //add xml declaration
+                        source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+                        //convert svg source to URI data scheme.
+                        var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+
+                        //set url value to a element's href attribute.
+                        location.href = url;
+                });
+        });
+        </script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script type="text/javascript">
       d3.json("bp.json", function(error, graph) {
