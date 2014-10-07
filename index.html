@@ -26,68 +26,74 @@
   <script src="http://d3js.org/d3.v3.min.js"></script>
 </head>
 <body>
-  <nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#">forna</a>
+  <div class="container" role="main" id="main" style="padding:10px;">
+  
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="active"><a href="#new" role="tab" data-toggle="tab">New</a></li>
+      <li><a href="#color" role="tab" data-toggle="tab">Color</a></li>
+      <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li>
+      <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+    </ul>
+    
+    <div class="tab-content" id="ribbon">
+      <div class="tab-pane fade in active" id="new">
+        <form role="form">
+          <div class="form-group">
+            <label for="Input">Sequence and Structure</label>
+            <div class="input-group">
+              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 56px;" data-bind="value: input"></textarea>
+              <span class="input-group-btn">
+                <button data-bind="click: submit" type="submit" class="btn btn-default" style="height: 56px;">Submit</button>
+              </span>
+            </div>
+          </div>
+          <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
+        </form>
+      </div>
+      <div class="tab-pane fade" id="color">
+        <form role="form">
+          <div class="form-group">
+            <label for="Input">Colors</label>
+            <div class="input-group" >
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default active"><input type="radio" name="options" checked>Structure</label>
+                <label class="btn btn-default"><input type="radio" name="options">Sequence</label>
+                <label class="btn btn-default"><input type="radio" name="options">Pair Probabilities</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="Input">Label</label>
+            <div class="input-group">
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default active"><input type="radio" name="options" checked>Sequence</label>
+                <label class="btn btn-default"><input type="radio" name="options">Position</label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="tab-pane fade" id="edit">
+        edit
+      </div>
+      
+      <div class="tab-pane fade" id="settings">
+       <form role="form">
+        <div class="form-group">
+          <label for="Input">Temperature</label>
+          <div class="input-group" style="width: 8em;">
+            <span class="input-group-addon">°C</span>
+            <input type="number" min="0" value="37" class="form-control" style="padding: 0px 0px 0px 12px;">
+          </div>
+        </div>
       </div>
     </div>
-  </nav>
-    <div class="container" role="main" id="main" style="padding: 20px;">
-      <form role="form">
-        <div class="form-group">
-          <label for="Input">Sequence and Structure</label>
-          <textarea type="email" class="form-control" id="Input" placeholder="" data-bind="value: input" rows="2"></textarea>
-        </div>
-        <button data-bind="click: submit" type="submit" class="btn btn-default">Submit</button>
-      </form>
-      
-      <div class="gallery" id='chart'> </div>
+    <!-- the graph goes here -->
+    <div class="gallery" id='chart'> </div>
+    <!-- foce field javascript -->
+    <script type="text/javascript" src="js/force.js"></script>
+    <!-- interface javascript -->
+    <script type="text/javascript" src="js/interface.js"></script>
   </div>
-  
-  
-  
-  <script type="text/javascript">
-    
-    serverURL = "";
-    
-    // custom ajax call
-    ajax = function(uri, method, data) {
-      var request = {
-        url: uri,
-        type: method,
-        contentType: "application/json",
-        accepts: "application/json",
-        cache: false,
-        dataType: 'json',
-        data: data,
-        error: function(jqXHR) {
-            console.log("ajax error " + jqXHR.status);
-        }
-      };
-      return $.ajax(request);
-    }
-    
-    // Knockout view model for RNA
-    function RNAViewModel() {
-      var self = this;
-      
-      self.input = ko.observable('');
-      self.ss = ko.computed(function() {
-        return this.input().split("\n");
-      }, this);
-      
-      self.submit = function() {
-        ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
-          draw(data);
-        });
-      }
-    }
-    
-    // bind the model to the ui
-    ko.applyBindings(new RNAViewModel());
-    
-  </script>
-  <script type="text/javascript" src="js/force.js"></script>
 </body>
 </html>
