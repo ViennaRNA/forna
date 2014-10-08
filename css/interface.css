@@ -7,3 +7,8 @@ textarea {
   margin: 10px;
   height: 11em;
 }
+
+label.btn > input[type='radio']
+{
+    display: none;
+}
