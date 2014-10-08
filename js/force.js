@@ -1,4 +1,4 @@
-function draw(json) {
+function Graph(json) {
 
     var w = 800,
         h = 600,

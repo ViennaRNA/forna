@@ -24,102 +24,90 @@
   <script type='text/javascript' src="js/bootstrap.min.js"></script>
   <!-- D3 -->
   <script src="js/d3.js"></script>
+  <!-- File Saver https://github.com/eligrey/FileSaver.js -->
+  <script type='text/javascript' src="js/FileSaver.min.js"></script>
 </head>
 <body>
-  <nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#">forna</a>
+  <div class="container" role="main" id="main" style="padding:10px;">
+  
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="active"><a href="#new" role="tab" data-toggle="tab">New</a></li>
+      <li><a href="#color" role="tab" data-toggle="tab">Color</a></li>
+      <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li>
+      <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+      <li><a href="#output" role="tab" data-toggle="tab" style="display:none;" id="output-tab">Output</a></li>
+    </ul>
+    
+    <div class="tab-content" id="ribbon">
+      <div class="tab-pane fade in active" id="new">
+        <form role="form">
+          <div class="form-group">
+            <label for="Input">Sequence and Structure</label>
+            <div class="input-group">
+              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 56px;" data-bind="value: input" autofocus required></textarea>
+              <span class="input-group-btn">
+                <button type="submit" data-bind="click: submit" class="btn btn-default" style="height: 56px;">Submit</button>
+              </span>
+            </div>
+          </div>
+          <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
+        </form>
+      </div>
+      <div class="tab-pane fade" id="color">
+        <form role="form">
+          <div class="form-group">
+            <label for="Colors">Colors</label>
+            <div class="input-group" >
+              <div class="btn-group" id="Colors">
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'pairprobabilities' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'pairprobabilities'">Pair Probabilities</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="Label">Label</label>
+            <div class="input-group">
+              <div class="btn-group" id="Label">
+                <label class="btn btn-default" data-bind="css: { active: label() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'sequence'">Sequence</label>
+                <label class="btn btn-default" data-bind="css: { active: label() == 'position' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'position'">Position</label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="tab-pane fade" id="edit">
+        <label>Edit RNA</label>
+        <br>
+      </div>
+      
+      <div class="tab-pane fade" id="settings">
+       <form role="form">
+        <div class="form-group">
+          <label for="Temperature">Temperature</label>
+          <div class="input-group" style="width: 8em;" id="Temperature">
+            <span class="input-group-addon">°C</span>
+            <input type="number" min="0" class="form-control" data-bind="value: temperature" style="padding: 0px 0px 0px 12px;">
+          </div>
+        </div>
+      </div>
+      
+      <div class="tab-pane fade" id="output">
+        <form role="form">
+          <div class="form-group">
+            <label>Save as File</label>
+            <br>
+            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg">Save SVG-File</button>
+          </div>
+        </form>
       </div>
     </div>
-  </nav>
-    <div class="container" role="main" id="main" style="padding: 20px;">
-      <form role="form">
-        <div class="form-group">
-          <label for="Input">Sequence and Structure</label>
-          <textarea type="email" class="form-control" id="Input" placeholder="" data-bind="value: input" rows="2"></textarea>
-        </div>
-        <button data-bind="click: submit" type="submit" class="btn btn-default">Submit</button>
-    <button class="btn btn-default" id="save_as_svg" value="" type='button'>
-                    Save as SVG</button>
-      </form>
-      
-      <div class="gallery" id='chart'> </div>
-      <hline>
+    <!-- the graph goes here -->
+    <div class="gallery" id='chart'> </div>
+    <!-- foce field javascript -->
+    <script type="text/javascript" src="js/force.js"></script>
+    <!-- interface javascript -->
+    <script type="text/javascript" src="js/interface.js"></script>
   </div>
-  
-  
-        <script type="text/javascript">
-$(document).ready(function() {
-        $("#save_as_svg").click(function() { 
-                console.log("hello"); 
-                var svg = document.getElementById('plotting-area');
-
-                //get svg source.
-                var serializer = new XMLSerializer();
-                var source = serializer.serializeToString(svg);
-
-                //add name spaces.
-                if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
-                    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-                    }
-                    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
-                        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-                        }
-
-                        //add xml declaration
-                        source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-
-                        //convert svg source to URI data scheme.
-                        var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
-
-                        //set url value to a element's href attribute.
-                        location.href = url;
-                });
-        });
-        </script>
-  
-  <script type="text/javascript">
-    
-    serverURL = "";
-    
-    // custom ajax call
-    ajax = function(uri, method, data) {
-      var request = {
-        url: uri,
-        type: method,
-        contentType: "application/json",
-        accepts: "application/json",
-        cache: false,
-        dataType: 'json',
-        data: data,
-        error: function(jqXHR) {
-            console.log("ajax error " + jqXHR.status);
-        }
-      };
-      return $.ajax(request);
-    }
-    
-    // Knockout view model for RNA
-    function RNAViewModel() {
-      var self = this;
-      
-      self.input = ko.observable('');
-      self.ss = ko.computed(function() {
-        return this.input().split("\n");
-      }, this);
-      
-      self.submit = function() {
-        ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
-          draw(data);
-        });
-      }
-    }
-    
-    // bind the model to the ui
-    ko.applyBindings(new RNAViewModel());
-    
-  </script>
-  <script type="text/javascript" src="js/force.js"></script>
 </body>
 </html>
