@@ -28,10 +28,11 @@ def create_task():
     if 'text' not in request.json:
         abort(400)
 
-    fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
-                                           request.json['struct'])
+    fasta_text = request.json['text']
 
     result = forna.fasta_to_json(fasta_text)
+
+    # find a way to return a meaningful error
     return jsonify(result), 201
 
 if __name__ == '__main__':

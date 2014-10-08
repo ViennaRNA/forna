@@ -27,12 +27,12 @@ function RNAViewModel() {
   
   self.input = ko.observable('');
   self.ss = ko.computed(function() {
-    return this.input().split("\n");
+    return this.input();
   }, this);
   
   self.submit = function() {
     $('#inputError').hide();
-    ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
+    ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( { text: self.ss() } )).success( function(data) {
       graph = new Graph(data);
     }).error( function(jqXHR) { 
       document.getElementById("inputError").innerHTML = "Ajax error: " + jqXHR.status;
