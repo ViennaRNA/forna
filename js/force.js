@@ -1,7 +1,7 @@
 function Graph(json) {
 
     var w = 800,
-        h = 450,
+        h = 600,
         fill = d3.scale.category20();
 
     var xScale = d3.scale.linear()
