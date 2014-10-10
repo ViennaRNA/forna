@@ -13,7 +13,6 @@ function Graph(json) {
         var svgStyles = window.getComputedStyle(svg.node());
         var svgW = parseInt(svgStyles["width"]);
         var svgH = parseInt(svgStyles["height"]);
-        console.log("setting size", svgW, svgH)
 
             //Set the output range of the scales
             xScale.range([0, svgW]);
@@ -27,16 +26,12 @@ function Graph(json) {
         rect.attr("width", svgW)
             .attr("height", svgH);
 
-        //console.log(xScale.range(), yScale.range());
-        //redraw();
     }
 
     this.changeColorScheme = function(newColorScheme) {
         var nodes = vis.selectAll('[node_type=nucleotide]');
         data = nodes.data();
 
-        console.log('newColorScheme', newColorScheme);
-        console.log('data:', data);
 
         if (newColorScheme == 'sequence') {
             scale = d3.scale.category10()
@@ -98,7 +93,6 @@ function Graph(json) {
             .attr("width", w)
             .attr("height", h)
             .attr("id", 'plotting-area')
-            console.log('svg', svg.node())
 
             var graph = svg.append('svg:g')
             .call(zoomer);
@@ -116,7 +110,6 @@ function Graph(json) {
     var vis = graph.append("svg:g");
 
     function redraw() {
-        console.log("here", d3.event.translate, d3.event.scale);
         vis.attr("transform",
                 "translate(" + d3.event.translate + ")"
                 + " scale(" + d3.event.scale + ")");
@@ -172,9 +165,9 @@ function Graph(json) {
             var node = gnodes.append("svg:circle")
             .attr("class", "node")
             .attr("r", 6)
-            .attr("node_type", function(d) { console.log("node_type", d.node_type); return d.node_type; })
+            .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", "white")
-            .style("fill", function(d) { console.log(d.color); return d.color });
+            .style("fill", function(d) { return d.color });
 
             var labels = gnodes.append("text")
             .text(function(d) { return d.name })

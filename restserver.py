@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, abort
 
 import forna
+import json
 import sys
 import os
 
@@ -32,7 +33,7 @@ def create_task():
                                            request.json['struct'])
 
     result = forna.fasta_to_json(fasta_text)
-    return jsonify(result), 201
+    return json.dumps(result), 201
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=False, port=8008)
