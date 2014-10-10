@@ -25,7 +25,7 @@ def bg_to_json(bg):
 
     # the initial width and height of the screen
     scr_width=800.
-    scr_height=800.
+    scr_height=600.
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
     bp_string =  bg.to_dotbracket_string()
