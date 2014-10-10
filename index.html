@@ -33,8 +33,8 @@
     <ul class="nav nav-tabs" role="tablist">
       <li class="active"><a href="#new" role="tab" data-toggle="tab">New</a></li>
       <li><a href="#color" role="tab" data-toggle="tab">Color</a></li>
-      <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li>
-      <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+      <!-- <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li> -->
+      <!-- <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li> -->
       <li><a href="#output" role="tab" data-toggle="tab" style="display:none;" id="output-tab">Output</a></li>
     </ul>
     
@@ -44,9 +44,9 @@
           <div class="form-group">
             <label for="Input">Sequence and Structure</label>
             <div class="input-group">
-              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 56px;" data-bind="value: input" autofocus required></textarea>
+              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 112px;" data-bind="value: input" autofocus required></textarea>
               <span class="input-group-btn">
-                <button type="submit" data-bind="click: submit" class="btn btn-default" style="height: 56px;">Submit</button>
+                <button type="submit" data-bind="click: submit" class="btn btn-default" style="height: 112px;">Submit</button>
               </span>
             </div>
           </div>
@@ -59,9 +59,9 @@
             <label for="Colors">Colors</label>
             <div class="input-group" >
               <div class="btn-group" id="Colors">
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'position' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Positions</label>
                 <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
                 <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'pairprobabilities' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'pairprobabilities'">Pair Probabilities</label>
               </div>
             </div>
           </div>
@@ -69,7 +69,6 @@
             <label for="Label">Label</label>
             <div class="input-group">
               <div class="btn-group" id="Label">
-                <label class="btn btn-default" data-bind="css: { active: label() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'sequence'">Sequence</label>
                 <label class="btn btn-default" data-bind="css: { active: label() == 'position' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'position'">Position</label>
               </div>
             </div>
