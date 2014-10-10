@@ -30,11 +30,24 @@ showError = function(text, id) {
 function RNAViewModel() {
   var self = this;
   
-  self.input = ko.observable('');
+  self.graph = null;
+  self.input = ko.observable('CGGCCCC\n((...))');
   
-  self.colors = ko.observable('sequence'); // the color scheme setting can be structure/sequence/pairprobabilities
+  self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
   self.label = ko.observable('position'); // the label scheme can be sequence/position
   self.temperature = ko.observable("37");
+
+  self.colors.subscribe(function(newValue) {
+      if (self.graph == null) {
+          console.log("graph is null");
+    } else {
+        //console.log("self.graph:", self.graph.changeColorScheme);
+        self.graph.changeColorScheme(newValue);
+
+        console.log("newValue:", newValue);
+    }
+  });
+
   self.ss = ko.computed(function() {
     return this.input().replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"); //remove leading/trailing newlines and split in between
   }, this);
@@ -49,7 +62,7 @@ function RNAViewModel() {
       showError("Structures just consist of brackets and dots.", "inputError");
     } else {
       ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
-        graph = new Graph(data);
+        self.graph = new Graph(data);
         $('#output-tab').show();
       }).error( function(jqXHR) { 
         showError("Ajax error (" + jqXHR.status + ") Please check your input!", "inputError");
