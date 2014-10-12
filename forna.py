@@ -25,7 +25,7 @@ def bg_to_json(bg):
 
     # the initial width and height of the screen
     scr_width=800.
-    scr_height=800.
+    scr_height=600.
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
     bp_string =  bg.to_dotbracket_string()
@@ -54,8 +54,9 @@ def bg_to_json(bg):
         # create the nodes with initial positions
         # the  node_name comes from the forgi representation
         node_name = bg.get_node_from_residue_num(i+1)
-        node = {"group": 1, "elem": node_name, "name": bg.seq[i], "id": i+1, 
-                "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]]}
+        node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i+1, 
+                "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
+                "node_type":"nucleotide"}
 
         #node = {"group": 1, "name": i+1, "id": i+1}
         struct["nodes"] += [node]
@@ -75,7 +76,7 @@ def bg_to_json(bg):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i+1), "id": node_id, 
-                                 "color": 'white'}]
+                                 "color": 'transparent'}]
             struct["links"] += [{"source": i, "target": node_id, "value":1}]
 
     # store the node id of the center id for each loop

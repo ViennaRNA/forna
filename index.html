@@ -24,6 +24,8 @@
   <script type='text/javascript' src="js/bootstrap.min.js"></script>
   <!-- D3 -->
   <script src="js/d3.js"></script>
+  <!-- File Saver https://github.com/eligrey/FileSaver.js -->
+  <script type='text/javascript' src="js/FileSaver.min.js"></script>
 </head>
 <body>
   <div class="container" role="main" id="main" style="padding:10px;">
@@ -31,8 +33,9 @@
     <ul class="nav nav-tabs" role="tablist">
       <li class="active"><a href="#new" role="tab" data-toggle="tab">New</a></li>
       <li><a href="#color" role="tab" data-toggle="tab">Color</a></li>
-      <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li>
-      <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+      <li><a href="#output" role="tab" data-toggle="tab" id="output-tab">Output</a></li>
+      <!-- <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li> -->
+      <!-- <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li> -->
     </ul>
     
     <div class="tab-content" id="ribbon">
@@ -41,9 +44,9 @@
           <div class="form-group">
             <label for="Input">Sequence and Structure</label>
             <div class="input-group">
-              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 56px;" data-bind="value: input"></textarea>
+              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 112px;" data-bind="value: input" autofocus required></textarea>
               <span class="input-group-btn">
-                <button data-bind="click: submit" type="submit" class="btn btn-default" style="height: 56px;">Submit</button>
+                <button type="submit" data-bind="click: submit" class="btn btn-default" style="height: 112px;">Submit</button>
               </span>
             </div>
           </div>
@@ -53,39 +56,49 @@
       <div class="tab-pane fade" id="color">
         <form role="form">
           <div class="form-group">
-            <label for="Input">Colors</label>
+            <label for="Colors">Colors</label>
             <div class="input-group" >
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default active"><input type="radio" name="options" checked>Structure</label>
-                <label class="btn btn-default"><input type="radio" name="options">Sequence</label>
-                <label class="btn btn-default"><input type="radio" name="options">Pair Probabilities</label>
+              <div class="btn-group" id="Colors">
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'position' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Position</label>
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
+                <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label for="Input">Label</label>
+            <label for="Label">Label</label>
             <div class="input-group">
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default active"><input type="radio" name="options" checked>Sequence</label>
-                <label class="btn btn-default"><input type="radio" name="options">Position</label>
+              <div class="btn-group" id="Label">
+                <label class="btn btn-default" data-bind="css: { active: label() == 'position' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'position'">Position</label>
               </div>
             </div>
           </div>
         </form>
       </div>
       <div class="tab-pane fade" id="edit">
-        edit
+        <label>Edit RNA</label>
+        <br>
       </div>
       
       <div class="tab-pane fade" id="settings">
        <form role="form">
         <div class="form-group">
-          <label for="Input">Temperature</label>
-          <div class="input-group" style="width: 8em;">
+          <label for="Temperature">Temperature</label>
+          <div class="input-group" style="width: 8em;" id="Temperature">
             <span class="input-group-addon">°C</span>
-            <input type="number" min="0" value="37" class="form-control" style="padding: 0px 0px 0px 12px;">
+            <input type="number" min="0" class="form-control" data-bind="value: temperature" style="padding: 0px 0px 0px 12px;">
           </div>
         </div>
+      </div>
+      
+      <div class="tab-pane fade" id="output">
+        <form role="form">
+          <div class="form-group">
+            <label>Save as File</label>
+            <br>
+            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg">Save SVG-File</button>
+          </div>
+        </form>
       </div>
     </div>
     <!-- the graph goes here -->
@@ -95,5 +108,16 @@
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
   </div>
+
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-55640065-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
 </body>
 </html>

@@ -4,6 +4,14 @@ textarea {
 }
 
 #ribbon {
-  margin: 10px;
-  height: 11em;
+  padding: 10px;
+  height: 12em;
+  border-bottom: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+label.btn > input[type='radio']
+{
+    display: none;
 }
