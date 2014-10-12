@@ -6117,6 +6117,7 @@
       if (k = alpha * gravity) {
         x = size[0] / 2;
         y = size[1] / 2;
+
         i = -1;
         if (k) while (++i < n) {
           o = nodes[i];

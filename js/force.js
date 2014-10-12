@@ -1,6 +1,6 @@
 function Graph(json) {
 
-    var w = 800,
+    var w = 679,
     h = 600,
         fill = d3.scale.category20();
 
@@ -34,7 +34,8 @@ function Graph(json) {
 
 
         if (newColorScheme == 'sequence') {
-            scale = d3.scale.category10()
+            scale = d3.scale.ordinal()
+                .range(['#dbdb8d', '#98df8a', '#ff9896', '#aec7e8'])
                 .domain(['A','C','G','U']);
             nodes.style('fill', function(d) { 
                 return scale(d.name);
@@ -49,10 +50,14 @@ function Graph(json) {
                 return scale(d.elem_type);
             });
         } else if (newColorScheme == 'positions') {
+            data_values = data.map(function(d) { return d.id; });
+            data_min = d3.min(data_values);
+            data_max = d3.max(data_values);
+            
             var scale = d3.scale.linear()
-                .range(["#dbdb8d", "#aec7e8"])
+                .range(["#98df8a", "#dbdb8d", "#ff9896"])
                 .interpolate(d3.interpolateLab)
-                .domain(d3.extent(data.map(function(d) { return d.id;})));
+                .domain([data_min, data_min + (data_max - data_min) / 2., data_max]);
 
             nodes.style('fill', function(d) { 
                 return scale(d.id);
@@ -124,6 +129,7 @@ function Graph(json) {
         .gravity(0.001)
         .chargeDistance(250)
         .friction(.970)
+        //.friction(1.)
         .size([w, h])
         .start();
 
