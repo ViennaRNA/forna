@@ -7,6 +7,7 @@ import itertools as it
 import json
 import math
 import numpy as np
+import os.path as op
 import RNA
 
 import sys
@@ -242,9 +243,17 @@ def main():
     if args[0] == '-':
         text = sys.stdin.read()
     else:
-        with open(args[0], 'r') as f: text = f.read()
+        fname, fext = op.splitext(args[0])
+        fud.pv('fext')
+        if fext == '.cg' or fext == '.bg':
+            print >>sys.stderr, "Detected BulgeGraph"
+            bg = fgb.BulgeGraph(args[0])
+            struct = bg_to_json(bg)
+        else:
+            print >>sys.stderr, "Detected fasta"
+            with open(args[0], 'r') as f: text = f.read()
+            struct = fasta_to_json(text)
 
-    struct = fasta_to_json(text)
     print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':

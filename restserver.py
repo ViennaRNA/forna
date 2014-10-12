@@ -26,7 +26,7 @@ def create_task():
     if not request.json:
         abort(400)
     
-    if 'text' not in request.json:
+    if 'seq' not in request.json and 'struct' not in request:
         abort(400)
 
     fasta_text = request.json['text']
