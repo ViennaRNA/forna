@@ -20,8 +20,10 @@ structure manipulation library and the provided ``forna.py`` script.
 Click on ``Add Molecule`` to draw a new secondary structure. The input should
 contain a sequence and a secondary structure in dot-bracket notation:
 
-    GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG
-    ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))
+```
+GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG
+((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))
+```
 
 **Zooming** can be accomplished using the mouse wheel.
 Dragging the canvas leads to **panning**.
