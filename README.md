@@ -1,5 +1,5 @@
-forna - RNA Secondary Structure Visualization Using a Force Directed Graph
-==========================================================================
+RNA Secondary Structure Visualization Using a Force Directed Graph Layout
+=========================================================================
 
 #### Overview ####
 
