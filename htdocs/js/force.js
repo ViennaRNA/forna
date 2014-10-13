@@ -115,7 +115,15 @@ function Graph(json) {
     }
 
     var force = d3.layout.force()
-    .charge(-80)
+    .charge( function(d) {
+        base = -100;
+        if (d.node_type == 'pseudo') {
+         new_charge = base * d.members / 5.0;
+         console.log('new_charge', new_charge);
+         return new_charge;
+        } else {
+            return base;
+        }} )
     .linkDistance(function(d) { return 15 * d.value; })
     .linkStrength(function(d) { return 8; })
     .nodes(json.nodes)
