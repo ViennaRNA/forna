@@ -62,7 +62,11 @@ def main():
         @app.route('/css/<path:path>')
         def static_css(path):
             return app.send_static_file(os.path.join('css', path))
-        # end serving static files
+	
+	@app.route('/fonts/<path:path>')
+        def static_fonts(path):
+            return app.send_static_file(os.path.join('fonts', path)) 
+	# end serving static files
 
     app.run(host=options.host, debug=options.debug, port=options.port)
 

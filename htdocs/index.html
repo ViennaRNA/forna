@@ -1,16 +1,18 @@
 <!DOCTYPE html> 
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<head>
+  
   <title>forna</title>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- CSS -->
   <!-- Bootstrap: http://getbootstrap.com/ -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel='stylesheet' type='text/css' href="css/bootstrap.min.css">
+  <link rel='stylesheet' type='text/css' href="css/bootstrap.css">
   <!-- custom CSS -->
-  <link href='css/force.css' rel='stylesheet' type='text/css' />
-  <link href='css/interface.css' rel='stylesheet' type='text/css' />
+  <link rel='stylesheet' type='text/css' href='css/force.css' />
+  <link rel='stylesheet' type='text/css' href='css/interface.css' />
 
   <!-- Java Script -->
   <!-- Get jQuery -- use local if unavailable -->
@@ -28,43 +30,83 @@
   <script type='text/javascript' src="js/FileSaver.min.js"></script>
 </head>
 <body>
+  <!-- 'Add new molecule' modal -->
+  <div class="modal fade" id="add">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Add RNA Molecule</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label for="Input">Sequence and Structure</label>
+              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
+            </div>
+            <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancle</button>
+          <button type="submit" data-bind="click: submit" class="btn btn-primary">Submit</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+  <!-- 'About' modal -->
+  <div class="modal fade" id="about">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">About forna</h4>
+        </div>
+        <div class="modal-body">
+          <h3>RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h3>
+          <h4>Overview</h4>
+          <p>The <code>forna</code> package provides a web interface for displaying RNA secondary
+          structures using the <a href="https://github.com/mbostock/d3/wiki/Force-Layout">force-directed graph
+          layout</a> provided by the
+          <a href="http://d3js.org/">d3.js visualization library</a>. </p>
+          <p>The front end makes use of <a href="getbootstrap.com">Bootstrap</a> and
+          <a href="http://knockoutjs.com/">Knockout.js</a> for the user interfact while the back end
+          uses <a href="http://flask.pocoo.org/">Flask</a> to serve the static files and provide a
+          REST API. The RNA structure manipulation and graph construction is created
+          using the python <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> RNA
+          structure manipulation library and the provided <code>forna.py</code> script.</p>
+          <h4>Runing</h4>
+          <p>The server can be run locally using the following command:</p>
+          <pre><code class="lang-shell">python restserver.py -s -d</code></pre>
+          <p>Documentation about the available options is provided using the <code>-h</code> option.</p>
+          <h4>Contact</h4>
+          <p>Questions and/or comments can be sent to <a href="mailto:pkerp@tbi.univie.ac.at">pkerp@tbi.univie.ac.at</a></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
   <div class="container" role="main" id="main">
-    <!-- Add new molecule modal -->
-    <div class="modal fade" id="add">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">Add RNA Molecule</h4>
-          </div>
-          <div class="modal-body">
-            <form role="form">
-              <div class="form-group">
-                <label for="Input">Sequence and Structure</label>
-                <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
-              </div>
-              <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancle</button>
-            <button type="submit" data-bind="click: submit" class="btn btn-primary">Submit</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
 
     <div class="row">
       <div class="col-md-3">
-        <button class="btn btn-default" data-bind="click: addMolecule">Add Molecule</button>
+        <button class="btn btn-primary" data-bind="click: addMolecule">Add Molecule</button>
       </div>
-      <div class="col-md-3 col-md-offset-6">
+      <div class="col-md-4 col-md-offset-5">
         <form role="form">
           <div class="form-group pull-right">
-            <div class="btn-group" id="Colors">
+            <div class="btn-group" id="Colors" data-toggle="tooltip" data-placement="left" title="Choose the color scheme" data-delay="800">
               <label class="btn btn-default" data-bind="css: { active: colors() == 'positions' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Positions</label>
               <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
               <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
+            </div>
+            <div class="btn-group" id="About">
+              <button data-bind="click: showAbout" class="btn btn-default"><span class="glyphicon glyphicon-question-sign"></span></button>
+            
             </div>
           </div>
         </form>
@@ -79,10 +121,10 @@
     </div>
     
     <div class="row">
-      <div class="col-md-3 col-md-offset-9">
+      <div class="col-md-4 col-md-offset-8">
         <form role="form">
           <div class="form-group pull-right">
-            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg">Save as File</button>
+            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg" data-toggle="tooltip" data-placement="left" title="Save as SVG file" data-delay="800">Save File</button>
           </div>
         </form>
       </div>

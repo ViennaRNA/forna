@@ -10,6 +10,13 @@ div.modal-dialog {
   width: 1000px;
 }
 
+.tooltip.left .tooltip-inner {
+  background-color: #aaa;
+}
+.tooltip.left .tooltip-arrow {
+  border-left-color: #aaa;
+}  
+
 label.btn > input[type='radio']
 {
     display: none;

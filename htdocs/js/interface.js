@@ -17,6 +17,9 @@ ajax = function(uri, method, data) {
   return $.ajax(request);
 }
 
+// initialize bootstrap tooltips
+$("[data-toggle=tooltip]").tooltip();
+
 $('.alert').on('click', function(e) {
   $(this).hide();
 });
@@ -54,6 +57,10 @@ function RNAViewModel() {
   
   self.addMolecule = function() {
     $('#add').modal('show');
+  }
+  
+  self.showAbout = function() {
+    $('#about').modal('show');
   }
   
   self.submit = function() {
