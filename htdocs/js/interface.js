@@ -1,4 +1,4 @@
-serverURL = "/forna/api";
+serverURL = "";
 
 // custom ajax call
 ajax = function(uri, method, data) {
