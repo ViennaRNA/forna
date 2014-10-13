@@ -77,7 +77,7 @@ def bg_to_json(bg):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i+1), "id": node_id, 
-                                 "color": 'transparent'}]
+                "color": 'transparent', 'node_type':'label'}]
             struct["links"] += [{"source": i, "target": node_id, "value":1}]
 
     # store the node id of the center id for each loop
@@ -101,7 +101,7 @@ def bg_to_json(bg):
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id, 
                              "x": x_pos, "y": y_pos, "px":x_pos, "py":y_pos, 
-                             "color": colors['x']}]
+                             "color": colors['x'], 'node_type':'pseudo'}]
 
         # some geometric calculations for deciding how long to make
         # the links between alternating nodes

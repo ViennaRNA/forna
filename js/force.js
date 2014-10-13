@@ -121,13 +121,13 @@ function Graph(json) {
     }
 
     var force = d3.layout.force()
-        .charge(-20)
+        .charge(-40)
         .linkDistance(function(d) { return 15 * d.value; })
         .linkStrength(function(d) { return 8; })
         .nodes(json.nodes)
         .links(json.links)
         .gravity(0.001)
-        .chargeDistance(250)
+        .chargeDistance(150)
         .friction(.970)
         //.friction(1.)
         .size([w, h])
@@ -167,13 +167,33 @@ function Graph(json) {
             .classed('gnode', true)
             .call(drag);
 
+            
+            node_fill = function(d) {
+                node_fills = {}
+
+                node_fills['nucleotide'] = 'white';
+                node_fills['label'] = 'white';
+                node_fills['pseudo'] = 'transparent';
+
+                return node_fills[d.node_type];
+            }
+
+            node_stroke = function(d) {
+                node_strokes = {}
+
+                node_strokes['nucleotide'] = 'white';
+                node_strokes['label'] = 'white';
+                node_strokes['pseudo'] = 'transparent';
+
+                return node_strokes[d.node_type];
+            }
 
             var node = gnodes.append("svg:circle")
             .attr("class", "node")
             .attr("r", 6)
             .attr("node_type", function(d) { return d.node_type; })
-            .style("stroke", "white")
-            .style("fill", function(d) { return d.color });
+            .style("stroke", node_stroke)
+            .style("fill", node_fill);
 
             var labels = gnodes.append("text")
             .text(function(d) { return d.name })
@@ -182,6 +202,8 @@ function Graph(json) {
             .attr('y', 2.5)
             .attr('fill', d3.rgb(50,50,50))
             .attr('class', 'node-label');
+
+            this.changeColorScheme('structure');
 
             node.append("svg:title")
                 .text(function(d) { return d.name; });
