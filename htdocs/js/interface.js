@@ -15,7 +15,7 @@ ajax = function(uri, method, data) {
     }
   };
   return $.ajax(request);
-}
+};
 
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
@@ -27,13 +27,13 @@ $('.alert').on('click', function(e) {
 showError = function(text, id) {
   document.getElementById(id).innerHTML = text;
   $('#' + id).show();
-}
+};
 
 // Knockout view model for RNA
 function RNAViewModel() {
   var self = this;
   
-  self.graph = null;
+  self.graph = new Graph();
   self.input = ko.observable('CGGCCCC\n((...))');
   
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
@@ -41,15 +41,9 @@ function RNAViewModel() {
   self.temperature = ko.observable("37");
 
   self.colors.subscribe(function(newValue) {
-      if (self.graph == null) {
-          console.log("graph is null");
-    } else {
-        //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);
-
-        console.log("newValue:", newValue);
     }
-  });
+  );
 
   self.ss = ko.computed(function() {
     return this.input().replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"); //remove leading/trailing newlines and split in between
@@ -57,11 +51,11 @@ function RNAViewModel() {
   
   self.addMolecule = function() {
     $('#add').modal('show');
-  }
+  };
   
   self.showAbout = function() {
     $('#about').modal('show');
-  }
+  };
   
   self.submit = function() {
     $('#inputError').hide();
@@ -73,13 +67,14 @@ function RNAViewModel() {
       showError("Structures just consist of brackets and dots.", "inputError");
     } else {
       ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
-        self.graph = new Graph(data);
+        self.graph.addNodes(data);
+        self.graph.changeColorScheme(self.colors());
         $('#add').modal('hide');
       }).error( function(jqXHR) { 
         showError("Ajax error (" + jqXHR.status + ") Please check your input!", "inputError");
       });
     }
-  }
+  };
   
   self.saveSVG = function() { 
     console.log("saving svg...");
@@ -108,7 +103,7 @@ function RNAViewModel() {
     //window.open(url, 'download');
     var file = new Blob([source], {type: "data:image/svg+xml;charset=utf-8"});
     saveAs(file, "rna.svg");
-  }
+  };
 }
 
 // bind the model to the ui
