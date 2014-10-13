@@ -7,6 +7,7 @@ import itertools as it
 import json
 import math
 import numpy as np
+import os.path as op
 import RNA
 
 import sys
@@ -76,7 +77,7 @@ def bg_to_json(bg):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i+1), "id": node_id, 
-                                 "color": 'transparent'}]
+                "color": 'transparent', 'node_type':'label'}]
             struct["links"] += [{"source": i, "target": node_id, "value":1}]
 
     # store the node id of the center id for each loop
@@ -100,7 +101,7 @@ def bg_to_json(bg):
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id, 
                              "x": x_pos, "y": y_pos, "px":x_pos, "py":y_pos, 
-                             "color": colors['x']}]
+                             "color": colors['x'], 'node_type':'pseudo'}]
 
         # some geometric calculations for deciding how long to make
         # the links between alternating nodes
@@ -242,9 +243,17 @@ def main():
     if args[0] == '-':
         text = sys.stdin.read()
     else:
-        with open(args[0], 'r') as f: text = f.read()
+        fname, fext = op.splitext(args[0])
+        fud.pv('fext')
+        if fext == '.cg' or fext == '.bg':
+            print >>sys.stderr, "Detected BulgeGraph"
+            bg = fgb.BulgeGraph(args[0])
+            struct = bg_to_json(bg)
+        else:
+            print >>sys.stderr, "Detected fasta"
+            with open(args[0], 'r') as f: text = f.read()
+            struct = fasta_to_json(text)
 
-    struct = fasta_to_json(text)
     print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':

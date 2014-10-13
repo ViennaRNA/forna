@@ -1,6 +1,6 @@
 function Graph(json) {
 
-    var w = 800,
+    var w = 679,
     h = 600,
         fill = d3.scale.category20();
 
@@ -34,7 +34,8 @@ function Graph(json) {
 
 
         if (newColorScheme == 'sequence') {
-            scale = d3.scale.category10()
+            scale = d3.scale.ordinal()
+                .range(['#dbdb8d', '#98df8a', '#ff9896', '#aec7e8'])
                 .domain(['A','C','G','U']);
             nodes.style('fill', function(d) { 
                 return scale(d.name);
@@ -49,10 +50,14 @@ function Graph(json) {
                 return scale(d.elem_type);
             });
         } else if (newColorScheme == 'positions') {
+            data_values = data.map(function(d) { return d.id; });
+            data_min = d3.min(data_values);
+            data_max = d3.max(data_values);
+            
             var scale = d3.scale.linear()
-                .range(["#dbdb8d", "#aec7e8"])
+                .range(["#98df8a", "#dbdb8d", "#ff9896"])
                 .interpolate(d3.interpolateLab)
-                .domain(d3.extent(data.map(function(d) { return d.id;})));
+                .domain([data_min, data_min + (data_max - data_min) / 2., data_max]);
 
             nodes.style('fill', function(d) { 
                 return scale(d.id);
@@ -116,14 +121,15 @@ function Graph(json) {
     }
 
     var force = d3.layout.force()
-        .charge(-20)
+        .charge(-80)
         .linkDistance(function(d) { return 15 * d.value; })
         .linkStrength(function(d) { return 8; })
         .nodes(json.nodes)
         .links(json.links)
         .gravity(0.001)
-        .chargeDistance(250)
+        .chargeDistance(150)
         .friction(.970)
+        //.friction(1.)
         .size([w, h])
         .start();
 
@@ -161,13 +167,33 @@ function Graph(json) {
             .classed('gnode', true)
             .call(drag);
 
+            
+            node_fill = function(d) {
+                node_fills = {}
+
+                node_fills['nucleotide'] = 'white';
+                node_fills['label'] = 'white';
+                node_fills['pseudo'] = 'transparent';
+
+                return node_fills[d.node_type];
+            }
+
+            node_stroke = function(d) {
+                node_strokes = {}
+
+                node_strokes['nucleotide'] = 'white';
+                node_strokes['label'] = 'white';
+                node_strokes['pseudo'] = 'transparent';
+
+                return node_strokes[d.node_type];
+            }
 
             var node = gnodes.append("svg:circle")
             .attr("class", "node")
             .attr("r", 6)
             .attr("node_type", function(d) { return d.node_type; })
-            .style("stroke", "white")
-            .style("fill", function(d) { return d.color });
+            .style("stroke", node_stroke)
+            .style("fill", node_fill);
 
             var labels = gnodes.append("text")
             .text(function(d) { return d.name })
@@ -176,6 +202,8 @@ function Graph(json) {
             .attr('y', 2.5)
             .attr('fill', d3.rgb(50,50,50))
             .attr('class', 'node-label');
+
+            this.changeColorScheme('structure');
 
             node.append("svg:title")
                 .text(function(d) { return d.name; });

@@ -26,7 +26,7 @@ def create_task():
     if not request.json:
         abort(400)
     
-    if 'seq' not in request.json or 'struct' not in request.json:
+    if 'seq' not in request.json and 'struct' not in request:
         abort(400)
 
     fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
@@ -36,5 +36,4 @@ def create_task():
     return json.dumps(result), 201
 
 if __name__ == '__main__':
-#    app.run(host='0.0.0.0', debug=False, port=8008)
     app.run(host='127.0.0.1', debug=False, port=8008)
