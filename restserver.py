@@ -4,6 +4,7 @@ import forna
 import json
 import sys
 import os
+import RNA
 
 
 
@@ -35,7 +36,7 @@ def main():
     app = Flask(__name__, static_folder='htdocs')
 
     @app.route('/struct_graph', methods=['POST'])
-    def create_task():
+    def struct_graph():
         if not request.json:
             abort(400)
         
@@ -47,7 +48,19 @@ def main():
 
         result = forna.fasta_to_json(fasta_text)
         return json.dumps(result), 201
-
+    
+    @app.route('/mfe_struct', methods=['POST'])
+    def mfe_struct():
+        if not request.json:
+            abort(400)
+            
+        if 'seq' not in request.json:
+            abort(400)
+        # TODO Taint check if seq is really just a seq
+        result = RNA.fold(str(request.json['seq']))[0]
+        return json.dumps(result), 201
+    
+    
     if options.static:
         print >>sys.stderr, "Starting static"
         # serving static files for developmental purpose
@@ -63,10 +76,10 @@ def main():
         def static_css(path):
             return app.send_static_file(os.path.join('css', path))
 	
-	@app.route('/fonts/<path:path>')
+        @app.route('/fonts/<path:path>')
         def static_fonts(path):
             return app.send_static_file(os.path.join('fonts', path)) 
-	# end serving static files
+        # end serving static files
 
     app.run(host=options.host, debug=options.debug, port=options.port)
 
