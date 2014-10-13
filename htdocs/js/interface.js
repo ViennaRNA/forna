@@ -15,7 +15,7 @@ ajax = function(uri, method, data) {
     }
   };
   return $.ajax(request);
-}
+};
 
 //an observable that retrieves its value when first bound
 ko.onDemandObservable = function(callback, target) {
@@ -74,7 +74,7 @@ $('.alert').on('click', function(e) {
 showError = function(text, id) {
   document.getElementById(id).innerHTML = text;
   $('#' + id).show();
-}
+};
 
 function RNA() {
   var self = this;
@@ -119,13 +119,22 @@ function RNA() {
 function RNAViewModel() {
   var self = this;
   
+<<<<<<< HEAD
   self.input = ko.observable('>test\nCGGCCCC\n((...))');
   self.molecules = ko.observableArray([]);
+=======
+  self.graph = null;
+  /*jshint multistr: true */
+  self.input = ko.observable(
+      'CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
+  );
+>>>>>>> cc280757e81cf9ffd437af1e848cefa2ab1cd8be
   
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
 
   self.colors.subscribe(function(newValue) {
-      if (self.graph == null) {
+      if (self.graph === null) {
           console.log("graph is null");
     } else {
         //console.log("self.graph:", self.graph.changeColorScheme);
@@ -137,11 +146,11 @@ function RNAViewModel() {
   
   self.addMolecule = function() {
     $('#add').modal('show');
-  }
+  };
   
   self.showAbout = function() {
     $('#about').modal('show');
-  }
+  };
   
   self.inputError = ko.computed(function() {
     var returnValue = false;
@@ -234,7 +243,7 @@ function RNAViewModel() {
     //window.open(url, 'download');
     var file = new Blob([source], {type: "data:image/svg+xml;charset=utf-8"});
     saveAs(file, "rna.svg");
-  }
+  };
 }
 
 // bind the model to the ui
