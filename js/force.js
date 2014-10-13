@@ -121,7 +121,7 @@ function Graph(json) {
     }
 
     var force = d3.layout.force()
-        .charge(-40)
+        .charge(-80)
         .linkDistance(function(d) { return 15 * d.value; })
         .linkStrength(function(d) { return 8; })
         .nodes(json.nodes)
