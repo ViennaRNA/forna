@@ -119,17 +119,13 @@ function RNA() {
 function RNAViewModel() {
   var self = this;
   
-<<<<<<< HEAD
-  self.input = ko.observable('>test\nCGGCCCC\n((...))');
   self.molecules = ko.observableArray([]);
-=======
   self.graph = null;
   /*jshint multistr: true */
   self.input = ko.observable(
-      'CGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+      '>test\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
   );
->>>>>>> cc280757e81cf9ffd437af1e848cefa2ab1cd8be
   
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
 
