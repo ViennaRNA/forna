@@ -28,81 +28,66 @@
   <script type='text/javascript' src="js/FileSaver.min.js"></script>
 </head>
 <body>
-  <div class="container" role="main" id="main" style="padding:10px;">
-  
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="active"><a href="#new" role="tab" data-toggle="tab">New</a></li>
-      <li><a href="#color" role="tab" data-toggle="tab">Color</a></li>
-      <li><a href="#output" role="tab" data-toggle="tab" id="output-tab">Output</a></li>
-      <!-- <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li> -->
-      <!-- <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li> -->
-    </ul>
-    
-    <div class="tab-content" id="ribbon">
-      <div class="tab-pane fade in active" id="new">
-        <form role="form">
-          <div class="form-group">
-            <label for="Input">Sequence and Structure</label>
-            <div class="input-group">
-              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 56px;" data-bind="value: input" autofocus required></textarea>
-              <span class="input-group-btn">
-                <button type="submit" data-bind="click: submit" class="btn btn-default" style="height: 56px;">Submit</button>
-              </span>
-            </div>
+  <div class="container" role="main" id="main">
+    <!-- Add new molecule modal -->
+    <div class="modal fade" id="add">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Add RNA Molecule</h4>
           </div>
-          <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
-        </form>
-      </div>
-      <div class="tab-pane fade" id="color">
-        <form role="form">
-          <div class="form-group">
-            <label for="Colors">Colors</label>
-            <div class="input-group" >
-              <div class="btn-group" id="Colors">
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'position' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Position</label>
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
+          <div class="modal-body">
+            <form role="form">
+              <div class="form-group">
+                <label for="Input">Sequence and Structure</label>
+                <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
               </div>
-            </div>
+              <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
+            </form>
           </div>
-          <div class="form-group">
-            <label for="Label">Label</label>
-            <div class="input-group">
-              <div class="btn-group" id="Label">
-                <label class="btn btn-default" data-bind="css: { active: label() == 'position' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'position'">Position</label>
-              </div>
-            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancle</button>
+            <button type="submit" data-bind="click: submit" class="btn btn-primary">Submit</button>
           </div>
-        </form>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="row">
+      <div class="col-md-3">
+        <button class="btn btn-default" data-bind="click: addMolecule">Add Molecule</button>
       </div>
-      <div class="tab-pane fade" id="edit">
-        <label>Edit RNA</label>
-        <br>
-      </div>
-      
-      <div class="tab-pane fade" id="settings">
-       <form role="form">
-        <div class="form-group">
-          <label for="Temperature">Temperature</label>
-          <div class="input-group" style="width: 8em;" id="Temperature">
-            <span class="input-group-addon">°C</span>
-            <input type="number" min="0" class="form-control" data-bind="value: temperature" style="padding: 0px 0px 0px 12px;">
-          </div>
-        </div>
-      </div>
-      
-      <div class="tab-pane fade" id="output">
+      <div class="col-md-3 col-md-offset-6">
         <form role="form">
-          <div class="form-group">
-            <label>Save as File</label>
-            <br>
-            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg">Save SVG-File</button>
+          <div class="form-group pull-right">
+            <div class="btn-group" id="Colors">
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'positions' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Positions</label>
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
+            </div>
           </div>
         </form>
       </div>
     </div>
-    <!-- the graph goes here -->
-    <div class="gallery" id='chart'> </div>
+    
+    <div class="row">
+      <div class="col-md-12">
+        <!-- the graph goes here -->
+        <div class="gallery" id='chart'> </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-3 col-md-offset-9">
+        <form role="form">
+          <div class="form-group pull-right">
+            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg">Save as File</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
     <!-- foce field javascript -->
     <script type="text/javascript" src="js/force.js"></script>
     <!-- interface javascript -->
@@ -110,14 +95,13 @@
   </div>
 
   <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-55640065-1', 'auto');
-    ga('send', 'pageview');
-
+    ga('create', 'UA-55640065-1', 'auto');
+      ga('send', 'pageview');
   </script>
 </body>
 </html>
