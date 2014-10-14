@@ -163,8 +163,6 @@ function Graph() {
         var link = vis.selectAll("line.link")
         .data(graph.links);
 
-        console.log('graph.links:', graph.links)
-
         link.enter().append("svg:line")
         .attr("class", "link")
         .style("stroke", "#999")
@@ -173,7 +171,7 @@ function Graph() {
             //return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
-        .attr("x1", function(d) { console.log("d", d, "d.source", d.source); return d.source.x; })
+        .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
@@ -194,9 +192,6 @@ function Graph() {
 
             gnodes.enter()
             .append('g')
-            .attr("transform", function(d) {
-                return 'translate(' + [d.x, d.y] + ')'; 
-            })
             .classed('gnode', true)
             .call(drag);
 
