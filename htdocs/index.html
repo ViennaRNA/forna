@@ -64,8 +64,8 @@
           <h4 class="modal-title">About forna</h4>
         </div>
         <div class="modal-body">
-          <h3>RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h3>
-          <h4>Overview</h4>
+          <h3 id="rna-secondary-structure-visualization-using-a-force-directed-graph-layout">RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h3>
+          <h4 id="overview">Overview</h4>
           <p>The <code>forna</code> package provides a web interface for displaying RNA secondary
           structures using the <a href="https://github.com/mbostock/d3/wiki/Force-Layout">force-directed graph
           layout</a> provided by the
@@ -76,11 +76,38 @@
           REST API. The RNA structure manipulation and graph construction is created
           using the python <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> RNA
           structure manipulation library and the provided <code>forna.py</code> script.</p>
-          <h4>Runing</h4>
+          <h4 id="usage">Usage</h4>
+          <p>Click on <code>Add Molecule</code> to draw a new secondary structure. The input should
+          contain a sequence and a secondary structure in dot-bracket notation:</p>
+          <pre><code>GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG<br>((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))</code></pre>
+          <p>You can also use the <strong>FASTA</strong> format to add multiple molecule at once. If you do
+          not enter a structure, it will calculate the MFE structure at 37°C for you.</p>
+          <p><strong>Zooming</strong> can be accomplished using the mouse wheel.
+          Dragging the canvas leads to <strong>panning</strong>.</p>
+          <h5 id="colors">Colors</h5>
+          <h6 id="position">Position</h6>
+          <p>Color the nucleotides according to their position in the molecule. Lower numbered
+          nucleotides are closer to the 5' end and are colored green. Nucleotides in the middle
+          are colored yellow whereas nucleotides near the 3' end are colored red.</p>
+          <h6 id="structure">Structure</h6>
+          <p>Color the nucleotides according to the type of structure that they are in:</p>
+          <p><strong>Green</strong>: Stems (canonical helices)
+          <strong>Red</strong>: Multiloops (junctions)
+          <strong>Yellow</strong>: Interior Loops
+          <strong>Blue</strong>: Hairpin loops
+          <strong>Orange</strong>: 5' unpaired region
+          <strong>Light Blue</strong>: 3' unpaired region</p>
+          <h6 id="sequence">Sequence</h6>
+          <p>Color according to the nucleotide types: </p>
+          <p><strong>Yellow</strong>: Adenine
+          <strong>Green</strong>: Cytosine
+          <strong>Blue</strong>: Uridine
+          <strong>Red</strong>: Guanine</p>
+          <h4 id="runing-locally">Runing Locally</h4>
           <p>The server can be run locally using the following command:</p>
           <pre><code class="lang-shell">python restserver.py -s -d</code></pre>
           <p>Documentation about the available options is provided using the <code>-h</code> option.</p>
-          <h4>Contact</h4>
+          <h4 id="contact">Contact</h4>
           <p>Questions and/or comments can be sent to <a href="mailto:pkerp@tbi.univie.ac.at">pkerp@tbi.univie.ac.at</a></p>
         </div>
         <div class="modal-footer">
