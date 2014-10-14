@@ -25,6 +25,9 @@ GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))
 ```
 
+You can also use the **FASTA** format to add multiple molecule at once. If you do
+not enter a structure, it will calculate the MFE structure at 37°C for you.
+
 **Zooming** can be accomplished using the mouse wheel.
 Dragging the canvas leads to **panning**.
 
