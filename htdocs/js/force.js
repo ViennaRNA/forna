@@ -56,7 +56,9 @@ function Graph() {
         rect.attr("width", svgW)
         .attr("height", svgH);
 
-    }
+        svg.attr("width", svgW)
+        .attr("height", svgH);
+    };
 
     this.changeColorScheme = function(newColorScheme) {
         var nodes = vis.selectAll('[node_type=nucleotide]');
@@ -104,18 +106,15 @@ function Graph() {
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
         d3.select(this).classed("dragging", true);
-    }
+    };
 
     function dragged(d) {
-        //d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-        d3.select(this).parent().attr("transform", function(d) { 
-            return 'translate(' + [d3.event.x, d3.event.y] + ')'; 
-        });
-    }
+
+    };
 
     function dragended(d) {
         d3.select(this).classed("dragging", false);
-    }
+    };
 
     zoomer = d3.behavior.zoom().
         scaleExtent([0.1,10]).
@@ -262,12 +261,11 @@ function Graph() {
                 });
             });
 
-
-            setSize();
-
         force.nodes(graph.nodes)
         .links(graph.links)
         .start();
     };
+
+    setSize();
 
 }
