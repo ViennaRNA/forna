@@ -44,12 +44,12 @@
               <label for="Input">Sequence and Structure</label>
               <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
             </div>
-            <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0" id="inputError"> </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" data-bind="click: submit" class="btn btn-primary">Submit</button>
+          <button type="submit" id="Submit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

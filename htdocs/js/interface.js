@@ -68,18 +68,13 @@ ko.bindingHandlers.showModal = {
 $("[data-toggle=tooltip]").tooltip();
 
 $('.alert').on('click', function(e) {
-  $(this).hide();
+  ViewModel.inputError('');
+  $('#Submit').button('reset');
 });
-
-showError = function(text, id) {
-  document.getElementById(id).innerHTML = text;
-  $('#' + id).show();
-};
 
 function RNA() {
   var self = this;
   
-  self.inputError = ko.observable(false);
   self.header = ko.observable('');
   self.sequence = ko.observable('');
   self.structure = ko.onDemandObservable(function() {
@@ -88,8 +83,7 @@ function RNA() {
         self.structure(data);
         self.json();
       }).error( function(jqXHR) {
-        self.inputError(true);
-        showError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self, "inputError");
+        ViewModel.newInputError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self.header());
       });
     }
   }, self);
@@ -100,17 +94,16 @@ function RNA() {
     if ((self.sequence() != '') && (self.structure() != '')) {
       ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.sequence(), struct: self.structure()} )).success( function(data) {
         self.json(data);
-        // TODO just add a new molecule to the graph
+        // add a new molecule to the graph
         ViewModel.graph.addNodes(self.json());
         ViewModel.graph.changeColorScheme(ViewModel.colors());
-      }).error( function(jqXHR) { 
-        self.inputError(true);
-        showError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self, "inputError");
+      }).error( function(jqXHR) {
+        ViewModel.newInputError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self.header());
       });
     }
   }, self);
   
-  self.loaded = ko.computed( function() {    
+  self.loaded = ko.computed( function() {
     return (self.structure.loaded() && self.json.loaded());
   });
   
@@ -141,6 +134,8 @@ function RNAViewModel() {
   });
   
   self.addMolecule = function() {
+    self.inputError('');
+    $('#Submit').button('reset');
     $('#add').modal('show');
   };
   
@@ -148,14 +143,10 @@ function RNAViewModel() {
     $('#about').modal('show');
   };
   
-  self.inputError = ko.computed(function() {
-    var returnValue = false;
-    self.molecules().forEach(function(rna) {
-      returnValue = (returnValue && rna.inputError());
-    });
-    console.log(returnValue);
-    return returnValue;
-  });
+  self.inputError = ko.observable('');
+  self.newInputError = function(message) {
+    self.inputError([self.inputError, message].join("\n"));
+  }
   
   self.loaded = ko.computed(function() {
     var returnValue = true;
@@ -163,15 +154,14 @@ function RNAViewModel() {
       returnValue = (returnValue && rna.loaded());
     });
     // here the code to hide modal if everything is loaded correctly
-    if(returnValue && !self.inputError()) {
+    if(returnValue) {
       $('#add').modal('hide');
     }
     return returnValue;
   });
   
   self.submit = function() {
-    self.molecules.removeAll();
-    $('#inputError').hide();
+    $('#Submit').button('loading');
     //remove leading/trailing/inbeteen newlines and split in at the remaining ones
     var array = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
     var rna;
@@ -197,11 +187,10 @@ function RNAViewModel() {
         // this is a structure
         rna.structure(rna.structure().concat(line));
       } else {
-        showError("You did not enter valid sequences, structures or fasta", "inputError");
+        self.newInputError("You did not enter valid sequences, structures or fasta");
       }
     });
     
-    self.inputError();
     // now check for missing structures and get them, otherwise call json directly
     self.molecules().forEach( function(rna) {
       if (rna.structure() == '') {
@@ -217,7 +206,7 @@ function RNAViewModel() {
     self.graph.clearNodes();
   }
   
-  self.saveSVG = function() { 
+  self.saveSVG = function() {
     console.log("saving svg...");
     var svg = document.getElementById('plotting-area');
 
@@ -233,15 +222,10 @@ function RNAViewModel() {
         source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
     }
     
-    // TODO adopt width and height in <svg> tag to get the whole calculated area drawn
     //add xml declaration
     source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
 
-    //convert svg source to URI data scheme.
-    //var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
-
-    //set url value to a element's href attribute.
-    //window.open(url, 'download');
+    // use FileSave to get a downloadable SVG File
     var file = new Blob([source], {type: "data:image/svg+xml;charset=utf-8"});
     saveAs(file, "rna.svg");
   };
