@@ -1,19 +1,19 @@
 #!/usr/bin/python
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, abort, jsonify
 
 import forna
 import json
+import re
 import sys
 import os
 import RNA
-import sys
 from optparse import OptionParser
 
 def main():
     usage = """
     python restserver.py
     """
-    num_args= 0
+    num_args = 0
     parser = OptionParser(usage=usage)
 
     #parser.add_option('-o', '--options', dest='some_option', default='yo', help="Place holder for a real option", type='str')
@@ -30,13 +30,25 @@ def main():
 
     app = Flask(__name__, static_folder='htdocs')
 
+    @app.errorhandler(400)
+    # pylint: disable=W0612
+    def custom400(error):
+        response = jsonify({'message': error.description})
+
     @app.route('/struct_graph', methods=['POST'])
+    # pylint: disable=W0612
     def struct_graph():
         if not request.json:
             abort(400)
         
         if 'seq' not in request.json and 'struct' not in request:
             abort(400)
+
+        if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
+            abort(400, "Invalid sequence: {}".format(request.json['seq']))
+
+        if re.match("^[\(\)\.\[\]]+$", request.json['struct']) is None:
+            abort(400, "Invalid structure: {}".format(request.json['struct']))
 
         fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
                                                request.json['struct'])
@@ -45,33 +57,42 @@ def main():
         return json.dumps(result), 201
     
     @app.route('/mfe_struct', methods=['POST'])
+    # pylint: disable=W0612
     def mfe_struct():
         if not request.json:
-            abort(400)
+            abort(400, "Request has no json.")
             
         if 'seq' not in request.json:
-            abort(400)
-        # TODO Taint check if seq is really just a seq
+            abort(400, "Request has no sequence in the json.")
+
+        if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
+            abort(400, "Invalid sequence: {}".format(request.json['seq']))
+
+
         result = RNA.fold(str(request.json['seq']))[0]
         return json.dumps(result), 201
     
     
     if options.static:
-        print >>sys.stderr, "Starting static"
+        print >> sys.stderr, "Starting static"
         # serving static files for developmental purpose
         @app.route('/')
+        # pylint: disable=W0612
         def index():
             return app.send_static_file('index.html')
 
         @app.route('/js/<path:path>')
+        # pylint: disable=W0612
         def static_js(path):
             return app.send_static_file(os.path.join('js', path))
 
         @app.route('/css/<path:path>')
+        # pylint: disable=W0612
         def static_css(path):
             return app.send_static_file(os.path.join('css', path))
 	
         @app.route('/fonts/<path:path>')
+        # pylint: disable=W0612
         def static_fonts(path):
             return app.send_static_file(os.path.join('fonts', path)) 
         # end serving static files
