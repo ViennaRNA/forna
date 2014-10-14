@@ -34,6 +34,9 @@ def main():
     # pylint: disable=W0612
     def custom400(error):
         response = jsonify({'message': error.description})
+        response.status_code = 404
+        response.status = 'error.Bad Request'
+        return response
 
     @app.route('/struct_graph', methods=['POST'])
     # pylint: disable=W0612
