@@ -101,7 +101,8 @@ function RNA() {
       ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.sequence(), struct: self.structure()} )).success( function(data) {
         self.json(data);
         // TODO just add a new molecule to the graph
-        ViewModel.graph = new Graph(self.json());
+        ViewModel.graph.addNodes(self.json());
+        ViewModel.graph.changeColorScheme(ViewModel.colors());
       }).error( function(jqXHR) { 
         self.inputError(true);
         showError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self, "inputError");
@@ -119,8 +120,8 @@ function RNA() {
 function RNAViewModel() {
   var self = this;
   
+  self.graph = new Graph();
   self.molecules = ko.observableArray([]);
-  self.graph = null;
   /*jshint multistr: true */
   self.input = ko.observable(
       '>test\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
@@ -130,13 +131,12 @@ function RNAViewModel() {
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
 
   self.colors.subscribe(function(newValue) {
+
       if (self.graph === null) {
           console.log("graph is null");
     } else {
         //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);
-
-        console.log("newValue:", newValue);
     }
   });
   
@@ -210,6 +210,11 @@ function RNAViewModel() {
         rna.json();
       }
     });
+  }
+  
+  self.clearGraph = function() {
+    // delete all nodes
+    self.graph.clearNodes();
   }
   
   self.saveSVG = function() { 
