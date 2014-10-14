@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from flask import Flask, request, jsonify, abort
 
 import forna
@@ -5,14 +6,8 @@ import json
 import sys
 import os
 import RNA
-
-
-
-#!/usr/bin/python
-
 import sys
 from optparse import OptionParser
-
 
 def main():
     usage = """
@@ -85,4 +80,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
