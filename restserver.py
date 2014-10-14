@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, Response
 
 import forna
 import json
@@ -18,20 +18,18 @@ def create_app(static):
 
     @app.errorhandler(400)
     # pylint: disable=W0612
-    def custom400(error):
-        response = jsonify({'message': error.description})
-        response.status_code = 400
-        response.status = 'BAD REQUEST'
-
-        return response
+    def custom405(error):
+        return error.description, 400
 
     @app.route('/struct_graph', methods=['POST'])
     # pylint: disable=W0612
     def struct_graph():
+        print >>sys.stderr, "request.json:", request.json
+        #print >>sys.stderr, "dir(request)", dir(request)
         if not request.json:
-            abort(400, "Missing a json in the request")
+           abort(400, "Missing a json in the request")
         
-        if 'seq' not in request.json and 'struct' not in request:
+        if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
 
         if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
