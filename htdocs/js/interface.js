@@ -17,6 +17,53 @@ ajax = function(uri, method, data) {
   return $.ajax(request);
 };
 
+//an observable that retrieves its value when first bound
+ko.onDemandObservable = function(callback, target) {
+  var _value = ko.observable();  //private observable
+
+  var result = ko.dependentObservable({
+      read: function() {
+          //if it has not been loaded, execute the supplied function
+          if (!result.loaded()) {
+              callback.call(target);
+          }
+          //always return the current value
+          return _value();
+      },
+      write: function(newValue) {
+          //indicate that the value is now loaded and set it
+          result.loaded(true);
+          _value(newValue);
+      },
+      deferEvaluation: true  //do not evaluate immediately when created
+  });
+
+  //expose the current state, which can be bound against
+  result.loaded = ko.observable();  
+  //load it again
+  result.refresh = function() {
+      result.loaded(false);
+  };
+
+  return result;
+};
+
+ko.bindingHandlers.showModal = {
+    init: function (element, valueAccessor) {
+    },
+    update: function (element, valueAccessor) {
+        var value = valueAccessor();
+        if (ko.utils.unwrapObservable(value)) {
+            $(element).modal('show');
+                                // this is to focus input field inside dialog
+            $("input", element).focus();
+        }
+        else {
+            $(element).modal('hide');
+        }
+    }
+};
+
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
 
@@ -29,25 +76,69 @@ showError = function(text, id) {
   $('#' + id).show();
 };
 
+function RNA() {
+  var self = this;
+  
+  self.inputError = ko.observable(false);
+  self.header = ko.observable('');
+  self.sequence = ko.observable('');
+  self.structure = ko.onDemandObservable(function() {
+    if ((self.sequence() != '') && (self.structure() == '')) {
+      ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
+        self.structure(data);
+        self.json();
+      }).error( function(jqXHR) {
+        self.inputError(true);
+        showError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self, "inputError");
+      });
+    }
+  }, self);
+  
+  self.structure('');
+  
+  self.json = ko.onDemandObservable(function() {
+    if ((self.sequence() != '') && (self.structure() != '')) {
+      ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.sequence(), struct: self.structure()} )).success( function(data) {
+        self.json(data);
+        // TODO just add a new molecule to the graph
+        ViewModel.graph.addNodes(self.json());
+        ViewModel.graph.changeColorScheme(ViewModel.colors());
+      }).error( function(jqXHR) { 
+        self.inputError(true);
+        showError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self, "inputError");
+      });
+    }
+  }, self);
+  
+  self.loaded = ko.computed( function() {    
+    return (self.structure.loaded() && self.json.loaded());
+  });
+  
+}
+
 // Knockout view model for RNA
 function RNAViewModel() {
   var self = this;
   
   self.graph = new Graph();
-  self.input = ko.observable('CGGCCCC\n((...))');
+  self.molecules = ko.observableArray([]);
+  /*jshint multistr: true */
+  self.input = ko.observable(
+      '>test\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
+  );
   
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
-  self.label = ko.observable('position'); // the label scheme can be sequence/position
-  self.temperature = ko.observable("37");
 
   self.colors.subscribe(function(newValue) {
+
+      if (self.graph === null) {
+          console.log("graph is null");
+    } else {
+        //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);
     }
-  );
-
-  self.ss = ko.computed(function() {
-    return this.input().replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"); //remove leading/trailing newlines and split in between
-  }, this);
+  });
   
   self.addMolecule = function() {
     $('#add').modal('show');
@@ -57,24 +148,74 @@ function RNAViewModel() {
     $('#about').modal('show');
   };
   
-  self.submit = function() {
-    $('#inputError').hide();
-    if (self.ss().length != 2) {
-      showError("Please insert an RNA sequence followed by a structure in the text field.", "inputError");
-    } else if (/[^AUGC]/g.test(self.ss()[0])) {
-      showError("Sequences just consist of A,U,G and C.", "inputError");
-    } else if (/[^\.\(\)]/g.test(self.ss()[1])) {
-      showError("Structures just consist of brackets and dots.", "inputError");
-    } else {
-      ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.ss()[0], struct: self.ss()[1]} )).success( function(data) {
-        self.graph.addNodes(data);
-        self.graph.changeColorScheme(self.colors());
-        $('#add').modal('hide');
-      }).error( function(jqXHR) { 
-        showError("Ajax error (" + jqXHR.status + ") Please check your input!", "inputError");
-      });
+  self.inputError = ko.computed(function() {
+    var returnValue = false;
+    self.molecules().forEach(function(rna) {
+      returnValue = (returnValue && rna.inputError());
+    });
+    console.log(returnValue);
+    return returnValue;
+  });
+  
+  self.loaded = ko.computed(function() {
+    var returnValue = true;
+    self.molecules().forEach(function(rna) {
+      returnValue = (returnValue && rna.loaded());
+    });
+    // here the code to hide modal if everything is loaded correctly
+    if(returnValue && !self.inputError()) {
+      $('#add').modal('hide');
     }
-  };
+    return returnValue;
+  });
+  
+  self.submit = function() {
+    self.molecules.removeAll();
+    $('#inputError').hide();
+    //remove leading/trailing/inbeteen newlines and split in at the remaining ones
+    var array = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
+    var rna;
+    
+    array.forEach( function(line) {
+      line = line.replace(/^[\s]+|[\s]+$/g,""); // remove leading/trailing whitespaces
+      console.log(line);
+      // check if it is a fasta header
+      if (line.substring(0, 1) == '>') {
+        // this is a header
+        rna = new RNA();
+        self.molecules.push(rna);
+        rna.header(line.substring(1));
+      } else if (/[ACGTUWSMKRYBDHV]/g.test(line.substring(0, 1))) {
+        // this is a sequence
+        if (rna === undefined) {
+          rna = new RNA();
+          self.molecules.push(rna);
+          rna.header('rna');
+        }
+        rna.sequence(rna.sequence().concat(line));
+      } else if (/[\(\)\.\{\}\[\]]/g.test(line.substring(0, 1))) {
+        // this is a structure
+        rna.structure(rna.structure().concat(line));
+      } else {
+        showError("You did not enter valid sequences, structures or fasta", "inputError");
+      }
+    });
+    
+    self.inputError();
+    // now check for missing structures and get them, otherwise call json directly
+    self.molecules().forEach( function(rna) {
+      if (rna.structure() == '') {
+        rna.structure.refresh();
+      } else {
+        rna.json();
+      }
+    });
+  }
+  
+  self.clearGraph = function() {
+    // delete all nodes
+    self.graph.clearNodes();
+  }
   
   self.saveSVG = function() { 
     console.log("saving svg...");

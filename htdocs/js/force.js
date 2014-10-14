@@ -34,7 +34,7 @@ function Graph() {
 
     this.clearNodes = function clearNodes() {
         graph.nodes = [];
-        graph.nodes = [];
+        graph.links = [];
 
         update();
     };
