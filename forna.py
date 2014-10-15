@@ -87,7 +87,7 @@ def bg_to_json(bg):
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i+1), "id": node_id, 
                 "color": 'transparent', 'node_type':'label'}]
-            struct["links"] += [{"source": i, "target": node_id, "value":1, "link_type":"fake"}]
+            struct["links"] += [{"source": i, "target": node_id, "value":1, "link_type":"real"}]
 
     # store the node id of the center id for each loop
     centers_radii = dict()
