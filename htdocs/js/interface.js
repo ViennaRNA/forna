@@ -1,3 +1,11 @@
+/* interface.js
+* Interface logic for the RNA Secondary Structure Visualization Using a Force Directed Graph Layout
+*
+* Author: Stefan Hammer <jango@tbi.univie.ac.at>
+* Version: 0.1
+* Date: 2014-10-15
+*/
+
 serverURL = "";
 
 // custom ajax call

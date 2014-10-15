@@ -1,3 +1,11 @@
+/* force.js
+* A graph object implementing a force-directed graph using d3.js.
+*
+* Author: Peter Kerpedjiev <pkerp@tbi.univie.ac.at>
+* Version: 0.1
+* Date: 2014-10-15
+*/
+
 function Graph() {
 
     var w = 679,
