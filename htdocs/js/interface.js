@@ -11,7 +11,7 @@ ajax = function(uri, method, data) {
     dataType: 'json',
     data: data,
     error: function(jqXHR) {
-        console.log("ajax error " + jqXHR.status);
+        console.log("ajax error " + jqXHR.status + jqXHR.responseText);
     }
   };
   return $.ajax(request);
@@ -67,7 +67,7 @@ function RNA(sequence, structure, header) {
         self.json.refresh();
         self.json();
       }).error( function(jqXHR) {
-        addView.newInputError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self.header());
+        addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
       });
     }, self 
   );
@@ -77,7 +77,7 @@ function RNA(sequence, structure, header) {
         self.json(data);
         self.done(true);
       }).error( function(jqXHR) {
-        addView.newInputError("Ajax error (" + jqXHR.status + ") Please check the input of: " + self.header());
+        addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
       });
     }, self
   );
@@ -156,7 +156,6 @@ function AddViewModel() {
     
     lines.forEach( function(line) {
       line = line.replace(/^[\s]+|[\s]+$/g,""); // remove leading/trailing whitespaces
-      console.log(line);
       // check if it is a fasta header
       if (line.substring(0, 1) == '>') {
         // this is a header
@@ -196,7 +195,6 @@ function RNAViewModel() {
   self.molecules = ko.observableArray([]);
   
   self.addMolecules = function(array) {
-    console.log(array);
     self.molecules().concat(array);
     // add a new molecule to the graph
     array.forEach( function(rna) {
@@ -212,7 +210,7 @@ function RNAViewModel() {
   self.colors.subscribe(function(newValue) {
 
       if (self.graph === null) {
-          console.log("graph is null");
+          console.log("graph is null, won't update the color");
     } else {
         //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);
