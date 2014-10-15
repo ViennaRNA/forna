@@ -66,7 +66,7 @@ The server can be run locally on your machine. It depends on the [forgi](http://
 To run it use the following command:
 
 ```shell
-python restserver.py -s -d
+python forna_server.py -s -d
 ```
 
 Documentation about the available options is provided using the ``-h`` option.

@@ -1,4 +1,15 @@
 #!/usr/bin/python
+
+"""forna_server.py: A server for converting RNA secondary structures to force-directed graphs
+   and doing something more."""
+
+                                                                                                         
+__author__      = "Stefan Hammer"
+__copyright__   = "Copyright 2014"
+__version__     = "0.1"
+__maintainer__  = "Stefan Hammer"
+__email__       = "jango@tbi.univie.ac.at"  
+
 from flask import Flask, request, abort
 
 import forna
