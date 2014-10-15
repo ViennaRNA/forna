@@ -1,15 +1,21 @@
 textarea {
   font-family: "Lucida Console", Monaco, monospace;
-  resize: none;
+  height: 400px !important;
+}
+div.container {
+  padding: 10px;
 }
 
-#ribbon {
-  padding: 10px;
-  height: 12em;
-  border-bottom: 1px solid #ddd;
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
+div.modal-dialog {
+  width: 1000px;
 }
+
+.tooltip.left .tooltip-inner {
+  background-color: #aaa;
+}
+.tooltip.left .tooltip-arrow {
+  border-left-color: #aaa;
+}  
 
 label.btn > input[type='radio']
 {

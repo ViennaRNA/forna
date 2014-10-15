@@ -1,16 +1,22 @@
 <!DOCTYPE html> 
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<head>
+  
   <title>forna</title>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RNA Secondary Structure Visualization Using a Force Directed Graph Layout">
+  <meta name="keywords" content="RNA, secundary structure, visualization, force directed graph, plot, svg">
+  <meta name="author" content="Stefan Hammer">
+  <meta name="author" content="Peter Kerpedjiev">
 
   <!-- CSS -->
   <!-- Bootstrap: http://getbootstrap.com/ -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel='stylesheet' type='text/css' href="css/bootstrap.min.css">
+  <link rel='stylesheet' type='text/css' href="css/bootstrap.css">
   <!-- custom CSS -->
-  <link href='css/force.css' rel='stylesheet' type='text/css' />
-  <link href='css/interface.css' rel='stylesheet' type='text/css' />
+  <link rel='stylesheet' type='text/css' href='css/force.css' />
+  <link rel='stylesheet' type='text/css' href='css/interface.css' />
 
   <!-- Java Script -->
   <!-- Get jQuery -- use local if unavailable -->
@@ -28,81 +34,138 @@
   <script type='text/javascript' src="js/FileSaver.min.js"></script>
 </head>
 <body>
-  <div class="container" role="main" id="main" style="padding:10px;">
-  
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="active"><a href="#new" role="tab" data-toggle="tab">New</a></li>
-      <li><a href="#color" role="tab" data-toggle="tab">Color</a></li>
-      <li><a href="#output" role="tab" data-toggle="tab" id="output-tab">Output</a></li>
-      <!-- <li><a href="#edit" role="tab" data-toggle="tab">Edit</a></li> -->
-      <!-- <li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li> -->
-    </ul>
-    
-    <div class="tab-content" id="ribbon">
-      <div class="tab-pane fade in active" id="new">
-        <form role="form">
-          <div class="form-group">
-            <label for="Input">Sequence and Structure</label>
-            <div class="input-group">
-              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" style="height: 56px;" data-bind="value: input" autofocus required></textarea>
-              <span class="input-group-btn">
-                <button type="submit" data-bind="click: submit" class="btn btn-default" style="height: 56px;">Submit</button>
-              </span>
-            </div>
-          </div>
-          <div class="alert alert-danger collapse" role="alert" id="inputError"> </div>
-        </form>
-      </div>
-      <div class="tab-pane fade" id="color">
-        <form role="form">
-          <div class="form-group">
-            <label for="Colors">Colors</label>
-            <div class="input-group" >
-              <div class="btn-group" id="Colors">
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'position' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Position</label>
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
-                <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="Label">Label</label>
-            <div class="input-group">
-              <div class="btn-group" id="Label">
-                <label class="btn btn-default" data-bind="css: { active: label() == 'position' }"><input type="radio" name="colors" data-bind="checked: label, checkedValue: 'position'">Position</label>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="tab-pane fade" id="edit">
-        <label>Edit RNA</label>
-        <br>
-      </div>
-      
-      <div class="tab-pane fade" id="settings">
-       <form role="form">
-        <div class="form-group">
-          <label for="Temperature">Temperature</label>
-          <div class="input-group" style="width: 8em;" id="Temperature">
-            <span class="input-group-addon">°C</span>
-            <input type="number" min="0" class="form-control" data-bind="value: temperature" style="padding: 0px 0px 0px 12px;">
-          </div>
+  <!-- 'Add new molecule' modal -->
+  <div class="modal fade" id="add" > <!-- data-bind="showModal: loaded"-->
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Add RNA Molecule</h4>
         </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label for="Input">Sequence and Structure</label>
+              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
+            </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" id="Submit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+  <!-- 'About' modal -->
+  <div class="modal fade" id="about">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">About forna</h4>
+        </div>
+        <div class="modal-body">
+          <h3 id="rna-secondary-structure-visualization-using-a-force-directed-graph-layout">RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h3>
+          <h4 id="overview">Overview</h4>
+          <p>The <code>forna</code> package provides a web interface for displaying RNA secondary
+          structures using the <a href="https://github.com/mbostock/d3/wiki/Force-Layout">force-directed graph
+          layout</a> provided by the
+          <a href="http://d3js.org/">d3.js visualization library</a>. </p>
+          <p>The front end makes use of <a href="getbootstrap.com">Bootstrap</a> and
+          <a href="http://knockoutjs.com/">Knockout.js</a> for the user interfact while the back end
+          uses <a href="http://flask.pocoo.org/">Flask</a> to serve the static files and provide a
+          REST API. The RNA structure manipulation and graph construction is created
+          using the python <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> RNA
+          structure manipulation library and the provided <code>forna.py</code> script. We heavily
+          depend on the python bindings of the <a href="http://www.tbi.univie.ac.at/RNA/">ViennaRNA</a> package.</p>
+          <h4 id="usage">Usage</h4>
+          <p>Click on <code>Add Molecule</code> to draw a new secondary structure. The input should
+          contain a sequence and a secondary structure in dot-bracket notation:</p>
+          <pre><code>GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG<br>((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))</code></pre>
+          <p>You can also use the <strong>FASTA</strong> format to add multiple molecule at once. If you do
+          not enter a structure, it will calculate the MFE structure at 37°C for you.</p>
+          <p><strong>Zooming</strong> can be accomplished using the mouse wheel.
+          Dragging the canvas leads to <strong>panning</strong>.</p>
+          <h5 id="colors">Colors</h5>
+          <h6 id="position">Position</h6>
+          <p>Color the nucleotides according to their position in the molecule. Lower numbered
+          nucleotides are closer to the 5' end and are colored green. Nucleotides in the middle
+          are colored yellow whereas nucleotides near the 3' end are colored red.</p>
+          <h6 id="structure">Structure</h6>
+          <p>Color the nucleotides according to the type of structure that they are in:</p>
+          <p><strong>Green</strong>: Stems (canonical helices)
+          <strong>Red</strong>: Multiloops (junctions)
+          <strong>Yellow</strong>: Interior Loops
+          <strong>Blue</strong>: Hairpin loops
+          <strong>Orange</strong>: 5' unpaired region
+          <strong>Light Blue</strong>: 3' unpaired region</p>
+          <h6 id="sequence">Sequence</h6>
+          <p>Color according to the nucleotide types: </p>
+          <p><strong>Yellow</strong>: Adenine
+          <strong>Green</strong>: Cytosine
+          <strong>Blue</strong>: Uridine
+          <strong>Red</strong>: Guanine</p>
+          <h4 id="runing-locally">Runing Locally</h4>
+          <p>The server can be run locally on your machine. It depends on the <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> library and needs the <a href="http://www.tbi.univie.ac.at/RNA/">ViennaRNA</a> package installed with python bindings enabled.
+          To run it use the following command:</p>
+          <pre><code class="lang-shell">python forna_server.py -s -d</code></pre>
+          <p>Documentation about the available options is provided using the <code>-h</code> option.</p>
+          <h4 id="contact">Contact</h4>
+          <p>Questions and/or comments can be sent to <a href="mailto:pkerp@tbi.univie.ac.at">pkerp@tbi.univie.ac.at</a></p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  
+  <!-- Main content starts here! -->
+  <div class="container" role="main" id="main">
+
+    <div class="row">
+      <div class="col-md-3">
+        <button class="btn btn-primary" data-bind="click: showAdd">Add Molecule</button>
+        <button class="btn btn-default" data-bind="click: clearGraph">Clear Graph</button>
       </div>
-      
-      <div class="tab-pane fade" id="output">
+      <div class="col-md-4 col-md-offset-5">
         <form role="form">
-          <div class="form-group">
-            <label>Save as File</label>
-            <br>
-            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg">Save SVG-File</button>
+          <div class="form-group pull-right">
+            <div class="btn-group" id="Colors" data-toggle="tooltip" data-placement="left" title="Choose the color scheme" data-delay="800">
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'positions' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Positions</label>
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
+            </div>
+            <div class="btn-group" id="About">
+              <button data-bind="click: showAbout" class="btn btn-default"><span class="glyphicon glyphicon-question-sign"></span></button>
+            
+            </div>
           </div>
         </form>
       </div>
     </div>
-    <!-- the graph goes here -->
-    <div class="gallery" id='chart'> </div>
+    
+    <div class="row">
+      <div class="col-md-12">
+        <!-- the graph goes here -->
+        <div class="gallery" id='chart'> </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-4 col-md-offset-8">
+        <form role="form">
+          <div class="form-group pull-right">
+            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg" data-toggle="tooltip" data-placement="left" title="Save as SVG file" data-delay="800">Save File</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
     <!-- foce field javascript -->
     <script type="text/javascript" src="js/force.js"></script>
     <!-- interface javascript -->
@@ -110,14 +173,13 @@
   </div>
 
   <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-55640065-1', 'auto');
-    ga('send', 'pageview');
-
+    ga('create', 'UA-55640065-1', 'auto');
+      ga('send', 'pageview');
   </script>
 </body>
 </html>

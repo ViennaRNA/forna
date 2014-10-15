@@ -5373,7 +5373,7 @@ button.close {
   border: 0;
 }
 .modal-open {
-  overflow: hidden; 
+  overflow: hidden;
 }
 .modal {
   position: fixed;
@@ -5393,16 +5393,16 @@ button.close {
           transition:         transform .3s ease-out;
   -webkit-transform: translate3d(0, -25%, 0);
        -o-transform: translate3d(0, -25%, 0);
-          transform: translate3d(0, -25%, 0); 
+          transform: translate3d(0, -25%, 0);
 }
 .modal.in .modal-dialog {
   -webkit-transform: translate3d(0, 0, 0);
        -o-transform: translate3d(0, 0, 0);
-          transform: translate3d(0, 0, 0); 
+          transform: translate3d(0, 0, 0);
 }
 .modal-open .modal {
   overflow-x: hidden;
-  overflow-y: auto; 
+  overflow-y: auto;
 }
 .modal-dialog {
   position: relative;
