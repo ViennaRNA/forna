@@ -75,7 +75,7 @@ def bg_to_json(bg):
         # the numbers for source and target indicate the indices of the nodes
         # in the "nodes" array, not their id or name
         if i > 0 and i < bg.seq_length:
-            link = {"source": i-1, "target" : i, "value":1}
+            link = {"source": i-1, "target" : i, "value":1, "link_type":"real"}
             struct["links"] += [link]
 
     num_nodes = len(struct["nodes"])
@@ -87,7 +87,7 @@ def bg_to_json(bg):
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i+1), "id": node_id, 
                 "color": 'transparent', 'node_type':'label'}]
-            struct["links"] += [{"source": i, "target": node_id, "value":1}]
+            struct["links"] += [{"source": i, "target": node_id, "value":1, "link_type":"fake"}]
 
     # store the node id of the center id for each loop
     centers_radii = dict()
@@ -123,22 +123,22 @@ def bg_to_json(bg):
 
         for j, rn in enumerate(res_list):
             # link nodes to the center
-            struct["links"] += [{"source": node_id, "target": rn - 1, "value":width}]
+            struct["links"] += [{"source": node_id, "target": rn - 1, "value":width, "link_type":"fake"}]
 
         for j in range(0, (num_residues+1) / 2):
             # link nodes across the loop
             fri = j
             tri = (j+num_residues/2)
-            struct["links"] += [{"source": res_list[fri]-1, "target": res_list[tri]-1, "value":width*2}]
+            struct["links"] += [{"source": res_list[fri]-1, "target": res_list[tri]-1, "value":width*2, "link_type":"fake"}]
 
         for j in range(0, num_residues, 1):
             # link every other node in the loop
             ia = ((num_residues - 2) * math.pi) / (num_residues)
-            a = math.pi/2 - ia/2.
+            #a = math.pi/2 - ia/2.
             c = 2 * math.cos(math.pi/2. - ia / 2.  )
             fri = j
             tri = (j+2) % (num_residues)
-            struct["links"] += [{"source": res_list[fri]-1, "target": res_list[tri]-1, "value":c}]
+            struct["links"] += [{"source": res_list[fri]-1, "target": res_list[tri]-1, "value":c, "link_type":"fake"}]
 
     # Create the loop pseudo-nodes for hairpins and interior loops
     num_nodes = len(struct["nodes"])
@@ -182,11 +182,11 @@ def bg_to_json(bg):
             else:
                 x = 2.
 
-            struct["links"] += [{"source": i, "target": i+2, "value": x}]
+            struct["links"] += [{"source": i, "target": i+2, "value": x, "link_type":"fake"}]
 
         # actually make the stem-loop links
         if node1[0] == 's' and node2[0] == 's' and node1 == node2:
-            struct["links"] += [{"source": i, "target": i+2, "value": 2}]
+            struct["links"] += [{"source": i, "target": i+2, "value": 2, "link_type":"fake"}]
 
         if (node1[0] == 's' and node15[0] == 's' and node2[0] != 's'):
             create_stem_loop_link(node1, node2)
@@ -202,12 +202,12 @@ def bg_to_json(bg):
         prev_f, prev_t = None, None
 
         for (f, t) in bg.stem_bp_iterator(d):
-            link = {"source": f-1, "target": t-1, "value":1}
+            link = {"source": f-1, "target": t-1, "value":1, "link_type":"real"}
             struct["links"] += [link]
 
             if prev_f is not None and prev_t is not None:
-                struct["links"] += [{"source": f-1, "target": prev_t-1, "value":1 * math.sqrt(2)}]
-                struct["links"] += [{"source": t-1, "target": prev_f-1, "value":1 * math.sqrt(2)}]
+                struct["links"] += [{"source": f-1, "target": prev_t-1, "value":1 * math.sqrt(2), "link_type":"fake"}]
+                struct["links"] += [{"source": t-1, "target": prev_f-1, "value":1 * math.sqrt(2), "link_type":"fake"}]
 
             prev_f, prev_t = f,t
 
