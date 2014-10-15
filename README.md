@@ -13,7 +13,8 @@ The front end makes use of [Bootstrap](getbootstrap.com) and
 uses [Flask](http://flask.pocoo.org/) to serve the static files and provide a
 REST API. The RNA structure manipulation and graph construction is created
 using the python [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) RNA
-structure manipulation library and the provided ``forna.py`` script.
+structure manipulation library and the provided ``forna.py`` script. We heavily
+depend on the python bindings of the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package.
 
 #### Usage ####
 
@@ -61,7 +62,8 @@ Color according to the nucleotide types:
 
 #### Runing Locally ####
 
-The server can be run locally using the following command:
+The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled.
+To run it use the following command:
 
 ```shell
 python restserver.py -s -d
