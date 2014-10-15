@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import Flask, request, abort, jsonify, Response
+from flask import Flask, request, abort
 
 import forna
 import json
@@ -41,7 +41,11 @@ def create_app(static):
         fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
                                                request.json['struct'])
 
-        result = forna.fasta_to_json(fasta_text)
+        try:
+            result = forna.fasta_to_json(fasta_text)
+        except Exception as ex:
+            abort(400, "Secondary structure parsing error: {}".format(str(ex)))
+
         return json.dumps(result), 201
     
     @app.route('/mfe_struct', methods=['POST'])
