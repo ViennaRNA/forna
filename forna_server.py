@@ -110,7 +110,7 @@ def main():
     parser = OptionParser(usage=usage)
 
     #parser.add_option('-o', '--options', dest='some_option', default='yo', help="Place holder for a real option", type='str')
-    parser.add_option('-p', '--port', dest='port', default=5000, help="Liston on this port", type='int')
+    parser.add_option('-p', '--port', dest='port', default=8008, help="Liston on this port", type='int')
     parser.add_option('-d', '--debug', dest='debug', default=False, help="Run in debug mode", action='store_true')
     parser.add_option('-o', '--host', dest='host', default='127.0.0.1', help='The host address', type='str')
     parser.add_option('-s', '--static', dest='static', default=False, action='store_true', help='Start serving static files.')
@@ -121,7 +121,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    app = create_app(options)
+    app = create_app(options.static)
     app.run(host=options.host, debug=options.debug, port=options.port)
 
 if __name__ == '__main__':
