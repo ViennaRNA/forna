@@ -1,5 +1,14 @@
 #!/usr/bin/python
  
+"""forna.py: A script for converting RNA secondary structure to json objects encoding
+   a graph to be visualized using d3.js's force-directed graph layout."""
+                                                                                                         
+__author__      = "Peter Kerpedjiev"
+__copyright__   = "Copyright 2014"
+__version__     = "0.1"
+__maintainer__  = "Peter Kerpedjiev"                                                                   
+__email__       = "pkerp@tbi.univie.ac.at"  
+
 import forgi.graph.bulge_graph as fgb
 import forgi.utilities.debug as fud
 
