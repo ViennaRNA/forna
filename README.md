@@ -44,7 +44,7 @@ are colored yellow whereas nucleotides near the 3' end are colored red.
 
 Color the nucleotides according to the type of structure that they are in:
 
-<span style='color:green'>Green</span>: Stems (canonical helices)
+**Green**: Stems (canonical helices)
 **Red**: Multiloops (junctions)
 **Yellow**: Interior Loops
 **Blue**: Hairpin loops
