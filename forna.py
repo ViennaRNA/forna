@@ -66,7 +66,7 @@ def bg_to_json(bg):
         node_name = bg.get_node_from_residue_num(i+1)
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i+1, 
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
-                "node_type":"nucleotide"}
+                "node_type":"nucleotide", 'struct_name':bg.name}
 
         #node = {"group": 1, "name": i+1, "id": i+1}
         struct["nodes"] += [node]
@@ -228,6 +228,25 @@ def fasta_to_json(fasta_text):
     bg.from_fasta(fasta_text)
     return bg_to_json(bg)
 
+def add_colors_to_graph(struct, colors):
+    '''
+    Change the colors in the structure graph. Colors should be a dictionary-fied
+    json object containing the following entries:
+
+    [{'name': '1Y26_X', 'nucleotide':15, 'color':'black'}]
+    
+    @param struct: The structure returned by fasta_to_json
+    @param colors: A color dictionary as specified above
+    '''
+    fud.pv('struct')
+    for node in struct['nodes']:
+        if node['node_type'] == 'nucleotide':
+            if node['struct_name'] in colors:
+                if node['id'] in colors[node['struct_name']]:
+                    node['color'] = colors[node['struct_name']][node['id']]
+
+    return struct
+
 def main():
     usage = """
     python cg_to_d3_bp.py x.fa
@@ -241,6 +260,9 @@ def main():
 
     #parser.add_option('-o', '--options', dest='some_option', default='yo', help="Place holder for a real option", type='str')
     #parser.add_option('-u', '--useless', dest='uselesss', default=False, action='store_true', help='Another useless option')
+    parser.add_option('-c', '--colors', dest='colors', default=None, 
+            help='Specifiy a json file which contains information about nucleotide colors', 
+            type='str')
 
     (options, args) = parser.parse_args()
 
@@ -262,6 +284,11 @@ def main():
             print >>sys.stderr, "Detected fasta"
             with open(args[0], 'r') as f: text = f.read()
             struct = fasta_to_json(text)
+
+    if options.colors is not None:
+        with open(options.colors) as f:
+            colors = json.loads(f)
+            struct = add_colors_to_graph(struct, colors)
 
     print json.dumps(struct, sort_keys=True,indent=4, separators=(',', ': '))
 
