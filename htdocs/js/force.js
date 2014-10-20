@@ -189,7 +189,7 @@ function Graph() {
 
             /* We don't need to update the positions of the stabilizing links */
             link = vis.selectAll("[link_type=real]");
-            console.log("link:", link)
+            console.log("link:", link);
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);

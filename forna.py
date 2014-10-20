@@ -22,6 +22,36 @@ import RNA
 import sys
 from optparse import OptionParser
 
+def remove_pseudoknots(bg):
+    '''
+    Remove all pseudoknots from the structure and return a list
+    of tuples indicate the nucleotide numbers which were in the
+    pseudoknots.
+    
+    @param bg: The BulgeGraph structure
+    '''
+    # store which base pairs we've dissolved
+    dissolved_bp = []
+    dissolved = True
+    while dissolved:
+        dissolved = False
+        # keep iterating as long as we've dissolved a stem
+        for d in bg.mloop_iterator():
+            if bg.is_node_pseudoknot(d):
+                # does this multiloop lead to a pseudoknot?
+                # if so, one of the stems it connects needs to be unravelled
+                conn = bg.connections(d)
+                conn_len = [(bg.stem_length(c), c) for c in conn]
+                conn_len.sort()
+                to_dissolve = conn_len[0][1]
+
+                dissolved_bp += list(bg.stem_bp_iterator(to_dissolve))
+                bg.dissolve_stem(conn_len[0][1])
+                dissolved = True
+                break
+
+    return dissolved_bp
+
 def bg_to_json(bg):
     '''
     Convert a BulgeGraph to a json file containing a graph layout designed
@@ -36,6 +66,8 @@ def bg_to_json(bg):
     # the initial width and height of the screen
     scr_width=800.
     scr_height=600.
+
+    pseudoknot_pairs = remove_pseudoknots(bg)
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
     bp_string =  bg.to_dotbracket_string()
@@ -55,6 +87,9 @@ def bg_to_json(bg):
 
     # corresponds to the colors in d3's category10 color scale
     colors = {'s':'lightgreen', 'm':'#ff9896', 'i':'#dbdb8d', 'f':'lightsalmon', 't':'lightcyan', 'h': 'lightblue', 'x':'transparent'}
+
+    for (f,t) in pseudoknot_pairs:
+        struct["links"] += [{"source": f-1, "target" : t-1, "value":1, "link_type":"real"}]
 
     for i in range(bg.seq_length):
         # use the centered coordinates for each nucleotide
