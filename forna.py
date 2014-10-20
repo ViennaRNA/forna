@@ -99,6 +99,8 @@ def bg_to_json(bg):
         # create the nodes with initial positions
         # the  node_name comes from the forgi representation
         node_name = bg.get_node_from_residue_num(i+1)
+        fud.pv('i')
+        fud.pv('bg.seq')
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i+1, 
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
                 "node_type":"nucleotide", 'struct_name':bg.name}
@@ -177,14 +179,31 @@ def bg_to_json(bg):
 
     # Create the loop pseudo-nodes for hairpins and interior loops
     num_nodes = len(struct["nodes"])
+    pseudoknotted = [item for sublist in pseudoknot_pairs for item in sublist]
+    fud.pv('pseudoknotted')
+    fud.pv('pseudoknot_pairs')
+
+    counter = 0
     for i,d in enumerate(it.chain(bg.iloop_iterator(), 
-                                  bg.hloop_iterator())):
+                                  bg.hloop_iterator(),
+                                  bg.floop_iterator(),
+                                  bg.tloop_iterator())):
+        stop = False
+        for dr in bg.define_residue_num_iterator(d, adjacent=True):
+            if dr in pseudoknotted:
+                # don't create loop nodes for pseudoknotted regions
+                stop = True
+        if stop:
+            continue
+
         create_loop_node([d], 
                 list(bg.define_residue_num_iterator(d, adjacent=True)),
-                num_nodes + i)
+                num_nodes + counter)
+        counter += 1
 
     # create the loop pseudo-nodes for multiloops
     num_nodes = len(struct["nodes"])
+    counter = 0
     for i,m in enumerate(bg.find_multiloop_loops()):
         loop_elems = [d for d in m if d[0] == 'm']
         residue_list = []
@@ -192,10 +211,23 @@ def bg_to_json(bg):
             residue_list += list(bg.define_residue_num_iterator(e, adjacent=True))
 
         residue_list.sort()
-        create_loop_node(loop_elems, residue_list, num_nodes + i)
+
+        stop = False
+        for r in residue_list:
+            if r in pseudoknotted:
+                fud.pv('r')
+                stop = True
+        if stop:
+            continue
+
+        create_loop_node(loop_elems, residue_list, num_nodes + counter)
+        counter += 1
 
     # link the nodes that are in stems
     for i in range(0, bg.seq_length-2):
+        if i+1 in pseudoknotted or i+2 in pseudoknotted or i+3 in pseudoknotted:
+            continue
+
         # create triangles between semi-adjacent nucleotides
         node1 = bg.get_node_from_residue_num(i+1)
         node15 = bg.get_node_from_residue_num(i+2)

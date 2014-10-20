@@ -33,3 +33,13 @@ class FornaTest(unittest.TestCase):
 
         fud.pv('bg.to_bg_string()')
         fud.pv('dissolved_bp')
+
+    def test_with_pseudoknot(self):
+        pk_fasta = """>4QK8_A
+GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUCCCGCACCCGACAGCUAACUCCGGAGGCAAUAAAGGAAGGA
+..((((....((....))..(((((....(.....(.[((((....((((((.....))))))..(((((.{{{{{{)))))..)))).)].)....)))))..)))).....}}}}}}.
+        """
+        struct = forna.fasta_to_json(pk_fasta)
+        fud.pv('struct')
+
+

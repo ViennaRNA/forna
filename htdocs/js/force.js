@@ -176,7 +176,8 @@ function Graph() {
         .style("stroke", "#999")
         .style("stroke-opacity", 0.6)
         .style("stroke-width", function(d) { 
-            //return Math.sqrt(d.value); 
+            return 1;
+            return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
         .attr("x1", function(d) { return d.source.x; })

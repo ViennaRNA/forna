@@ -46,7 +46,7 @@ def create_app(static):
         if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
-        if re.match("^[\(\)\.\[\]]+$", request.json['struct']) is None:
+        if re.match("^[\(\)\.\[\]\{\}]+$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
         fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
