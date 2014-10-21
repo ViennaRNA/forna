@@ -73,4 +73,8 @@ Documentation about the available options is provided using the ``-h`` option.
 
 #### Contact ####
 
-Questions and/or comments can be sent to <pkerp@tbi.univie.ac.at>
+Questions and/or comments can be sent to <forna@tbi.univie.ac.at>
+
+#### Acknowledgement ####
+
+This project is, among others, supported by the European Commission under the Environment Theme of the 7th Framework Program for Research and Technological Development (Grant agreement no: 323987).

@@ -96,26 +96,27 @@
           are colored yellow whereas nucleotides near the 3' end are colored red.</p>
           <h6 id="structure">Structure</h6>
           <p>Color the nucleotides according to the type of structure that they are in:</p>
-          <p><strong>Green</strong>: Stems (canonical helices)
-          <strong>Red</strong>: Multiloops (junctions)
-          <strong>Yellow</strong>: Interior Loops
-          <strong>Blue</strong>: Hairpin loops
-          <strong>Orange</strong>: 5' unpaired region
-          <strong>Light Blue</strong>: 3' unpaired region</p>
+          <p><strong><font color='lightgreen'>Green</font></strong>: Stems (canonical helices) <br>
+          <strong><font color='#ff9896'>Red</font></strong>: Multiloops (junctions)<br>
+          <strong><font color='#dbdb8d'>Yellow</font></strong>: Interior Loops<br>
+          <strong><font color='lightblue'>Blue</font></strong>: Hairpin loops<br>
+          <strong><font color='lightsalmon'>Orange</font></strong>: 5' unpaired region<br>
+          <strong><font color='cyan'>Cyan</font></strong>: 3' unpaired region</p>
           <h6 id="sequence">Sequence</h6>
           <p>Color according to the nucleotide types: </p>
-          <p><strong>Yellow</strong>: Adenine
-          <strong>Green</strong>: Cytosine
-          <strong>Blue</strong>: Uridine
-          <strong>Red</strong>: Guanine</p>
+          <p><strong><font color='#dbdb8d'>Yellow</font></strong>: Adenine <br>
+          <strong><font color="#98df8a">Green</font></strong>: Cytosine <br>
+          <strong><font color='#ff9896'>Blue</font></strong>: Uridine <br>
+          <strong><font color='#aec7e8'>Red</font></strong>: Guanine</p>
           <h4 id="runing-locally">Runing Locally</h4>
           <p>The server can be run locally on your machine. It depends on the <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> library and needs the <a href="http://www.tbi.univie.ac.at/RNA/">ViennaRNA</a> package installed with python bindings enabled.
           To run it use the following command:</p>
           <pre><code class="lang-shell">python forna_server.py -s -d</code></pre>
           <p>Documentation about the available options is provided using the <code>-h</code> option.</p>
           <h4 id="contact">Contact</h4>
-          <p>Questions and/or comments can be sent to <a href="mailto:pkerp@tbi.univie.ac.at">pkerp@tbi.univie.ac.at</a></p>
-
+          <p>Questions and/or comments can be sent to <a href="mailto:forna@tbi.univie.ac.at">forna@tbi.univie.ac.at</a></p>
+          <h4 id="acknowledgement">Acknowledgement</h4>
+          <p>This project is, among others, supported by the European Commission under the Environment Theme of the 7th Framework Program for Research and Technological Development (Grant agreement no: 323987).</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -128,11 +129,11 @@
   <div class="container" role="main" id="main">
 
     <div class="row">
-      <div class="col-md-3">
+      <div class="col-md-4 col-xs-12">
         <button class="btn btn-primary" data-bind="click: showAdd">Add Molecule</button>
         <button class="btn btn-default" data-bind="click: clearGraph">Clear Graph</button>
       </div>
-      <div class="col-md-4 col-md-offset-5">
+      <div class="col-md-5 col-md-offset-3 col-xs-12">
         <form role="form">
           <div class="form-group pull-right">
             <div class="btn-group" id="Colors" data-toggle="tooltip" data-placement="left" title="Choose the color scheme" data-delay="800">
@@ -150,14 +151,14 @@
     </div>
     
     <div class="row">
-      <div class="col-md-12">
+      <div class="col-md-12 col-xs-12">
         <!-- the graph goes here -->
         <div class="gallery" id='chart'> </div>
       </div>
     </div>
     
     <div class="row">
-      <div class="col-md-4 col-md-offset-8">
+      <div class="col-md-4 col-md-offset-8 col-xs-12">
         <form role="form">
           <div class="form-group pull-right">
             <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg" data-toggle="tooltip" data-placement="left" title="Save as SVG file" data-delay="800">Save File</button>

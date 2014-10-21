@@ -160,18 +160,18 @@ function Graph() {
     .charge(-80)
     .linkDistance(function(d) { return 15 * d.value; })
     .linkStrength(function(d) { return 8; })
-    .gravity(0.005)
+    .gravity(0.002)
     .nodes(graph.nodes)
     .links(graph.links)
-    .chargeDistance(150)
+    .chargeDistance(100)
     .friction(0.970)
     .size([w, h]);
 
     var update = function () {
-        var link = vis.selectAll("line.link")
+        var all_links = vis.selectAll("line.link")
         .data(graph.links);
 
-        link.enter().append("svg:line")
+        all_links.enter().append("svg:line")
         .attr("class", "link")
         .style("stroke", "#999")
         .style("stroke-opacity", 0.6)
@@ -182,9 +182,14 @@ function Graph() {
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+        .attr("y2", function(d) { return d.target.y; })
+        .attr("link_type", function(d) { return d.link_type; } );
 
-            link.exit().remove();
+            all_links.exit().remove();
+
+            /* We don't need to update the positions of the stabilizing links */
+            link = vis.selectAll("[link_type=real]");
+            console.log("link:", link)
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
