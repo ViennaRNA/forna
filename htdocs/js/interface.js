@@ -62,7 +62,7 @@ $("[data-toggle=tooltip]").tooltip();
 
 function RNA(sequence, structure, header) {
   var self = this;
-  console.log(["New RNA with: ", sequence, structure, header].join('\n'))
+  console.log(["New RNA with: ", sequence, structure, header].join('\n'));
   self.header = ko.observable(header);
   
   self.sequence = ko.observable(sequence);
@@ -80,27 +80,29 @@ function RNA(sequence, structure, header) {
     }, self 
   );
   
-  self.json = ko.onDemandObservable( function() {
-      ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.sequence(), struct: self.structure()} )).success( function(data) {
-        self.json(data);
-        self.done(true);
-      }).error( function(jqXHR) {
-        addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-      });
-    }, self
-  );
+  self.nodes = ko.observableArray([]);
+  self.links = ko.observableArray([]);
+  
+  self.get_json = function() {
+    ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.sequence(), struct: self.structure()} )).success( function(data) {
+      self.nodes(data.nodes);
+      self.links(data.links);
+      self.done(true);
+    }).error( function(jqXHR) {
+      addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+    });
+  }
   
   if (structure == '') {
     self.structure.refresh();
     self.structure();
   } else {
     self.structure(structure);
-    self.json.refresh();
-    self.json();
+    self.get_json();
   }
   
   self.loaded = ko.computed( function() {
-    return (self.structure.loaded() && self.json.loaded() && self.done());
+    return (self.structure.loaded() && self.done());
   });
 }
 
@@ -144,7 +146,7 @@ function AddViewModel() {
       self.newMolecules([]);
     }
     return (returnValue);
-  });
+  }, self);
     
   self.submit = function() {
     self.submitted(false);
@@ -202,13 +204,26 @@ function RNAViewModel() {
   self.graph = new Graph();
   self.molecules = ko.observableArray([]);
   
-  self.addMolecules = function(array) {
-    self.molecules().concat(array);
-    // add a new molecule to the graph
-    array.forEach( function(rna) {
-      console.log(rna.header());
-      self.graph.addNodes(rna.json());
+  self.molecules.subscribe( function(newValue) {
+    console.log("updating graph after molecules");
+    var links = [];
+    var nodes = [];
+    // TODO update link.source and link.target ID!
+    newValue.forEach( function(rna) {
+      nodes = nodes.concat(rna.nodes());
+      links = links.concat(rna.links());
     });
+    self.graph.graph.nodes = nodes;
+    self.graph.graph.links = links;
+    self.graph.update();
+  });
+  
+  self.addMolecules = function(array) {
+    console.log("updating molecules array");
+    array.forEach( function(rna) {
+      self.molecules().push(rna);
+    });
+    self.molecules.valueHasMutated();
     self.graph.changeColorScheme(self.colors());
   }
   /*jshint multistr: true */
@@ -237,7 +252,6 @@ function RNAViewModel() {
   self.clearGraph = function() {
     // delete all nodes
     self.molecules([]);
-    self.graph.clearNodes();
   }
   
   self.saveSVG = function() {

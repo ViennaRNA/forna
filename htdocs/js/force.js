@@ -167,7 +167,7 @@ function Graph() {
     .friction(0.970)
     .size([w, h]);
 
-    var update = function () {
+    this.update = function () {
         var all_links = vis.selectAll("line.link")
         .data(graph.links);
 
