@@ -174,9 +174,9 @@ function Graph() {
         all_links.enter().append("svg:line")
         .attr("class", "link")
         .style("stroke", "#999")
-        .style("stroke-opacity", 0.6)
+        .style("stroke-opacity", 0.8)
         .style("stroke-width", function(d) { 
-            return 1;
+            return 2;
             return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
@@ -223,8 +223,8 @@ function Graph() {
             node_stroke = function(d) {
                 node_strokes = {};
 
-                node_strokes.nucleotide = 'white';
-                node_strokes.label = 'white';
+                node_strokes.nucleotide = 'grey';
+                node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
 
                 return node_strokes[d.node_type];
