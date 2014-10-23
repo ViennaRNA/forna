@@ -53,9 +53,6 @@ def bg_to_json(bg):
     new_xs = (xs - center_x) + center_width
     new_ys = (ys - center_y) + center_height
 
-    # corresponds to the colors in d3's category10 color scale
-    colors = {'s':'lightgreen', 'm':'#ff9896', 'i':'#dbdb8d', 'f':'lightsalmon', 't':'lightcyan', 'h': 'lightblue', 'x':'transparent'}
-
     for i in range(bg.seq_length):
         # use the centered coordinates for each nucleotide
         x = new_xs[i]
@@ -65,7 +62,7 @@ def bg_to_json(bg):
         # the  node_name comes from the forgi representation
         node_name = bg.get_node_from_residue_num(i+1)
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i+1, 
-                "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
+                "x": x, "y": y, "px": x, "py": y,
                 "node_type":"nucleotide"}
 
         #node = {"group": 1, "name": i+1, "id": i+1}
@@ -86,7 +83,7 @@ def bg_to_json(bg):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i+1), "id": node_id, 
-                "color": 'transparent', 'node_type':'label'}]
+                'node_type':'label'}]
             struct["links"] += [{"source": i, "target": node_id, "value":1, "link_type":"real"}]
 
     # store the node id of the center id for each loop
@@ -110,7 +107,7 @@ def bg_to_json(bg):
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id, 
                              "x": x_pos, "y": y_pos, "px":x_pos, "py":y_pos, 
-                             "color": colors['x'], 'node_type':'pseudo'}]
+                             'node_type':'pseudo'}]
 
         # some geometric calculations for deciding how long to make
         # the links between alternating nodes
