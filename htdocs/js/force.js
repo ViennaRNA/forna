@@ -174,9 +174,10 @@ function Graph() {
         all_links.enter().append("svg:line")
         .attr("class", "link")
         .style("stroke", "#999")
-        .style("stroke-opacity", 0.6)
+        .style("stroke-opacity", 0.8)
         .style("stroke-width", function(d) { 
-            //return Math.sqrt(d.value); 
+            return 2;
+            return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
         .attr("x1", function(d) { return d.source.x; })
@@ -189,7 +190,7 @@ function Graph() {
 
             /* We don't need to update the positions of the stabilizing links */
             link = vis.selectAll("[link_type=real]");
-            console.log("link:", link)
+            console.log("link:", link);
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
@@ -222,8 +223,8 @@ function Graph() {
             node_stroke = function(d) {
                 node_strokes = {};
 
-                node_strokes.nucleotide = 'white';
-                node_strokes.label = 'white';
+                node_strokes.nucleotide = 'grey';
+                node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
 
                 return node_strokes[d.node_type];
