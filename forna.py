@@ -67,7 +67,8 @@ def bg_to_json(bg):
     scr_width=800.
     scr_height=600.
 
-    pseudoknot_pairs = remove_pseudoknots(bg)
+    pseudoknot_pairs = []
+    #pseudoknot_pairs = remove_pseudoknots(bg)
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
     bp_string =  bg.to_dotbracket_string()
@@ -99,8 +100,6 @@ def bg_to_json(bg):
         # create the nodes with initial positions
         # the  node_name comes from the forgi representation
         node_name = bg.get_node_from_residue_num(i+1)
-        fud.pv('i')
-        fud.pv('bg.seq')
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i+1, 
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
                 "node_type":"nucleotide", 'struct_name':bg.name}
@@ -205,11 +204,10 @@ def bg_to_json(bg):
     num_nodes = len(struct["nodes"])
     counter = 0
     for i,m in enumerate(bg.find_multiloop_loops()):
+        residue_list = bg.get_multiloop_nucleotides(m)
         loop_elems = [d for d in m if d[0] == 'm']
-        residue_list = []
-        for e in loop_elems:
-            residue_list += list(bg.define_residue_num_iterator(e, adjacent=True))
 
+        fud.pv('residue_list')
         residue_list.sort()
 
         stop = False
