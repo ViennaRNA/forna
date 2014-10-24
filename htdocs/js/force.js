@@ -222,7 +222,7 @@ function Graph() {
             node_stroke = function(d) {
                 node_strokes = {};
 
-                node_strokes.nucleotide = 'white';
+                node_strokes.nucleotide = 'grey';
                 node_strokes.label = 'white';
                 node_strokes.pseudo = 'transparent';
 
@@ -234,6 +234,7 @@ function Graph() {
             .attr("r", 6)
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
+            .style("stroke-width", 0.8)
             .style("fill", node_fill);
 
             var labels = gnodes.append("text")
