@@ -34,7 +34,7 @@ class FornaTest(unittest.TestCase):
         fud.pv('bg.to_bg_string()')
         fud.pv('dissolved_bp')
 
-    def test_with_pseudoknot(self):
+    def test_with_pseudoknot1(self):
         pk_fasta = """>4QK8_A
 GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUCCCGCACCCGACAGCUAACUCCGGAGGCAAUAAAGGAAGGA
 ..((((....((....))..(((((....(.....(.[((((....((((((.....))))))..(((((.{{{{{{)))))..)))).)].)....)))))..)))).....}}}}}}.
@@ -42,4 +42,10 @@ GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUC
         struct = forna.fasta_to_json(pk_fasta)
         fud.pv('struct')
 
+    def test_with_pseudoknot2(self):
+        pk_fasta = """>4FAW_A
+UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGGUGUCCGUGGCGACAUGGAAUCUGAAGGAAGCGGACGGCAAACCUUCGGUCUGAGGAACACGAACUUCAUAUGAGGCUAGGUAUCAAUGGAUGAGUUUGCAUAACAAAACAAAGUCCUUUCUGCCAAAGUUGGUACAGAGUAAAUGAAGCAGAUUGAUGAAGGGAAAGACUGCAUUCUUACCCGGGGAGGUCUGGAAACAGAAGUCAGCAGAAGUCAUAGUACCCUGUUCGCAGGGGAAGGACGGAACAAGUAUGGCGUUCGCGCCUAAGCUUGAACCGCCGUAUACCGAACGGUACGUACGGUGGUGUGG
+.((.[[[[[[..{{{{{{{{{{{...(((.......)))..(((((...{{{{{{{...))))){.{{{...{{{..((((.((((((....))))))))))...)]..}}}...}}}.}.(((((((((((.(.....)...(((((.....([[[..[.[..[[[[[[[..[[[[.)......]]]]...]]]].}}}}}}}...]]]..].]..]]]...))))))))))...))))))...}}}}}}}}}}}...)]]]]](...((((....))))...).......(((.(....(((........)))...))))....(((((..(((.(..).)))...))))).(((((((((((((....)))..))))))))))...."""
+        struct = forna.fasta_to_json(pk_fasta)
+        fud.pv('struct')
 
