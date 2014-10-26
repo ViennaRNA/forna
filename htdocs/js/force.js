@@ -192,8 +192,8 @@ function Graph() {
             all_links.exit().remove();
 
             /* We don't need to update the positions of the stabilizing links */
-            //link = vis.selectAll("[link_type=real]");
-            link = all_links;
+            link = vis.selectAll("[link_type=real]");
+            //link = all_links;
             console.log("link:", link);
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -219,7 +219,7 @@ function Graph() {
 
                 node_fills.nucleotide = 'white';
                 node_fills.label = 'white';
-                node_fills.pseudo = 'black';
+                node_fills.pseudo = 'transparent';
 
                 return node_fills[d.node_type];
             };

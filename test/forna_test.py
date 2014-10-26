@@ -3,6 +3,7 @@ import forna
 import forgi.graph.bulge_graph as fgb
 import forgi.utilities.debug as fud
 
+
 class FornaTest(unittest.TestCase):
     def setUp(self):
         self.fasta = '>hi\nAACCGG\n((..))'
@@ -18,7 +19,7 @@ class FornaTest(unittest.TestCase):
     def test_add_colors_to_graph(self):
         struct = forna.fasta_to_json(self.fasta)
 
-        colors = {'hi':{3: 'black'}}
+        colors = {'hi': {3: 'black'}}
         struct = forna.add_colors_to_graph(struct, colors)
 
         self.assertEqual(struct['nodes'][2]['color'], 'black')
@@ -30,6 +31,7 @@ class FornaTest(unittest.TestCase):
         bg.from_fasta(pk_fasta)
 
         dissolved_bp = forna.remove_pseudoknots(bg)
+        self.assertTrue(dissolved_bp is not None)
 
         fud.pv('bg.to_bg_string()')
         fud.pv('dissolved_bp')
@@ -40,6 +42,8 @@ GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUC
 ..((((....((....))..(((((....(.....(.[((((....((((((.....))))))..(((((.{{{{{{)))))..)))).)].)....)))))..)))).....}}}}}}.
         """
         struct = forna.fasta_to_json(pk_fasta)
+        self.assertTrue(struct is not None)
+
         fud.pv('struct')
 
     def test_with_pseudoknot2(self):

@@ -23,13 +23,13 @@ import sys
 from optparse import OptionParser
 
 def remove_pseudoknots(bg):
-    '''
+    """
     Remove all pseudoknots from the structure and return a list
     of tuples indicate the nucleotide numbers which were in the
     pseudoknots.
     
     @param bg: The BulgeGraph structure
-    '''
+    """
     # store which base pairs we've dissolved
     dissolved_bp = []
     dissolved = True
@@ -53,10 +53,10 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 def bg_to_json(bg):
-    '''
+    """
     Convert a BulgeGraph to a json file containing a graph layout designed
     to create a nice force-directed graph using the d3 library.
-    '''
+    """
     
     # the json structure that will hold everything
     struct = {}
@@ -130,11 +130,11 @@ def bg_to_json(bg):
     num_nodes = len(struct["nodes"])
 
     def create_loop_node(ds, res_list, node_id):
-        '''
+        """
         Create a pseudo-node in the middle of each loop. This node
         will be the center of the circular arrangement of the loop
         nodes.
-        '''
+        """
         # get the coordinates of the nodes which are part of this loop
         xs = np.array([coords.get(r).X for r in res_list])
         ys = np.array([coords.get(r).Y for r in res_list])
@@ -201,22 +201,19 @@ def bg_to_json(bg):
         counter += 1
 
     # create the loop pseudo-nodes for multiloops
+
     num_nodes = len(struct["nodes"])
     counter = 0
-    for i,m in enumerate(bg.find_multiloop_loops()):
-        residue_list = bg.get_multiloop_nucleotides(m)
-        loop_elems = [d for d in m if d[0] == 'm']
+    loops, residue_lists = bg.find_multiloop_loops()
+    for loop, residue_list in zip(loops, residue_lists):
+        loop_elems = [d for d in loop if d[0] == 'm']
+
+        if bg.is_loop_pseudoknot(loop):
+            # we shouldn't make a pseudonode for a psueodknotted node
+            continue
 
         fud.pv('residue_list')
-        residue_list.sort()
-
-        stop = False
-        for r in residue_list:
-            if r in pseudoknotted:
-                fud.pv('r')
-                stop = True
-        if stop:
-            continue
+        residue_list = sorted(residue_list)
 
         create_loop_node(loop_elems, residue_list, num_nodes + counter)
         counter += 1
@@ -228,14 +225,14 @@ def bg_to_json(bg):
 
         # create triangles between semi-adjacent nucleotides
         node1 = bg.get_node_from_residue_num(i+1)
-        node15 = bg.get_node_from_residue_num(i+2)
+        #node15 = bg.get_node_from_residue_num(i+2)
         node2 = bg.get_node_from_residue_num(i+3)
 
         def create_stem_loop_link(node1, node2):
-            '''
+            """
             Create a link between the second-to-last node on a stem
             and the second-to-last node on a loop.
-            '''
+            """
             res_list = list(bg.define_residue_num_iterator(node2, adjacent=True))
             num_residues = len(res_list)
             ia = ((num_residues - 2) * math.pi) / (num_residues)
@@ -253,6 +250,7 @@ def bg_to_json(bg):
         if node1[0] == 's' and node2[0] == 's' and node1 == node2:
             struct["links"] += [{"source": i, "target": i+2, "value": 2, "link_type":"fake"}]
 
+        """
         if (node1[0] == 's' and node15[0] == 's' and node2[0] != 's'):
             create_stem_loop_link(node1, node2)
 
@@ -260,6 +258,7 @@ def bg_to_json(bg):
             create_stem_loop_link(node2, node1)
 
             pass
+        """
 
     # link paired nucleotides
     num_nodes = len(struct["nodes"])
@@ -279,7 +278,7 @@ def bg_to_json(bg):
     return struct
 
 def fasta_to_json(fasta_text):
-    '''
+    """
     Create the d3 compatible graph representation from a dotbracket string
     formatted like so:
 
@@ -288,13 +287,13 @@ def fasta_to_json(fasta_text):
         (((..)))
 
     @param fasta_text: The fasta string.
-    '''
+    """
     bg = fgb.BulgeGraph()
     bg.from_fasta(fasta_text)
     return bg_to_json(bg)
 
 def add_colors_to_graph(struct, colors):
-    '''
+    """
     Change the colors in the structure graph. Colors should be a dictionary-fied
     json object containing the following entries:
 
@@ -302,7 +301,7 @@ def add_colors_to_graph(struct, colors):
     
     @param struct: The structure returned by fasta_to_json
     @param colors: A color dictionary as specified above
-    '''
+    """
     fud.pv('struct')
     for node in struct['nodes']:
         if node['node_type'] == 'nucleotide':
