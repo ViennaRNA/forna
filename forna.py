@@ -67,8 +67,8 @@ def bg_to_json(bg):
     scr_width=800.
     scr_height=600.
 
-    pseudoknot_pairs = []
-    #pseudoknot_pairs = remove_pseudoknots(bg)
+    #pseudoknot_pairs = []
+    pseudoknot_pairs = bg.remove_pseudoknots()
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
     bp_string =  bg.to_dotbracket_string()
@@ -90,7 +90,7 @@ def bg_to_json(bg):
     colors = {'s':'lightgreen', 'm':'#ff9896', 'i':'#dbdb8d', 'f':'lightsalmon', 't':'lightcyan', 'h': 'lightblue', 'x':'transparent'}
 
     for (f,t) in pseudoknot_pairs:
-        struct["links"] += [{"source": f-1, "target" : t-1, "value":1, "link_type":"real"}]
+        struct["links"] += [{"source": f-1, "target" : t-1, "value":1, "link_type":"pseudoknot"}]
 
     for i in range(bg.seq_length):
         # use the centered coordinates for each nucleotide
@@ -178,15 +178,14 @@ def bg_to_json(bg):
 
     # Create the loop pseudo-nodes for hairpins and interior loops
     num_nodes = len(struct["nodes"])
-    pseudoknotted = [item for sublist in pseudoknot_pairs for item in sublist]
+    #pseudoknotted = [item for sublist in pseudoknot_pairs for item in sublist]
+    pseudoknotted = []
     fud.pv('pseudoknotted')
     fud.pv('pseudoknot_pairs')
 
     counter = 0
     for i,d in enumerate(it.chain(bg.iloop_iterator(), 
-                                  bg.hloop_iterator(),
-                                  bg.floop_iterator(),
-                                  bg.tloop_iterator())):
+                                  bg.hloop_iterator())):
         stop = False
         for dr in bg.define_residue_num_iterator(d, adjacent=True):
             if dr in pseudoknotted:

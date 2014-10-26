@@ -162,7 +162,10 @@ function Graph() {
         else 
             return -40;})
     .linkDistance(function(d) { return 15 * d.value; })
-    .linkStrength(function(d) { return 8; })
+    .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
+                  { return 0.001; }
+            else
+                { return 8; } })
     .gravity(0.002)
     .nodes(graph.nodes)
     .links(graph.links)
@@ -192,7 +195,7 @@ function Graph() {
             all_links.exit().remove();
 
             /* We don't need to update the positions of the stabilizing links */
-            link = vis.selectAll("[link_type=real]");
+            link = vis.selectAll("[link_type=real],[link_type=pseudoknot]");
             //link = all_links;
             console.log("link:", link);
 
