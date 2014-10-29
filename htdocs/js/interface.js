@@ -63,8 +63,9 @@ $("[data-toggle=tooltip]").tooltip();
 function RNA(sequence, structure, header) {
   var self = this;
   console.log(["New RNA with: ", sequence, structure, header].join('\n'))
+  console.log("structure:", structure);
+
   self.header = ko.observable(header);
-  
   self.sequence = ko.observable(sequence);
   
   self.done = ko.observable(false);
