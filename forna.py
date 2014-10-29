@@ -223,6 +223,13 @@ def bg_to_json(bg, circular=False):
         create_loop_node(loop_elems, residue_list, num_nodes + counter)
         counter += 1
 
+    # create a common node for the external loop
+    eloops = bg.find_external_loops()
+    if len(eloops) > 0:
+        all_residues = it.chain(*[bg.define_residue_num_iterator(e, adjacent=True) for e in eloops])
+        fud.pv('all_residues')
+        create_loop_node(eloops, sorted(all_residues), len(struct["nodes"]))
+
     # link the nodes that are in stems
     for i in range(0, bg.seq_length - 2):
         if i + 1 in pseudoknotted or i + 2 in pseudoknotted or i + 3 in pseudoknotted:

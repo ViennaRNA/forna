@@ -160,16 +160,16 @@ function Graph() {
     .charge(function(d) { if (d.node_type == 'pseudo') 
             return -200; 
         else 
-            return -40;})
+            return -80;})
     .linkDistance(function(d) { return 15 * d.value; })
     .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
-                  { return 0.001; }
+                  { return 0.0; }
             else
                 { return 8; } })
     .gravity(0.002)
     .nodes(graph.nodes)
     .links(graph.links)
-    .chargeDistance(100)
+    .chargeDistance(110)
     .friction(0.950)
     .size([w, h]);
 
