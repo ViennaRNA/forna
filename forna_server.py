@@ -46,14 +46,23 @@ def create_app(static):
         if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
-        if re.match("^[\(\)\.\[\]\{\}]+$", request.json['struct']) is None:
+        if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
-        fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
-                                               request.json['struct'])
+        print >>sys.stderr, "struct[-1]:", request.json['struct'][-1]
+        if request.json['struct'][-1] == '*':
+            circular = True
+            structure = request.json['struct'].strip('*')
+        else:
+            circular = False
+            structure = request.json['struct']
 
+        fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
+                                               structure)
+
+        print >>sys.stderr, "hcirc:", circular
         try:
-            result = forna.fasta_to_json(fasta_text)
+            result = forna.fasta_to_json(fasta_text, circular)
         except Exception as ex:
             abort(400, "Secondary structure parsing error: {}".format(str(ex)))
 
