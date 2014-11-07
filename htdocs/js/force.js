@@ -161,7 +161,7 @@ function Graph() {
             return -200; 
         else 
             return -80;})
-    .linkDistance(function(d) { return 15 * d.value; })
+    .linkDistance(function(d) { return 20 * d.value; })
     .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
                   { return 0.0; }
             else
