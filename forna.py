@@ -186,8 +186,6 @@ def bg_to_json(bg, circular=False):
     num_nodes = len(struct["nodes"])
     # pseudoknotted = [item for sublist in pseudoknot_pairs for item in sublist]
     pseudoknotted = []
-    fud.pv('pseudoknotted')
-    fud.pv('pseudoknot_pairs')
 
     counter = 0
     for i, d in enumerate(it.chain(bg.iloop_iterator(),
@@ -331,7 +329,8 @@ def parse_ranges(range_text):
                 raise Exception('Invalid range')
 
             try:
-                (f,t) = map(int, single_range.split())
+                fud.pv('single_range.split()')
+                (f,t) = map(int, single_range.split('-'))
             except ValueError as ve:
                 raise Exception('Range components need to be integers')
         else:
@@ -340,8 +339,8 @@ def parse_ranges(range_text):
             except ValueError as ve:
                 raise Exception('Range components need to be integers')
 
-    for i in range(f,t+1):
-        all_nucleotides.add(i)
+        for i in range(f,t+1):
+            all_nucleotides.add(i)
 
     return sorted(all_nucleotides)
     
@@ -375,8 +374,13 @@ def parse_colors_text(colors_text):
 
     for i,line in enumerate(colors_text.split('\n')):
         parts = line.split()
+
+        if len(parts) == 0:
+            # we'll let empty lines slide
+            continue
         
         if len(parts) != 4:
+            fud.pv('parts')
             raise Exception('Too many parts in line {}'.format(i+1))
 
         if parts[0] == 'color':
@@ -385,13 +389,13 @@ def parse_colors_text(colors_text):
             except Exception as ex:
                 raise Exception("Improperly formatted range on line {}: {}".format(i+1, str(ex)))
 
-        color = parts[3]
+            color = parts[3]
 
-        for nucleotide in nucleotides:
-            color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
-            colors += [color_entry]
+            for nucleotide in nucleotides:
+                color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
+                colors += [color_entry]
 
-    return
+    return colors
 
 def add_colors_to_graph(struct, colors):
     """
