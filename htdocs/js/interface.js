@@ -221,6 +221,9 @@ function RNAViewModel() {
       if (self.graph === null) {
           console.log("graph is null, won't update the color");
     } else {
+        if (newValue == 'custom') {
+            console.log("Custom colors selected")
+        }
         //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);
     }

@@ -309,6 +309,90 @@ def fasta_to_json(fasta_text, circular=False):
     return bg_to_json(bg, circular=circular)
 
 
+def parse_ranges(range_text):
+    '''
+    Parse a numerical range indicated like this:
+
+    13-14,15,16-17
+
+    And a return a sorted array containing the numbers
+    covered by this range. Negative values are not
+    allowed. Overlapping values will be counted only once.
+    '''
+    all_nucleotides = set()
+
+    ranges = range_text.split(',')
+    for single_range in ranges:
+        if single_range.count('-') > 1:
+            raise Exception('Too many dashes in the range')
+        elif single_range.count('-') == 1:
+            parts = single_range.split('-')
+            if len(parts) != 2 or parts[0] == '' or parts[1] == '':
+                raise Exception('Invalid range')
+
+            try:
+                (f,t) = map(int, single_range.split())
+            except ValueError as ve:
+                raise Exception('Range components need to be integers')
+        else:
+            try:
+                (f,t) = (int(single_range), int(single_range))
+            except ValueError as ve:
+                raise Exception('Range components need to be integers')
+
+    for i in range(f,t+1):
+        all_nucleotides.add(i)
+
+    return sorted(all_nucleotides)
+    
+def parse_colors_text(colors_text):
+    '''
+    Parse a text string and return a json object which identifies
+    the colors with which nucleotides should be colored.
+
+    The colors lines should look like this:
+
+    #color struct_name residue_num color_value
+    color 1y26 13 red
+
+    Nucleotide ranges can be specified using dashes:
+    
+    color 1y26 13-14 red
+
+    Multiple nucleotides and/or ranges can be combined using commas:
+
+    color 1y26 13-14,15 blue
+
+    Highlights are specified in a similar manner, except the effect
+    is that the convex hull of the nucleotides of each highlight are
+    colored in the color specified.
+
+    @param colors_text: A string containing the color specs
+    @return: A json object indicating which nucleotides should 
+             have which colors.
+    '''
+    colors = []
+
+    for i,line in enumerate(colors_text.split('\n')):
+        parts = line.split()
+        
+        if len(parts) != 4:
+            raise Exception('Too many parts in line {}'.format(i+1))
+
+        if parts[0] == 'color':
+            try: 
+                nucleotides = parse_ranges(parts[2])
+            except Exception as ex:
+                raise Exception("Improperly formatted range on line {}: {}".format(i+1, str(ex)))
+
+        color = parts[3]
+
+        for nucleotide in nucleotides:
+            color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
+            colors += [color_entry]
+
+    return
+
 def add_colors_to_graph(struct, colors):
     """
     Change the colors in the structure graph. Colors should be a dictionary-fied

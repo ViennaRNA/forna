@@ -53,3 +53,28 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
         struct = forna.fasta_to_json(pk_fasta)
         fud.pv('struct')
 
+    def test_colors(self):
+        pk_fasta = '>hi\nAAAAAAAAAAAAAAAA\n((..[[[..))..]]]'
+
+        bg = fgb.BulgeGraph()
+        bg.from_fasta(pk_fasta)
+
+        colors_text = """
+color hi 4 orange
+color hi 5 orange
+highlight hi 7-8 brown
+"""
+
+    def test_parse_ranges(self):
+        nucs = forna.parse_ranges('1,7')
+        self.assertEqual(nucs, [1,7])
+
+        nucs = forna.parse_ranges('1-3')
+        self.assertEqual(nucs, [1,2,3])
+
+        nucs = forna.parse_ranges('1-3,7')
+        self.assertEqual(nucs, [1,2,3,7])
+
+        nucs = forna.parse_ranges('1-3,1-4')
+        self.assertEqual(nucs, [1,2,3,4])
+
