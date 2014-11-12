@@ -83,6 +83,17 @@ def create_app(static):
 
         result = RNA.fold(str(request.json['seq']))[0]
         return json.dumps(result), 201
+
+    @app.route('/colors_to_json', methods=['POST'])
+    def colors_to_json():
+        if not request.json:
+            abort(400, "Request has no json.")
+
+        if 'text' not in request.json:
+            abort(400, "Request has no text field.")
+
+        color_json = forna.parse_colors_text(request.json['text'])
+        return json.dumps(color_json)
     
     
     if static:

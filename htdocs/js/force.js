@@ -40,6 +40,11 @@ function Graph() {
         update();
     };
 
+    this.addCustomColors = function addCustomColors(json) {
+        // Add a json file containing the custom colors
+        this.customColors = json;
+    }
+
     this.clearNodes = function clearNodes() {
         graph.nodes = [];
         graph.links = [];
@@ -102,9 +107,20 @@ function Graph() {
             nodes.style('fill', function(d) { 
                 return scale(d.id);
             });
+        } else if (newColorScheme == 'custom') {
+            nodes.style('fill', function(d) {
+                if (this.customColors.hasOwnKey(d.name)) {
+                    //is the molecule name in the custom colors object
+                    molecule_colors = this.customColors[d.name]
+
+                    if (molecule_colors.hasOwnProperty(d.id)) {
+                        return molecule_colors[d.id];
+                    }
+                }
+
+                return 'white';
+            });
         }
-
-
     };
 
     //adapt size to window changes:
@@ -161,7 +177,7 @@ function Graph() {
             return -200; 
         else 
             return -80;})
-    .linkDistance(function(d) { return 20 * d.value; })
+    .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
                   { return 0.0; }
             else
@@ -248,7 +264,8 @@ function Graph() {
             var labels = gnodes.append("text")
             .text(function(d) { return d.name; })
             .attr('text-anchor', 'middle')
-            .attr('font-size', 6.0)
+            .attr('font-size', 8.0)
+            .attr('font-weight', 'bold')
             .attr('y', 2.5)
             .attr('fill', d3.rgb(50,50,50))
             .attr('class', 'node-label');

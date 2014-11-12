@@ -59,6 +59,31 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
   
+  <!-- 'Custom Colors' modal -->
+  <div class="modal fade" id="addColors" > <!-- data-bind="showModal: loaded"-->
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Edit Color Scheme</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label for="Input">Color Specifications:</label>
+              <textarea type="text" class="form-control" id="ColorInput" placeholder="" rows="2" data-bind="value: colorInput" autofocus required></textarea>
+            </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: colorInputError().length > 0, html: inputError" id="inputError"> </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" id="ColorSubmit" data-bind="click: colorSubmit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal custom colors -->
+
   <!-- 'About' modal -->
   <div class="modal fade" id="about">
     <div class="modal-dialog">
@@ -140,7 +165,7 @@
               <label class="btn btn-default" data-bind="css: { active: colors() == 'positions' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Positions</label>
               <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
               <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
-              <label class="btn btn-default" data-bind="css: { active: colors() == 'custom' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'custom'">Custom</label>
+              <label class="btn btn-default" data-bind="css: { active: colors() == 'custom' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'custom', click: showCustomColors">Custom</label>
             </div>
             <div class="btn-group" id="About">
               <button data-bind="click: showAbout" class="btn btn-default"><span class="glyphicon glyphicon-question-sign"></span></button>

@@ -105,6 +105,19 @@ function RNA(sequence, structure, header) {
   });
 }
 
+function ColorViewModel() {
+    var self = this;
+
+
+  self.colorInput = ko.observable(
+      'color 3-4,7 red')
+  self.colorInputError = ko.observable('');
+
+  self.colorSubmit = function() {
+      console.log('Clicked');
+  }
+}
+
 function AddViewModel() {
   var self = this;
   
@@ -116,6 +129,7 @@ function AddViewModel() {
   self.newMolecules = ko.observableArray([]);
   
   self.inputError = ko.observable('');
+
   self.newInputError = function(message) {
     if (self.inputError() == '') {
       self.inputError(message);
@@ -146,6 +160,7 @@ function AddViewModel() {
     }
     return (returnValue);
   });
+
     
   self.submit = function() {
     self.submitted(false);
@@ -233,6 +248,11 @@ function RNAViewModel() {
     $('#Submit').button('reset');
     $('#add').modal('show');
   };
+
+  self.showCustomColors = function() {
+    $('#ColorSubmit').button('reset');
+    $('#addColors').modal('show');
+  }
   
   self.showAbout = function() {
     $('#about').modal('show');
@@ -272,5 +292,8 @@ function RNAViewModel() {
 // bind the model to the ui
 var rnaView = new RNAViewModel();
 var addView = new AddViewModel();
+var colorView = new ColorViewModel();
+
 ko.applyBindings(rnaView, document.getElementById('main'));
 ko.applyBindings(addView, document.getElementById('add'));
+ko.applyBindings(colorView, document.getElementById('addColors'));
