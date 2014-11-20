@@ -133,6 +133,16 @@
           <strong><font color="#98df8a">Green</font></strong>: Cytosine <br>
           <strong><font color='#ff9896'>Blue</font></strong>: Uridine <br>
           <strong><font color='#aec7e8'>Red</font></strong>: Guanine</p>
+          <h6 id="custom">Custom</h6>
+          <p> Create a custom coloring scheme. The colors for each nucleotide or sets of nucleotide are specified in the 
+          text box that appears when the tab is clicked. The format is simple. The first column should always be 'color',
+          since other types of coloring (i.e. highlighting) will be implemented in the future. The second column will
+          contain the name of the molecule (indicated by the '>' line in the 'Add Molecule' input area). The third 
+          column will contain a list of nucleotides. This can be individual nucleotides or ranges. Multiple nucleotides
+          or ranges can be separated by commas (i.e. '7,14-16' indicates nucleotides 7,14,15 and 16). The final line
+          contains the color (i.e. 'red', or '0xFF0000'). If a single number between 0 and 1 is specified in the final
+          column, it will be used to select a shade between white and steel blue. This is useful for showing values
+          associated with various nucleotides (i.e. conservation, reactivities, etc...).</p>
           <h4 id="runing-locally">Runing Locally</h4>
           <p>The server can be run locally on your machine. It depends on the <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> library and needs the <a href="http://www.tbi.univie.ac.at/RNA/">ViennaRNA</a> package installed with python bindings enabled.
           To run it use the following command:</p>
