@@ -310,6 +310,10 @@ function RNAViewModel() {
     self.molecules([]);
     self.graph.clearNodes();
   }
+
+  self.savePNG = function() {
+    saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 1);
+  }
   
   self.saveSVG = function() {
     console.log("saving svg...");

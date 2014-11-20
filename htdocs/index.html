@@ -32,6 +32,8 @@
   <script src="js/d3.js"></script>
   <!-- File Saver https://github.com/eligrey/FileSaver.js -->
   <script type='text/javascript' src="js/FileSaver.min.js"></script>
+  <!-- saveSvgAsPng.js -->
+  <script type='text/javascript' src="js/saveSvgAsPng.js"></script>
 </head>
 <body>
   <!-- 'Add new molecule' modal -->
@@ -197,8 +199,18 @@
       <div class="col-md-4 col-md-offset-8 col-xs-12">
         <form role="form">
           <div class="form-group pull-right">
-            <button data-bind="click: saveSVG" class="btn btn-default" download="rna.svg" data-toggle="tooltip" data-placement="left" title="Save as SVG file" data-delay="800">Save File</button>
-          </div>
+              <div class="btn-group dropup">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="tria">Save As
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu">
+                      <!-- Dropdown menu links -->
+                      <li role="presentation"><a role="menuitem" data-bind="click: saveSVG" download="rna.svg" data-toggle="tooltip" data-placement="left" title="Save as SVG file" data-delay="800">SVG</a></li>
+                      <li role="presentation"><a role="menuitem" data-bind="click: savePNG" download="rna.png" data-toggle="tooltip" data-placement="left" title="Save as PNG file" data-delay="800">PNG</a></li>
+                  </ul>
+              </div>
+
         </form>
       </div>
     </div>
@@ -208,6 +220,7 @@
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
   </div>
+  <canvas width="960" height="500" style="display:none"></canvas>
 
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
