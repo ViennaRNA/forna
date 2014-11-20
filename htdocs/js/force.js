@@ -285,7 +285,9 @@ function Graph() {
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', 0.8)
-            .style("fill", node_fill);
+            .style("fill", node_fill)
+            .append("svg:title")
+            .text(function(d) { return d.id; });
 
             var labels = gnodes.append("text")
             .text(function(d) { return d.name; })
@@ -294,7 +296,9 @@ function Graph() {
             .attr('font-weight', 'bold')
             .attr('y', 2.5)
             .attr('fill', d3.rgb(50,50,50))
-            .attr('class', 'node-label');
+            .attr('class', 'node-label')
+            .append('svg:title')
+            .text(function(d) { return d.id; });
 
             //self.changeColorScheme('structure');
 
