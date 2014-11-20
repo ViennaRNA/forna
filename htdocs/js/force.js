@@ -22,6 +22,9 @@ function Graph() {
         "links":[]
     };
 
+    this.customColors = {};
+    console.log("x1:", this.customColors)
+
     this.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
 
@@ -109,7 +112,10 @@ function Graph() {
             });
         } else if (newColorScheme == 'custom') {
             nodes.style('fill', function(d) {
-                if (this.customColors.hasOwnKey(d.name)) {
+                console.log("x2:", this.customColors)
+                if (typeof this.customColors == 'undefined') {
+                    return 'white';
+                } else if (this.customColors.hasOwnKey(d.name)) {
                     //is the molecule name in the custom colors object
                     molecule_colors = this.customColors[d.name]
 
@@ -301,5 +307,4 @@ function Graph() {
     };
 
     setSize();
-
 }

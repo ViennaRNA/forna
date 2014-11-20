@@ -108,27 +108,67 @@ function RNA(sequence, structure, header) {
 function ColorViewModel() {
     var self = this;
 
+  self.input = ko.observable(
+      'color molecule_name 3-4,7 red')
 
-  self.colorInput = ko.observable(
-      'color 3-4,7 red')
-  self.colorInputError = ko.observable('');
+  self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
+
+  self.newInputError = function(message) {
+    if (self.inputError() == '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+  }
 
   self.colorSubmit = function() {
+      self.submitted(false);
+      self.inputError('');
+
+      var text = self.input()
+
       console.log('Clicked');
+      self.colorScheme = CustomColorScheme(text);
+
+      self.submitted(true);
   }
+}
+
+function CustomColorScheme(text) {
+    var self = this;
+    console.log('Adding new color scheme')
+
+    self.text = ko.observable(text)
+    self.done = ko.observable(false);
+
+    self.colorSchemeJson = ko.onDemandObservable( function() {
+        ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.text()} )).success( function(data) {
+            self.colorSchemeJson(data);
+            self.done();
+        }).error( function(jqXHR) {
+            colorView.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+        });
+    }, self
+    );
+
+    self.loaded = ko.computed( function() {
+        return (self.colorSchemeJson.loaded() && self.done())
+    });
 }
 
 function AddViewModel() {
   var self = this;
   
   self.input = ko.observable(
-      '>test\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+      '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
   );
   
   self.newMolecules = ko.observableArray([]);
   
   self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
 
   self.newInputError = function(message) {
     if (self.inputError() == '') {
@@ -138,7 +178,6 @@ function AddViewModel() {
     }
   }
   
-  self.submitted = ko.observable(false);
   self.loaded = ko.computed(function() {
     var returnValue = true;
     self.newMolecules().forEach(function(rna) {

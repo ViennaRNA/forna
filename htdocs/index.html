@@ -71,9 +71,9 @@
           <form role="form">
             <div class="form-group">
               <label for="Input">Color Specifications:</label>
-              <textarea type="text" class="form-control" id="ColorInput" placeholder="" rows="2" data-bind="value: colorInput" autofocus required></textarea>
+              <textarea type="text" class="form-control" id="ColorInput" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
             </div>
-            <div class="alert alert-danger" role="alert" data-bind="visible: colorInputError().length > 0, html: inputError" id="inputError"> </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
         </div>
         <div class="modal-footer">
