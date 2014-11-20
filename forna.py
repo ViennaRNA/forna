@@ -12,6 +12,7 @@ __email__ = "pkerp@tbi.univie.ac.at"
 import forgi.graph.bulge_graph as fgb
 import forgi.utilities.debug as fud
 
+import collections as col
 import itertools as it
 import json
 import math
@@ -104,6 +105,7 @@ def bg_to_json(bg, circular=False):
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i + 1,
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
                 "node_type": "nucleotide", 'struct_name': bg.name}
+        fud.pv('bg.name')
 
         # node = {"group": 1, "name": i+1, "id": i+1}
         struct["nodes"] += [node]
@@ -370,7 +372,9 @@ def parse_colors_text(colors_text):
     @return: A json object indicating which nucleotides should 
              have which colors.
     '''
-    colors = []
+    # colors will be a dictionary indexed by molecule_name, and residue_id
+    # 
+    colors = col.defaultdict(col.defaultdict)
 
     for i,line in enumerate(colors_text.split('\n')):
         parts = line.split()
@@ -392,8 +396,9 @@ def parse_colors_text(colors_text):
             color = parts[3]
 
             for nucleotide in nucleotides:
-                color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
-                colors += [color_entry]
+                #color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
+                colors[parts[1]][nucleotide] = color
+                #colors += [color_entry]
 
     return colors
 

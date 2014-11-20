@@ -7,6 +7,7 @@
 */
 
 function Graph() {
+    var self = this;
 
     var w = 679,
     h = 600,
@@ -17,20 +18,20 @@ function Graph() {
     var yScale = d3.scale.linear()
     .domain([0,h]);
 
-    var graph = this.graph = {
+    var graph = self.graph = {
         "nodes":[],
         "links":[]
     };
 
-    this.customColors = {};
-    console.log("x1:", this.customColors)
+    self.customColors = {};
+    console.log("x1:", self.customColors)
 
-    this.addNodes = function addNodes(json) {
+    self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
 
         // offset the source and target since we already
         // have a number of nodes present
-        // this will have to be changed if we start removing 
+        // self will have to be changed if we start removing 
         // nodes
         json.links.forEach(function(entry) {
             entry.source += graph.nodes.length;
@@ -43,12 +44,13 @@ function Graph() {
         update();
     };
 
-    this.addCustomColors = function addCustomColors(json) {
+    self.addCustomColors = function addCustomColors(json) {
         // Add a json file containing the custom colors
-        this.customColors = json;
+        self.customColors = json;
+        console.log("customcolors:", self.customColors);
     }
 
-    this.clearNodes = function clearNodes() {
+    self.clearNodes = function clearNodes() {
         graph.nodes = [];
         graph.links = [];
 
@@ -76,7 +78,7 @@ function Graph() {
         .attr("height", svgH);
     };
 
-    this.changeColorScheme = function(newColorScheme) {
+    self.changeColorScheme = function(newColorScheme) {
         var nodes = vis.selectAll('[node_type=nucleotide]');
         data = nodes.data();
 
@@ -111,16 +113,34 @@ function Graph() {
                 return scale(d.id);
             });
         } else if (newColorScheme == 'custom') {
+            // scale to be used in case the user passes scalar
+            // values rather than color names
+            var scale = d3.scale.linear()
+            .range(['white', 'steelblue'])
+            .interpolate(d3.interpolateLab)
+            .domain([0, 1]);
+
             nodes.style('fill', function(d) {
-                console.log("x2:", this.customColors)
-                if (typeof this.customColors == 'undefined') {
+                if (typeof self.customColors == 'undefined') {
                     return 'white';
-                } else if (this.customColors.hasOwnKey(d.name)) {
+                } else if (self.customColors.hasOwnProperty(d.struct_name)) {
                     //is the molecule name in the custom colors object
-                    molecule_colors = this.customColors[d.name]
+                    molecule_colors = self.customColors[d.struct_name]
+
+                    console.log('d.id', d.id);
 
                     if (molecule_colors.hasOwnProperty(d.id)) {
-                        return molecule_colors[d.id];
+                        val = parseFloat(molecule_colors[d.id])
+
+                        if (isNaN(val)) {
+                            // passed in color is not a scalar, so 
+                            // treat it as a color
+                            return molecule_colors[d.id];
+                        } else {
+                            // the user passed in a float, let's use a colormap
+                            // to convert it to a color
+                            return scale(val)
+                        }
                     }
                 }
 
@@ -135,7 +155,7 @@ function Graph() {
 
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
-        d3.select(this).classed("dragging", true);
+        d3.select(self).classed("dragging", true);
     };
 
     function dragged(d) {
@@ -143,7 +163,7 @@ function Graph() {
     };
 
     function dragended(d) {
-        d3.select(this).classed("dragging", false);
+        d3.select(self).classed("dragging", false);
     };
 
     zoomer = d3.behavior.zoom().
@@ -276,7 +296,7 @@ function Graph() {
             .attr('fill', d3.rgb(50,50,50))
             .attr('class', 'node-label');
 
-            //this.changeColorScheme('structure');
+            //self.changeColorScheme('structure');
 
             node.append("svg:title")
             .text(function(d) { return d.name; });

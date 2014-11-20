@@ -20,6 +20,8 @@ import os
 import RNA
 from optparse import OptionParser
 
+import forgi.utilities.debug as fud
+
 def create_app(static):
     '''
     Create the forna application given the options that were passed.
@@ -39,6 +41,8 @@ def create_app(static):
         #print >>sys.stderr, "dir(request)", dir(request)
         if not request.json:
            abort(400, "Missing a json in the request")
+
+        fud.pv('request.json')
         
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
@@ -57,7 +61,7 @@ def create_app(static):
             circular = False
             structure = request.json['struct']
 
-        fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
+        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
                                                structure)
 
         print >>sys.stderr, "hcirc:", circular
