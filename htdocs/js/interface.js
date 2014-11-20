@@ -105,6 +105,30 @@ function RNA(sequence, structure, header) {
   });
 }
 
+
+function CustomColorScheme(text) {
+    var self = this;
+    console.log('Adding new color scheme')
+
+    self.text = ko.observable(text)
+    self.done = ko.observable(false);
+
+    self.colorSchemeJson = ko.onDemandObservable( function() {
+        ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.text()} )).success( function(data) {
+            console.log('data', data)
+            self.colorSchemeJson(data);
+            self.done();
+        }).error( function(jqXHR) {
+            colorView.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+        });
+    }, self
+    );
+
+    self.loaded = ko.computed( function() {
+        return (self.colorSchemeJson.loaded() && self.done())
+    });
+}
+
 function ColorViewModel() {
     var self = this;
 
@@ -113,6 +137,7 @@ function ColorViewModel() {
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
+  self.colorScheme = CustomColorScheme('');
 
   self.newInputError = function(message) {
     if (self.inputError() == '') {
@@ -126,35 +151,36 @@ function ColorViewModel() {
       self.submitted(false);
       self.inputError('');
 
-      var text = self.input()
+      var text = self.input();
 
       console.log('Clicked');
       self.colorScheme = CustomColorScheme(text);
 
+      console.log('colorscheme', self.colorScheme)
+      console.log('cs', CustomColorScheme(text));
+
       self.submitted(true);
   }
-}
 
-function CustomColorScheme(text) {
-    var self = this;
-    console.log('Adding new color scheme')
+  self.loaded = ko.computed(function() {
+        var returnValue = true;
 
-    self.text = ko.observable(text)
-    self.done = ko.observable(false);
+        if (typeof self.colorScheme != 'undefined') {
+            returnValue = self.colorScheme.loaded();
+            console.log('returnValue', returnValue);
+        }
+        returnValue = (returnValue && self.submitted());
 
-    self.colorSchemeJson = ko.onDemandObservable( function() {
-        ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.text()} )).success( function(data) {
-            self.colorSchemeJson(data);
-            self.done();
-        }).error( function(jqXHR) {
-            colorView.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-        });
-    }, self
-    );
+        if (returnValue && (self.inputError().length == 0)) {
+            $('#addColors').modal('hide');
+            console.log('updating colors')
+            console.log(self.colorScheme)
+            rnaView.graph.addCustomColors(self.colorScheme);
+            rnaView.graph.changeColorScheme(rnaView.colors());
+        }
 
-    self.loaded = ko.computed( function() {
-        return (self.colorSchemeJson.loaded() && self.done())
-    });
+        return (returnValue);
+  });
 }
 
 function AddViewModel() {
