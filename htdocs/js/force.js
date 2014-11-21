@@ -289,14 +289,6 @@ function Graph() {
                 return node_tooltips[d.node_type];
             };
 
-            var tip = d3.tip()
-            .attr('class', 'd3-tip')
-            .offset([-5, -5])
-            .html(function (d) {
-                return d.id;
-            });
-            svg.call(tip);
-
             var node = gnodes.append("svg:circle")
             .attr("class", "node")
             .attr("r", 6)
@@ -304,8 +296,6 @@ function Graph() {
             .style("stroke", node_stroke)
             .style('stroke-width', 0.8)
             .style("fill", node_fill)
-            .on('mouseover', tip.show) //Added
-             .on('mouseout', tip.hide); //Added 
 
             var labels = gnodes.append("text")
             .text(function(d) { return d.name; })
@@ -315,12 +305,11 @@ function Graph() {
             .attr('y', 2.5)
             .attr('fill', d3.rgb(50,50,50))
             .attr('class', 'node-label')
-            .on('mouseover', tip.show) //Added
-             .on('mouseout', tip.hide); //Added 
-            //self.changeColorScheme('structure');
+            .append("svg:title")
+            .text(function(d) { return d.id; });
 
             node.append("svg:title")
-            .text(function(d) { return d.name; });
+            .text(function(d) { return d.id; });
 
             gnodes.exit().remove();
 
