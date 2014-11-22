@@ -82,7 +82,7 @@ function RNA(sequence, structure, header) {
   );
   
   self.json = ko.onDemandObservable( function() {
-      ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {seq: self.sequence(), struct: self.structure()} )).success( function(data) {
+      ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
         self.json(data);
         self.done(true);
       }).error( function(jqXHR) {
@@ -105,16 +105,63 @@ function RNA(sequence, structure, header) {
   });
 }
 
+
+function CustomColorScheme(text) {
+    var self = this;
+    console.log('Adding new color scheme')
+
+    self.text = ko.observable(text)
+    self.done = ko.observable(false);
+
+    self.colorSchemeJson = ko.onDemandObservable( function() {
+    }, self
+    );
+
+    self.loaded = ko.computed( function() {
+        return (self.colorSchemeJson.loaded() && self.done())
+    });
+}
+
 function ColorViewModel() {
     var self = this;
 
+  self.input = ko.observable(
+      'color molecule_name 3-4,7 red')
 
-  self.colorInput = ko.observable(
-      'color 3-4,7 red')
-  self.colorInputError = ko.observable('');
+  self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
+  self.colorSchemeJson = ko.observable({});
+
+  self.newInputError = function(message) {
+    if (self.inputError() == '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+  }
 
   self.colorSubmit = function() {
+      self.submitted(false);
+      self.inputError('');
       console.log('Clicked');
+      console.log('self.input()', self.input());
+
+      var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ))
+      console.log('a', a);
+
+        a.success( function(data) {
+            console.log('data', data)
+            $('#addColors').modal('hide');
+            console.log('updating colors')
+
+            self.colorSchemeJson(data);
+            rnaView.graph.addCustomColors(self.colorSchemeJson());
+            rnaView.graph.changeColorScheme(rnaView.colors());
+        }).error( function(jqXHR) {
+            console.log('error again')
+            self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+            //$('#ColorSubmit').button('reset');
+        });
   }
 }
 
@@ -122,13 +169,14 @@ function AddViewModel() {
   var self = this;
   
   self.input = ko.observable(
-      '>test\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+      '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
   );
   
   self.newMolecules = ko.observableArray([]);
   
   self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
 
   self.newInputError = function(message) {
     if (self.inputError() == '') {
@@ -138,7 +186,6 @@ function AddViewModel() {
     }
   }
   
-  self.submitted = ko.observable(false);
   self.loaded = ko.computed(function() {
     var returnValue = true;
     self.newMolecules().forEach(function(rna) {
@@ -250,7 +297,7 @@ function RNAViewModel() {
   };
 
   self.showCustomColors = function() {
-    $('#ColorSubmit').button('reset');
+    //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
   }
   
@@ -262,6 +309,10 @@ function RNAViewModel() {
     // delete all nodes
     self.molecules([]);
     self.graph.clearNodes();
+  }
+
+  self.savePNG = function() {
+    saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 1);
   }
   
   self.saveSVG = function() {
