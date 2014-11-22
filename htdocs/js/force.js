@@ -24,7 +24,6 @@ function Graph() {
     };
 
     self.customColors = {};
-    console.log("x1:", self.customColors)
 
     self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
@@ -152,20 +151,6 @@ function Graph() {
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
 
-
-    function dragstarted(d) {
-        d3.event.sourceEvent.stopPropagation();
-        d3.select(self).classed("dragging", true);
-    };
-
-    function dragged(d) {
-
-    };
-
-    function dragended(d) {
-        d3.select(self).classed("dragging", false);
-    };
-
     zoomer = d3.behavior.zoom().
         scaleExtent([0.1,10]).
         on("zoom", redraw);
@@ -215,6 +200,77 @@ function Graph() {
     .friction(0.950)
     .size([w, h]);
 
+    // line displayed when dragging new nodes
+    var drag_line = vis.append("line")
+    .attr("class", "drag_line")
+    .attr("x1", 0)
+    .attr("y1", 0)
+    .attr("x2", 0)
+    .attr("y2", 0);
+
+    var shift_keydown = false;
+    var ctrl_keydown = false;
+
+    function dragstarted(d) {
+        d3.event.sourceEvent.stopPropagation();
+        d3.select(self).classed("dragging", true);
+    }
+
+    function dragged(d) {
+
+    }
+
+    function dragended(d) {
+        d3.select(self).classed("dragging", false);
+    }
+
+    var drag = force.drag()
+    .origin(function(d) { return d; })
+    .on("dragstart", dragstarted)
+    .on("drag", dragged)
+    .on("dragend", dragended);
+
+    function keydown() {
+        if (shift_keydown || ctrl_keydown) return;
+        console.log('keydown', d3.event.keyCode);
+        key_is_down = true;
+        switch (d3.event.keyCode) {
+            case 16:
+                shift_keydown = true;
+                break;
+            case 17:
+                ctrl_keydown = true;
+                break;
+        }
+
+        if (shift_keydown || ctrl_keydown) {
+
+            svg_graph.call(zoomer)
+            .on("mousedown.zoom", null)
+            .on("touchstart.zoom", null)
+            .on("touchmove.zoom", null)
+            .on("touchend.zoom", null);
+
+            //svg_graph.on('zoom', null);
+            vis.selectAll('g.gnode')
+            .on('mousedown.drag', null);
+        }
+    }
+
+    function keyup() {
+        console.log('keyup', d3.event.keyCode);
+        shift_keydown = ctrl_keydown = false;
+
+        svg_graph.call(zoomer);
+
+        vis.selectAll('g.gnode')
+        .call(drag);
+    }
+
+    d3.select(window)
+    .on('keydown', keydown)
+    .on('keyup', keyup);
+
     var update = function () {
         var all_links = vis.selectAll("line.link")
         .data(graph.links);
@@ -244,11 +300,6 @@ function Graph() {
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
 
-            var drag = force.drag()
-            .origin(function(d) { return d; })
-            .on("dragstart", dragstarted)
-            .on("drag", dragged)
-            .on("dragend", dragended);
 
             var gnodes = vis.selectAll('g.gnode')
             .data(graph.nodes);
