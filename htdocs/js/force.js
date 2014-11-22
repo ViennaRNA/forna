@@ -213,7 +213,7 @@ function Graph() {
 
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
-        d3.select(self).classed("dragging", true);
+        //d3.select(self).classed("dragging", true);
     }
 
     function dragged(d) {
@@ -221,7 +221,7 @@ function Graph() {
     }
 
     function dragended(d) {
-        d3.select(self).classed("dragging", false);
+        //d3.select(self).classed("dragging", false);
     }
 
     var drag = force.drag()
