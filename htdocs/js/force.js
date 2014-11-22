@@ -13,6 +13,11 @@ function Graph() {
     h = 600,
     fill = d3.scale.category20();
 
+    // mouse event vars
+    var mousedown_link = null,
+        mousedown_node = null,
+        mouseup_node = null;
+
     var xScale = d3.scale.linear()
     .domain([0,w]);
     var yScale = d3.scale.linear()
@@ -47,7 +52,7 @@ function Graph() {
         // Add a json file containing the custom colors
         self.customColors = json;
         console.log("customcolors:", self.customColors);
-    }
+    };
 
     self.clearNodes = function clearNodes() {
         graph.nodes = [];
@@ -75,7 +80,7 @@ function Graph() {
 
         svg.attr("width", svgW)
         .attr("height", svgH);
-    };
+    }
 
     self.changeColorScheme = function(newColorScheme) {
         var nodes = vis.selectAll('[node_type=nucleotide]');
@@ -148,6 +153,41 @@ function Graph() {
         }
     };
 
+    function mousedown() {
+
+    }
+
+    function mousemove() {
+        if (!mousedown_node) return;
+
+        console.log('moving', mousedown_node.x, mousedown_node.y);
+        //console.log('mousedown_node:', mousedown_node);
+        mpos = d3.mouse(vis.node());
+        // update drag line
+        drag_line
+        .attr("x1", mousedown_node.x)
+        .attr("y1", mousedown_node.y)
+        .attr("x2", mpos[0])
+        .attr("y2", mpos[1]);
+
+        console.log('mousemove drag_line', drag_line)
+    }
+
+    function mouseup() {
+        console.log('mouseup')
+        if (mousedown_node) {
+            // hide drag line
+            drag_line
+            //.attr("class", "drag_line_hidden");
+            .attr("class", "drag_line");
+
+            //update();
+        }
+
+        console.log('clearing mouse vars')
+        // clear mouse event vars
+        resetMouseVars();
+    }
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
 
@@ -164,7 +204,10 @@ function Graph() {
     .attr("id", 'plotting-area');
 
     var svg_graph = svg.append('svg:g')
-    .call(zoomer);
+    .call(zoomer)
+    .on('mousemove', mousemove)
+    .on('mousedown', mousedown)
+    .on('mouseup', mouseup);
 
     var rect = svg_graph.append('svg:rect')
     .attr('width', w)
@@ -176,7 +219,7 @@ function Graph() {
     .attr("id", "zrect");
 
 
-    var vis = svg_graph.append("svg:g");
+    var vis = svg_graph.append("svg:g")
 
     function redraw() {
         vis.attr("transform",
@@ -207,6 +250,13 @@ function Graph() {
     .attr("y1", 0)
     .attr("x2", 0)
     .attr("y2", 0);
+
+    function resetMouseVars() {
+        mousedown_node = null;
+        mouseup_node = null;
+        mousedown_link = null;
+    }
+
 
     var shift_keydown = false;
     var ctrl_keydown = false;
@@ -300,14 +350,50 @@ function Graph() {
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
 
+            node_mouseup = function(d) {
+                if (mousedown_node) {
+                    mouseup_node = d;
+
+                    /*
+
+                    if (mouseup_node == mousedown_node) { resetMouseVars(); return; }
+                    var link = {source: mousedown_node, target: mouseup_node};
+                    graph.links.push(link);
+                    */
+
+                    //update();
+                }
+            };
+
+            node_mousedown = function(d) {
+                if (!shift_keydown) {
+                    return;
+                }
+                mousedown_node = d;
+
+                /*
+                drag_line
+                .attr("class", "link")
+                .attr("x1", mousedown_node.x)
+                .attr("y1", mousedown_node.y)
+                .attr("x2", mousedown_node.x)
+                .attr("y2", mousedown_node.y);
+
+                console.log('mousedown dragline:', drag_line)
+
+                update();
+                */
+            };
 
             var gnodes = vis.selectAll('g.gnode')
             .data(graph.nodes);
-
             gnodes.enter()
             .append('g')
             .classed('gnode', true)
-            .call(drag);
+            .call(drag)
+            .on('mousedown', node_mousedown)
+            .on('mousedrag', function(d) {})
+            .on('mouseup', node_mouseup);
 
 
             node_fill = function(d) {
@@ -382,8 +468,8 @@ function Graph() {
                 });
             });
 
-        force.nodes(graph.nodes)
-        .links(graph.links)
+            force.nodes(graph.nodes)
+            .links(graph.links)
         .start();
     };
 
