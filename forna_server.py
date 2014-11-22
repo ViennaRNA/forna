@@ -96,7 +96,11 @@ def create_app(static):
         if 'text' not in request.json:
             abort(400, "Request has no text field.")
 
-        color_json = forna.parse_colors_text(request.json['text'])
+        try:
+            color_json = forna.parse_colors_text(request.json['text'])
+        except Exception as ex:
+            abort(400, "Custom color error: {}".format(str(ex)))
+
         return json.dumps(color_json)
     
     
