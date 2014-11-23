@@ -181,7 +181,7 @@ function Graph() {
         console.log('clearing mouse vars');
         // clear mouse event vars
         resetMouseVars();
-        update()
+        //update()
     }
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
