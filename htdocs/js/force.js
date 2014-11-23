@@ -83,7 +83,7 @@ function Graph() {
     }
 
     self.changeColorScheme = function(newColorScheme) {
-        var nodes = vis.selectAll('[node_type=nucleotide]');
+        var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
         data = nodes.data();
 
 
@@ -129,12 +129,12 @@ function Graph() {
                     return 'white';
                 } else if (self.customColors.hasOwnProperty(d.struct_name)) {
                     //is the molecule name in the custom colors object
-                    molecule_colors = self.customColors[d.struct_name]
+                    molecule_colors = self.customColors[d.struct_name];
 
                     console.log('d.id', d.id);
 
                     if (molecule_colors.hasOwnProperty(d.id)) {
-                        val = parseFloat(molecule_colors[d.id])
+                        val = parseFloat(molecule_colors[d.id]);
 
                         if (isNaN(val)) {
                             // passed in color is not a scalar, so 
@@ -143,7 +143,7 @@ function Graph() {
                         } else {
                             // the user passed in a float, let's use a colormap
                             // to convert it to a color
-                            return scale(val)
+                            return scale(val);
                         }
                     }
                 }
@@ -160,7 +160,6 @@ function Graph() {
     function mousemove() {
         if (!mousedown_node) return;
 
-        console.log('moving', mousedown_node.x, mousedown_node.y);
         //console.log('mousedown_node:', mousedown_node);
         mpos = d3.mouse(vis.node());
         // update drag line
@@ -170,23 +169,19 @@ function Graph() {
         .attr("x2", mpos[0])
         .attr("y2", mpos[1]);
 
-        console.log('mousemove drag_line', drag_line)
     }
 
     function mouseup() {
-        console.log('mouseup')
+        console.log('mouseup');
         if (mousedown_node) {
-            // hide drag line
             drag_line
-            //.attr("class", "drag_line_hidden");
-            .attr("class", "drag_line");
-
-            //update();
+            .attr("class", "drag_line_hidden");
         }
 
-        console.log('clearing mouse vars')
+        console.log('clearing mouse vars');
         // clear mouse event vars
         resetMouseVars();
+        update()
     }
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
@@ -215,11 +210,12 @@ function Graph() {
     .attr('fill', 'white')
     .attr('stroke', 'transparent')
     .attr('stroke-width', 1)
-    .attr("pointer-events", "all")
+    //.attr("pointer-events", "all")
     .attr("id", "zrect");
 
-
-    var vis = svg_graph.append("svg:g")
+    var vis = svg_graph.append("svg:g");
+    var vis_links = vis.append("svg:g");
+    var vis_nodes = vis.append("svg:g");
 
     function redraw() {
         vis.attr("transform",
@@ -240,7 +236,7 @@ function Graph() {
     .nodes(graph.nodes)
     .links(graph.links)
     .chargeDistance(110)
-    .friction(0.950)
+    .friction(0.95)
     .size([w, h]);
 
     // line displayed when dragging new nodes
@@ -259,7 +255,6 @@ function Graph() {
 
 
     var shift_keydown = false;
-    var ctrl_keydown = false;
 
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
@@ -281,20 +276,16 @@ function Graph() {
     .on("dragend", dragended);
 
     function keydown() {
-        if (shift_keydown || ctrl_keydown) return;
-        console.log('keydown', d3.event.keyCode);
+        if (shift_keydown) return;
+        //console.log('keydown', d3.event.keyCode);
         key_is_down = true;
         switch (d3.event.keyCode) {
             case 16:
                 shift_keydown = true;
                 break;
-            case 17:
-                ctrl_keydown = true;
-                break;
         }
 
-        if (shift_keydown || ctrl_keydown) {
-
+        if (shift_keydown) {
             svg_graph.call(zoomer)
             .on("mousedown.zoom", null)
             .on("touchstart.zoom", null)
@@ -308,8 +299,7 @@ function Graph() {
     }
 
     function keyup() {
-        console.log('keyup', d3.event.keyCode);
-        shift_keydown = ctrl_keydown = false;
+        shift_keydown = false;
 
         svg_graph.call(zoomer);
 
@@ -321,31 +311,56 @@ function Graph() {
     .on('keydown', keydown)
     .on('keyup', keyup);
 
+    link_key = function(d) {
+        key = d.link_type + "," + d.source.index + "," + d.target.index;
+        return key;
+    };
     var update = function () {
-        var all_links = vis.selectAll("line.link")
-        .data(graph.links);
+        force.nodes(graph.nodes)
+        .links(graph.links)
+        .start();
 
-        all_links.enter().append("svg:line")
-        .attr("class", "link")
+        console.log('prev_graph.links')
+        var all_links = vis_links.selectAll("line.link")
+        .data(graph.links, link_key);
+
+        link_lines = all_links.enter().append("svg:line");
+
+        link_lines.append("svg:title")
+        .text(link_key);
+
+        link_lines.attr("class", "link")
         .style("stroke", "#999")
         .style("stroke-opacity", 0.8)
         .style("stroke-width", function(d) { 
             return 2;
-            return Math.sqrt(d.value); 
+            //return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; })
-        .attr("link_type", function(d) { return d.link_type; } );
+        .attr("link_type", function(d) { return d.link_type; } )
+        .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
+            console.log(vis_links.selectAll("line.link"))
             all_links.exit().remove();
 
+            console.log(vis_links.selectAll("line.link"))
+            console.log('nodes')
+            console.log(graph.nodes);
+            console.log(force.nodes());
+
             /* We don't need to update the positions of the stabilizing links */
-            link = vis.selectAll("[link_type=real],[link_type=pseudoknot]");
+            fake_links = vis_links.selectAll("[link_type=fake]")
+            fake_links.style('stroke-width', 0);
+            console.log('fake_links', fake_links)
+
+            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot]");
             //link = all_links;
-            console.log("link:", link);
+            console.log('graph_link:', graph.links);
+            console.log("link:", xlink);
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
@@ -354,14 +369,13 @@ function Graph() {
                 if (mousedown_node) {
                     mouseup_node = d;
 
-                    /*
-
                     if (mouseup_node == mousedown_node) { resetMouseVars(); return; }
-                    var link = {source: mousedown_node, target: mouseup_node};
-                    graph.links.push(link);
-                    */
+                    var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'real', value: 1};
+                    graph.links.push(new_link);
 
-                    //update();
+                    //throw new Error("Something went badly wrong!");
+
+                    update();
                 }
             };
 
@@ -371,30 +385,57 @@ function Graph() {
                 }
                 mousedown_node = d;
 
-                /*
                 drag_line
-                .attr("class", "link")
+                .attr("class", "drag_line")
                 .attr("x1", mousedown_node.x)
                 .attr("y1", mousedown_node.y)
                 .attr("x2", mousedown_node.x)
                 .attr("y2", mousedown_node.y);
 
+                //gnodes.attr('pointer-events',  'none');
+
+                /*
                 console.log('mousedown dragline:', drag_line)
 
                 update();
                 */
             };
 
-            var gnodes = vis.selectAll('g.gnode')
-            .data(graph.nodes);
-            gnodes.enter()
+            link_click = function(d) {
+                console.log('link click', d)
+                if (!shift_keydown) {
+                    return;
+                }
+
+                index = graph.links.indexOf(d);
+                console.log('index', index)
+
+                if (index > -1) {
+                    graph.links.splice(index, 1);
+                }
+
+                update();
+
+            }
+
+            var gnodes = vis_nodes.selectAll('g.gnode')
+            .data(graph.nodes)
+            //.attr('pointer-events', 'all');
+
+            gnodes_enter = gnodes.enter()
             .append('g')
+            .classed('noselect', true)
             .classed('gnode', true)
+
+            gnodes_enter
             .call(drag)
             .on('mousedown', node_mousedown)
             .on('mousedrag', function(d) {})
-            .on('mouseup', node_mouseup);
-
+            .on('mouseup', node_mouseup)
+            .transition()
+            .duration(750)
+            .ease("elastic")
+            .attr("r", 6.5);
 
             node_fill = function(d) {
                 node_fills = {};
@@ -426,15 +467,18 @@ function Graph() {
                 return node_tooltips[d.node_type];
             };
 
-            var node = gnodes.append("svg:circle")
+
+            xlink.on('click', link_click);
+
+            var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", 6)
+            .attr("r", function(d) {if (d.node_type == 'pseudo') return 1; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', 0.8)
-            .style("fill", node_fill)
+            .style("fill", node_fill);
 
-            var labels = gnodes.append("text")
+            var labels = gnodes_enter.append("text")
             .text(function(d) { return d.name; })
             .attr('text-anchor', 'middle')
             .attr('font-size', 8.0)
@@ -450,14 +494,8 @@ function Graph() {
 
             gnodes.exit().remove();
 
-            vis.style("opacity", 1e-6)
-            .transition()
-            .duration(1000)
-            .style("opacity", 1);
-
-
             force.on("tick", function() {
-                link.attr("x1", function(d) { return d.source.x; })
+                xlink.attr("x1", function(d) { return d.source.x; })
                 .attr("y1", function(d) {  return d.source.y; })
                 .attr("x2", function(d) { return d.target.x; })
                 .attr("y2", function(d) { return d.target.y; });
@@ -468,8 +506,7 @@ function Graph() {
                 });
             });
 
-            force.nodes(graph.nodes)
-            .links(graph.links)
+        force
         .start();
     };
 
