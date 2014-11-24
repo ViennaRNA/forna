@@ -53,3 +53,45 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
         struct = forna.fasta_to_json(pk_fasta)
         fud.pv('struct')
 
+    def test_parse_colors(self):
+        pk_fasta = '>hi\nAAAAAAAAAAAAAAAA\n((..[[[..))..]]]'
+
+        bg = fgb.BulgeGraph()
+        bg.from_fasta(pk_fasta)
+
+        colors_text = """
+color hi 4 orange
+color hi 5 orange
+color bye 6-9 blue
+highlight hi 7-8 brown
+"""
+        colors = forna.parse_colors_text(colors_text)
+        fud.pv('colors')
+
+        self.assertEqual(len(colors), 6)
+        self.assertEqual(colors[0]['name'], 'hi')
+        self.assertEqual(colors[1]['name'], 'hi')
+        self.assertEqual(colors[2]['name'], 'bye')
+        self.assertEqual(colors[2]['nucleotide'], 6)
+        self.assertEqual(colors[2]['color'], 'blue')
+
+    def test_parse_ranges(self):
+        nucs = forna.parse_ranges('1,7')
+        self.assertEqual(nucs, [1,7])
+
+        nucs = forna.parse_ranges('1-3')
+        self.assertEqual(nucs, [1,2,3])
+
+        nucs = forna.parse_ranges('1-3,7')
+        self.assertEqual(nucs, [1,2,3,7])
+
+        nucs = forna.parse_ranges('1-3,1-4')
+        self.assertEqual(nucs, [1,2,3,4])
+
+        self.assertRaises(Exception, lambda: forna.parse_ranges('a'))
+        self.assertRaises(Exception, lambda: forna.parse_ranges('a-b'))
+        self.assertRaises(Exception, lambda: forna.parse_ranges('1-b'))
+
+        nucs = forna.parse_ranges('6-9')
+        self.assertEqual(nucs, [6,7,8,9])
+

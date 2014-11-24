@@ -32,6 +32,18 @@ not enter a structure, it will calculate the MFE structure at 37°C for you.
 **Zooming** can be accomplished using the mouse wheel.
 Dragging the canvas leads to **panning**.
 
+##### Circular RNA #####
+
+Circular RNA molecules can be specified by adding an asterisk(*) to the end
+of the structure. This simply adds a link between the first and last nucleotides.
+Example:
+
+```
+>x
+ACCCAAACAAAAAAAAAAAAAA
+...((...))..((..))...*
+```
+
 ##### Colors #####
 
 ###### Position ######

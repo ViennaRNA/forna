@@ -8,10 +8,41 @@ line.link {
   stroke-opacity: .6;
 }
 
+.drag_line {
+  stroke: #999;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.drag_line_hidden {
+  stroke: #999;
+  stroke-width: 0;
+  pointer-events: none;
+}
+
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border-radius: 4px;
+    pointer-events: none;
+          }
+
 text.node-label {
     font-weight: bold;
     font-family: Tahoma, Geneva, sans-serif;
     color: rgb(100,100,100);
+    pointer-events: none;
+}
+
+text {
+    pointer-events: none;
+}
+
+g.gnode {
+
 }
 
 svg { 
@@ -29,3 +60,11 @@ svg {
     stroke: grey;
 }
 
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+                    }

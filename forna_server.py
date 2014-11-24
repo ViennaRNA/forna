@@ -20,6 +20,8 @@ import os
 import RNA
 from optparse import OptionParser
 
+import forgi.utilities.debug as fud
+
 def create_app(static):
     '''
     Create the forna application given the options that were passed.
@@ -39,6 +41,8 @@ def create_app(static):
         #print >>sys.stderr, "dir(request)", dir(request)
         if not request.json:
            abort(400, "Missing a json in the request")
+
+        fud.pv('request.json')
         
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
@@ -57,7 +61,7 @@ def create_app(static):
             circular = False
             structure = request.json['struct']
 
-        fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
+        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
                                                structure)
 
         print >>sys.stderr, "hcirc:", circular
@@ -83,6 +87,21 @@ def create_app(static):
 
         result = RNA.fold(str(request.json['seq']))[0]
         return json.dumps(result), 201
+
+    @app.route('/colors_to_json', methods=['POST'])
+    def colors_to_json():
+        if not request.json:
+            abort(400, "Request has no json.")
+
+        if 'text' not in request.json:
+            abort(400, "Request has no text field.")
+
+        try:
+            color_json = forna.parse_colors_text(request.json['text'])
+        except Exception as ex:
+            abort(400, "Custom color error: {}".format(str(ex)))
+
+        return json.dumps(color_json)
     
     
     if static:
