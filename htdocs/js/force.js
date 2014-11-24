@@ -157,14 +157,20 @@ function Graph() {
     }
 
     var force = d3.layout.force()
-    .charge(-80)
+    .charge(function(d) { if (d.node_type == 'pseudo') 
+            return -200; 
+        else 
+            return -40;})
     .linkDistance(function(d) { return 15 * d.value; })
-    .linkStrength(function(d) { return 8; })
+    .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
+                  { return 0.001; }
+            else
+                { return 8; } })
     .gravity(0.002)
     .nodes(graph.nodes)
     .links(graph.links)
     .chargeDistance(100)
-    .friction(0.970)
+    .friction(0.950)
     .size([w, h]);
 
     var update = function () {
@@ -189,7 +195,8 @@ function Graph() {
             all_links.exit().remove();
 
             /* We don't need to update the positions of the stabilizing links */
-            link = vis.selectAll("[link_type=real]");
+            link = vis.selectAll("[link_type=real],[link_type=pseudoknot]");
+            //link = all_links;
             console.log("link:", link);
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
