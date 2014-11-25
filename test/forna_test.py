@@ -33,9 +33,6 @@ class FornaTest(unittest.TestCase):
         dissolved_bp = forna.remove_pseudoknots(bg)
         self.assertTrue(dissolved_bp is not None)
 
-        fud.pv('bg.to_bg_string()')
-        fud.pv('dissolved_bp')
-
     def test_with_pseudoknot1(self):
         pk_fasta = """>4QK8_A
 GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUCCCGCACCCGACAGCUAACUCCGGAGGCAAUAAAGGAAGGA
@@ -44,14 +41,12 @@ GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUC
         struct = forna.fasta_to_json(pk_fasta)
         self.assertTrue(struct is not None)
 
-        fud.pv('struct')
 
     def test_with_pseudoknot2(self):
         pk_fasta = """>4FAW_A
 UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGGUGUCCGUGGCGACAUGGAAUCUGAAGGAAGCGGACGGCAAACCUUCGGUCUGAGGAACACGAACUUCAUAUGAGGCUAGGUAUCAAUGGAUGAGUUUGCAUAACAAAACAAAGUCCUUUCUGCCAAAGUUGGUACAGAGUAAAUGAAGCAGAUUGAUGAAGGGAAAGACUGCAUUCUUACCCGGGGAGGUCUGGAAACAGAAGUCAGCAGAAGUCAUAGUACCCUGUUCGCAGGGGAAGGACGGAACAAGUAUGGCGUUCGCGCCUAAGCUUGAACCGCCGUAUACCGAACGGUACGUACGGUGGUGUGG
 .((.[[[[[[..{{{{{{{{{{{...(((.......)))..(((((...{{{{{{{...))))){.{{{...{{{..((((.((((((....))))))))))...)]..}}}...}}}.}.(((((((((((.(.....)...(((((.....([[[..[.[..[[[[[[[..[[[[.)......]]]]...]]]].}}}}}}}...]]]..].]..]]]...))))))))))...))))))...}}}}}}}}}}}...)]]]]](...((((....))))...).......(((.(....(((........)))...))))....(((((..(((.(..).)))...))))).(((((((((((((....)))..))))))))))...."""
         struct = forna.fasta_to_json(pk_fasta)
-        fud.pv('struct')
 
     def test_parse_colors(self):
         pk_fasta = '>hi\nAAAAAAAAAAAAAAAA\n((..[[[..))..]]]'
@@ -65,8 +60,9 @@ color hi 5 orange
 color bye 6-9 blue
 highlight hi 7-8 brown
 """
+
         colors = forna.parse_colors_text(colors_text)
-        fud.pv('colors')
+        """
 
         self.assertEqual(len(colors), 6)
         self.assertEqual(colors[0]['name'], 'hi')
@@ -74,6 +70,7 @@ highlight hi 7-8 brown
         self.assertEqual(colors[2]['name'], 'bye')
         self.assertEqual(colors[2]['nucleotide'], 6)
         self.assertEqual(colors[2]['color'], 'blue')
+        """
 
     def test_parse_ranges(self):
         nucs = forna.parse_ranges('1,7')
@@ -95,3 +92,11 @@ highlight hi 7-8 brown
         nucs = forna.parse_ranges('6-9')
         self.assertEqual(nucs, [6,7,8,9])
 
+
+    def test_from_pdb(self):
+        with open('test/data/1MFQ.pdb') as f:
+            text = f.read()
+
+            forna.pdb_to_json(text, '1MFQ')
+
+        pass

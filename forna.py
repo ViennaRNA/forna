@@ -10,8 +10,11 @@ __maintainer__ = "Peter Kerpedjiev"
 __email__ = "pkerp@tbi.univie.ac.at"
 
 import forgi.graph.bulge_graph as fgb
+import forgi.threedee.utilities.pdb as ftup
+import forgi.threedee.model.coarse_grain as ftmc
 import forgi.utilities.debug as fud
 
+import Bio.PDB as bpdb
 import collections as col
 import itertools as it
 import json
@@ -19,6 +22,8 @@ import math
 import numpy as np
 import os.path as op
 import RNA
+import tempfile
+import forgi.utilities.stuff as fus
 
 import sys
 from optparse import OptionParser
@@ -105,7 +110,6 @@ def bg_to_json(bg, circular=False):
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i + 1,
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
                 "node_type": "nucleotide", 'struct_name': bg.name}
-        fud.pv('bg.name')
 
         # node = {"group": 1, "name": i+1, "id": i+1}
         struct["nodes"] += [node]
@@ -470,6 +474,59 @@ def main():
 
     print json.dumps(struct, sort_keys=True, indent=4, separators=(',', ': '))
 
+
+def pdb_to_json(text, name):
+    '''
+    Create a graph-layout displaying a pdb file which
+    presumably contains some RNA
+
+    The text is the contents of the pdb file.
+    '''
+    with fus.make_temp_directory() as output_dir:
+        fname = op.join(output_dir, 'temp.pdb')
+
+        with open(fname, 'w') as f:
+            # dump the pdb text to a temporary file
+            f.write(text)
+            f.flush
+
+            struct = bpdb.PDBParser().get_structure('temp', fname)
+            chains = struct.get_chains()
+
+        jsons = []
+        cgs = dict()
+
+        proteins = set()
+        rnas = set()
+
+        for chain in chains:
+            # create a graph json for each structure in the pdb file
+            if ftup.is_protein(chain):
+                proteins.add(chain.id)
+                # process protein
+                jsons += [{"nodes":[{"group":2, "name": "{}_{}".format(name, chain.id)}], 
+                           "links":[]}]
+                pass
+            else:
+                rnas.add(chain.id)
+                # process RNA molecules (hopefully)
+                cg = ftmc.from_pdb(fname, chain.id)
+                jsons += [bg_to_json(cg)]
+
+        links = []
+        for (a1, a2) in ftup.interchain_contacts(struct):
+            chain1 = a1.parent.parent.id
+            chain2 = a2.parent.parent.id
+
+            if ((chain1 in proteins and chain2 in rnas) or
+               (chain2 in proteins and chain1 in rnas)):
+
+                links += [{"struct1": "{}_{}".format(name, chain1),
+                           "id1": a1.parent.id[1],
+                           "struct2": "{}_{}".format(name, chain2),
+                           "id2": a2.parent.id[1]}]
+
+        fud.pv('links')
 
 if __name__ == '__main__':
     main()
