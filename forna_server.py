@@ -111,7 +111,6 @@ def create_app(static):
 
         try:
             result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
-            print "result:", json.dumps(result)
         except Exception as ex:
             abort(400, "PDB file parsing error: {}".format(str(ex)))
 

@@ -132,7 +132,7 @@ def bg_to_json(bg, circular=False):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i + 1), "id": node_id,
-                                 "color": 'transparent', 'node_type': 'label'}]
+                                 "color": 'transparent', 'node_type': 'label', "struct_name": bg.name}]
             struct["links"] += [{"source": i, "target": node_id, "value": 1, "link_type": "real"}]
 
     # store the node id of the center id for each loop
@@ -156,7 +156,7 @@ def bg_to_json(bg, circular=False):
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id,
                              "x": x_pos, "y": y_pos, "px": x_pos, "py": y_pos,
-                             "color": colors['x'], 'node_type': 'pseudo'}]
+                             "color": colors['x'], 'node_type': 'pseudo', 'struct_name': bg.name}]
 
         # some geometric calculations for deciding how long to make
         # the links between alternating nodes
@@ -483,7 +483,7 @@ def pdb_to_json(text, name):
     The text is the contents of the pdb file.
     '''
     with fus.make_temp_directory() as output_dir:
-        fname = op.join(output_dir, 'temp.pdb')
+        fname = op.join(output_dir, '{}.pdb'.format(name))
 
         with open(fname, 'w') as f:
             # dump the pdb text to a temporary file
@@ -498,6 +498,8 @@ def pdb_to_json(text, name):
         proteins = set()
         rnas = set()
 
+        cgs = dict()
+
         for chain in chains:
             # create a graph json for each structure in the pdb file
             if ftup.is_protein(chain):
@@ -506,28 +508,65 @@ def pdb_to_json(text, name):
                 jsons += [{"nodes":[{"group":2, 
                                      "struct_name": "{}_{}".format(name, chain.id),
                                      "id": 1,
-                                     "name": "protein"}],
+                                     "name": "protein",
+                                     "node_type":"protein"}],
                            "links":[]}]
                 pass
             else:
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
                 cg = ftmc.from_pdb(fname, chain.id)
+                cgs[chain.id] = cg
                 jsons += [bg_to_json(cg)]
+
+        # create a lookup table to find out the index of each node in the 
+        # what will eventually become the large list of nodes
+        counter = 0
+        node_ids = dict()
+        for j in jsons:
+            for n in j['nodes']:
+                fud.pv('n')
+                node_ids["{}_{}".format(n['struct_name'], n['id'])] = counter
+                counter += 1
 
         links = []
         for (a1, a2) in ftup.interchain_contacts(struct):
             chain1 = a1.parent.parent.id
             chain2 = a2.parent.parent.id
 
-            if ((chain1 in proteins and chain2 in rnas) or
-               (chain2 in proteins and chain1 in rnas)):
+            # the source and target values below need to be reduced by the length of the
+            # nodes array because when the jsons are added to the graph, the link
+            # source and target are incremented so as to correspond to the new indeces
+            # of the nodes
+            # so a link to a node at position 10, if there are 50 nodes, will have to have
+            # a source value of -40
+            if (chain1 in proteins and chain2 in rnas):
+                # get the index of this nucleotide in the secondary structure
+                sid = cgs[chain2].seq_ids.index(a2.parent.id)
 
-                links += [{"struct1": "{}_{}".format(name, chain1),
-                           "id1": a1.parent.id[1],
-                           "struct2": "{}_{}".format(name, chain2),
-                           "id2": a2.parent.id[1]}]
+                """
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain2, sid+1)] - len(node_ids.keys()) - 1,
+                           "target": node_ids["{}_{}_{}".format(name, chain1, 1)] - len(node_ids.keys()) - 1,
+                           "link_type": "protein_chain",
+                           "value": 3}]
+                """
+            elif (chain2 in proteins and chain1 in rnas):
+                # get the index of this nucleotide in the secondary structure
+                sid = cgs[chain1].seq_ids.index(a1.parent.id)
 
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid+1)] - len(node_ids.keys()) - 1,
+                           "target": node_ids["{}_{}_{}".format(name, chain2, 1)] - len(node_ids.keys()) - 1,
+                           "link_type": "protein_chain",
+                           "value": 3}]
+
+        fud.pv('links')
+        #jsons += [{'nodes': [], "links": links}]
+        fud.pv('counter')
+        jsons += [{"nodes": [], "links": links}]
+        """
+        jsons += [{'nodes': [], "links": [{"source": -40, "target":  -1, "value": 3, "link_type":"protein_chain"},
+                                          {"source": -153, "target": -1, "value": 3, "link_type":"protein_chain"}]}]
+        """
         return {"jsons": jsons, "extra_links": links}
 
 if __name__ == '__main__':

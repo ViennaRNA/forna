@@ -237,9 +237,13 @@ function AddPDBViewModel() {
                         console.log('data uploaded')
                         console.log(data)
                         data = JSON.parse(data)
+
+                        // each chain has its own json containing d3 graph representations
                         for (i = 0; i < data['jsons'].length ; i++) {
                             rnaView.graph.addNodes(data.jsons[i]);
                         }
+
+                        // the extra links contain supplementary information
                         rnaView.graph.changeColorScheme(rnaView.colors())
                    },
                    error: function (jqXHR) {
