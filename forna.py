@@ -494,7 +494,6 @@ def pdb_to_json(text, name):
             chains = struct.get_chains()
 
         jsons = []
-        cgs = dict()
 
         proteins = set()
         rnas = set()
@@ -504,7 +503,10 @@ def pdb_to_json(text, name):
             if ftup.is_protein(chain):
                 proteins.add(chain.id)
                 # process protein
-                jsons += [{"nodes":[{"group":2, "name": "{}_{}".format(name, chain.id)}], 
+                jsons += [{"nodes":[{"group":2, 
+                                     "struct_name": "{}_{}".format(name, chain.id),
+                                     "id": 1,
+                                     "name": "protein"}],
                            "links":[]}]
                 pass
             else:
@@ -526,7 +528,7 @@ def pdb_to_json(text, name):
                            "struct2": "{}_{}".format(name, chain2),
                            "id2": a2.parent.id[1]}]
 
-        fud.pv('links')
+        return {"jsons": jsons, "extra_links": links}
 
 if __name__ == '__main__':
     main()
