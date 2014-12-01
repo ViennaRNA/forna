@@ -146,7 +146,7 @@ function ColorViewModel() {
     var self = this;
 
   self.input = ko.observable(
-      'color molecule_name 3-4,7 red')
+      '3-4,7 red\n8 0.56\n9 0.66\n10 0.76 \n')
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);

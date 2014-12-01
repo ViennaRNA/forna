@@ -156,26 +156,36 @@ function Graph() {
             .interpolate(d3.interpolateLab)
             .domain([0, 1]);
 
+            function change_colors(molecule_colors, d) {
+                if (molecule_colors.hasOwnProperty(d.id)) {
+                    val = parseFloat(molecule_colors[d.id]);
+                    console.log('val', val)
+
+                    if (isNaN(val)) {
+                        // passed in color is not a scalar, so 
+                        // treat it as a color
+                        return molecule_colors[d.id];
+                    } else {
+                        // the user passed in a float, let's use a colormap
+                        // to convert it to a color
+                        return scale(val);
+                    }
+                }
+            }
+
+            console.log(self.customColors);
+
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
                     return 'white';
                 } else if (self.customColors.hasOwnProperty(d.struct_name)) {
                     //is the molecule name in the custom colors object
                     molecule_colors = self.customColors[d.struct_name];
-
-                    if (molecule_colors.hasOwnProperty(d.id)) {
-                        val = parseFloat(molecule_colors[d.id]);
-
-                        if (isNaN(val)) {
-                            // passed in color is not a scalar, so 
-                            // treat it as a color
-                            return molecule_colors[d.id];
-                        } else {
-                            // the user passed in a float, let's use a colormap
-                            // to convert it to a color
-                            return scale(val);
-                        }
-                    }
+                    change_colors(molecule_colors, d)
+                } else if (self.customColors.hasOwnProperty('')) {
+                    console.log('here')
+                    molecule_colors = self.customColors[''];
+                    change_colors(molecule_colors, d)
                 }
 
                 return 'white';

@@ -379,27 +379,34 @@ def parse_colors_text(colors_text):
 
     for i,line in enumerate(colors_text.split('\n')):
         parts = line.split()
+        fud.pv('parts')
 
         if len(parts) == 0:
             # we'll let empty lines slide
             continue
         
-        if len(parts) != 4:
+        if len(parts) > 3:
             raise Exception('Too many parts in line {}'.format(i+1))
 
-        if parts[0] == 'color':
-            try: 
-                nucleotides = parse_ranges(parts[2])
-            except Exception as ex:
-                raise Exception("Improperly formatted range on line {}: {}".format(i+1, str(ex)))
+        try: 
+            nucleotides = parse_ranges(parts[0])
+        except Exception as ex:
+            raise Exception("Improperly formatted range on line {}: {}".format(i+1, str(ex)))
 
-            color = parts[3]
+        color = parts[1]
 
-            for nucleotide in nucleotides:
-                #color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
-                colors[parts[1]][nucleotide] = color
-                #colors += [color_entry]
+        for nucleotide in nucleotides:
+            #color_entry = {"name":parts[1], "nucleotide":nucleotide, "color":color}
+            if len(parts) == 3:
+                colors[parts[2]][nucleotide] = color
+            else:
+                colors[''][nucleotide] = color
 
+            fud.pv('nucleotide')
+
+            #colors += [color_entry]
+
+    fud.pv('colors')
     return colors
 
 def add_colors_to_graph(struct, colors):
