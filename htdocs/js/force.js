@@ -29,6 +29,7 @@ function Graph() {
     };
 
     self.customColors = {};
+    self.extraLinks = {}
 
     self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
@@ -44,6 +45,12 @@ function Graph() {
 
         graph.nodes = graph.nodes.concat(json.nodes);
         graph.links = graph.links.concat(json.links);
+
+        console.log('graph.nodes', graph.nodes)
+        console.log('graph.links', graph.links)
+
+        console.log('graph.nodes.length', graph.nodes.length)
+        console.log('graph.links.length', graph.links.length)
 
         update();
     };
@@ -230,6 +237,8 @@ function Graph() {
     .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
                   { return 0.0; }
+            else if (d.link_type == 'protein_chain')
+                { return 0.02; }
             else
                 { return 8; } })
     .gravity(0.002)
@@ -357,7 +366,7 @@ function Graph() {
             fake_links.style('stroke-width', 0);
             console.log('fake_links', fake_links)
 
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot]");
+            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain]");
             //link = all_links;
             console.log('graph_link:', graph.links);
             console.log("link:", xlink);

@@ -165,6 +165,116 @@ function ColorViewModel() {
   }
 }
 
+function AddPDBViewModel() {
+    var self = this;
+
+  self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
+  self.colorSchemeJson = ko.observable({});
+  self.inputFile = ko.observable(null);
+
+  self.newInputError = function(message) {
+    if (self.inputError() == '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+  }
+
+  self.uploadPDB = function (file) {
+      self.inputFile(file);
+      console.log(file);
+  }
+
+  function progressHandlingFunction(e){
+      if(e.lengthComputable){
+          $('progress').attr({value:e.loaded,max:e.total});
+      }
+  }
+
+  self.submit = function() {
+      self.submitted(false);
+      self.inputError('');
+      console.log('Clicked');
+      //console.log('self.input()', self.inputFile());
+
+      if (self.inputFile() == null) {
+        self.inputError("ERROR Please select a PDB file") ;
+        return;
+      }
+
+      if (!self.inputFile().type == 'chemical/x-pdb') {
+        self.inputError("ERROR: Invalid file type, please upload a PDB file");
+        return;
+      }
+
+      if (self.inputFile().size > 20000000) {
+        self.inputError("ERROR: Selected file is too large");
+        return;
+      }
+
+      var formData = new FormData();
+      var xhr = new XMLHttpRequest();
+
+
+      formData.append('pdb_file', self.inputFile(), self.inputFile().name);
+      console.log("formData", formData)
+
+      $.ajax({type: "POST",
+                   url: serverURL + '/pdb_to_graph',
+                   /*
+                   xhr: function() {  // Custom XMLHttpRequest
+                       var myXhr = $.ajaxSettings.xhr();
+                       if(myXhr.upload){ // Check if upload property exists
+                           myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
+                       }
+                       return myXhr;
+                   },
+                   */
+                   data: formData,
+                   success: function (data) {
+                        $('#addPDB').modal('hide');
+                        console.log('data uploaded')
+                        console.log(data)
+                        data = JSON.parse(data)
+
+                        // each chain has its own json containing d3 graph representations
+                        for (i = 0; i < data['jsons'].length ; i++) {
+                            rnaView.graph.addNodes(data.jsons[i]);
+                        }
+
+                        // the extra links contain supplementary information
+                        rnaView.graph.changeColorScheme(rnaView.colors())
+                   },
+                   error: function (jqXHR) {
+                        self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+                   },
+                   cache: false,
+                   contentType: false,
+                   processData: false
+      });
+
+      /*
+      var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ))
+      console.log('a', a);
+
+        a.success( function(data) {
+            console.log('data', data)
+            $('#addColors').modal('hide');
+            console.log('updating colors')
+
+            self.colorSchemeJson(data);
+            rnaView.graph.addCustomColors(self.colorSchemeJson());
+            rnaView.graph.changeColorScheme(rnaView.colors());
+        }).error( function(jqXHR) {
+            console.log('error again')
+            self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+            //$('#ColorSubmit').button('reset');
+        });
+    */
+  }
+}
+
 function AddViewModel() {
   var self = this;
   
@@ -296,6 +406,11 @@ function RNAViewModel() {
     $('#add').modal('show');
   };
 
+  self.showAddPDB = function() {
+    $('#Submit').button('reset');
+    $('#addPDB').modal('show');
+  };
+
   self.showCustomColors = function() {
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
@@ -343,8 +458,10 @@ function RNAViewModel() {
 // bind the model to the ui
 var rnaView = new RNAViewModel();
 var addView = new AddViewModel();
+var addPdbView = new AddPDBViewModel();
 var colorView = new ColorViewModel();
 
 ko.applyBindings(rnaView, document.getElementById('main'));
 ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
+ko.applyBindings(addPdbView, document.getElementById('addPDB'));

@@ -19,7 +19,7 @@
   <link rel='stylesheet' type='text/css' href='css/interface.css' />
 
   <!-- Java Script -->
-  <!-- Get jQuery -- use local if unavailable -->
+  <!-- Get jQuery use local if unavailable -->
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript">/* <![CDATA[ */
     !window.jQuery && document.write('<script type="text/javascript" src="js/jquery.js"><\/script>')
@@ -61,6 +61,33 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
   
+  <!-- 'Add PDB molecule' modal -->
+  <div class="modal fade" id="addPDB" > <!-- data-bind="showModal: loaded"-->
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Add PDB File</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label for="Input">File Input</label>
+              <input type="file" id="inputPDBFile" data-bind="event: { change: function() { uploadPDB($element.files[0]) }}" }>
+               <p class="help-block">Please select a PDB file to extract the secondary structure from.</p>
+            </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
+          </form>
+          <!-- <progress></progress> -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" id="Submit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <!-- 'Custom Colors' modal -->
   <div class="modal fade" id="addColors" > <!-- data-bind="showModal: loaded"-->
     <div class="modal-dialog">
@@ -167,7 +194,17 @@
 
     <div class="row">
       <div class="col-md-4 col-xs-12">
-        <button class="btn btn-primary" data-bind="click: showAdd">Add Molecule</button>
+          <div class="btn-group">
+              <button class="btn btn-primary" data-bind="click: showAdd">Add Molecule</button>
+              <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  <span class="caret"></span>
+                  <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                  <li><a data-bind="click: showAdd" >Add Sequence and Secondary Structure</a></li>
+                  <li><a data-bind="click: showAddPDB">Add PDB File</a></li>
+              </ul>
+          </div>
         <button class="btn btn-default" data-bind="click: clearGraph">Clear Graph</button>
       </div>
       <div class="col-md-5 col-md-offset-3 col-xs-12">

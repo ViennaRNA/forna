@@ -102,7 +102,19 @@ def create_app(static):
             abort(400, "Custom color error: {}".format(str(ex)))
 
         return json.dumps(color_json)
-    
+
+    @app.route('/pdb_to_graph', methods=['POST'])
+    def pdb_to_graph():
+        from werkzeug import secure_filename
+
+        name = secure_filename(request.files['pdb_file'].filename)
+
+        try:
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
+        except Exception as ex:
+            abort(400, "PDB file parsing error: {}".format(str(ex)))
+
+        return json.dumps(result), 201
     
     if static:
         print >> sys.stderr, " * Starting static"
