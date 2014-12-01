@@ -146,7 +146,7 @@ function ColorViewModel() {
     var self = this;
 
   self.input = ko.observable(
-      '3-4,7 red\n8 0.56\n9 0.66\n10 0.76 \n')
+      '3-4,7 red\n10 0.1\n11 0.2\n12 0.3\n13 0.6\n14 0.7\n15 0.8\n36 green some_molecule\n37 purple molecule_name\n')
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
@@ -335,8 +335,12 @@ function AddViewModel() {
     if((returnValue) && (self.inputError().length == 0)) {
       console.log("everything should be loaded now, updating graph!");
       $('#add').modal('hide');
-      rnaView.addMolecules(self.newMolecules());
-      self.newMolecules([]);
+
+      if (self.newMolecules().length > 0) {
+          console.log('trying to add molecules');
+          rnaView.addMolecules(self.newMolecules());
+          self.newMolecules([]);
+      }
     }
     return (returnValue);
   });

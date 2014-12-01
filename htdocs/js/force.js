@@ -171,6 +171,8 @@ function Graph() {
                         // to convert it to a color
                         return scale(val);
                     }
+                } else {
+                    return 'white';
                 }
             }
 
@@ -179,14 +181,18 @@ function Graph() {
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
                     return 'white';
-                } else if (self.customColors.hasOwnProperty(d.struct_name)) {
-                    //is the molecule name in the custom colors object
+                } 
+                
+                if (self.customColors.hasOwnProperty(d.struct_name) &&
+                    self.customColors[d.struct_name].hasOwnProperty(d.id)) {
+                    // if a molecule name is specified, it supercedes the default colors
+                    // (for which no molecule name has been specified)
                     molecule_colors = self.customColors[d.struct_name];
-                    change_colors(molecule_colors, d)
+                    return change_colors(molecule_colors, d)
                 } else if (self.customColors.hasOwnProperty('')) {
                     console.log('here')
                     molecule_colors = self.customColors[''];
-                    change_colors(molecule_colors, d)
+                    return change_colors(molecule_colors, d)
                 }
 
                 return 'white';
@@ -256,30 +262,19 @@ function Graph() {
     var vis_nodes = vis.append("svg:g");
 
     function redraw() {
-
-        min_x = d3.min(graph.nodes.map(function(d) {return d.x}))
-        min_y = d3.min(graph.nodes.map(function(d) {return d.y}))
-
-        max_x = d3.max(graph.nodes.map(function(d) {return d.x}))
-        max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
-
-
-        mol_width = max_x - min_x
-        mol_height = max_y - min_y
-
-        width_ratio = self.svgW / mol_width;
-        height_ratio = self.svgH / mol_height;
-
-        min_ratio = Math.min(width_ratio, height_ratio);
-
         vis.attr("transform",
                  "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
     }
 
     self.center_view = function() {
+        // Center the view on the molecule(s) and scale it so that everything
+        // fits in the window
+
+        //no molecules, nothing to do
         if (graph.nodes.length == 0)
             return;
 
+        // Get the bounding box
         min_x = d3.min(graph.nodes.map(function(d) {return d.x}))
         min_y = d3.min(graph.nodes.map(function(d) {return d.y}))
 
@@ -287,33 +282,36 @@ function Graph() {
         max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
 
 
+        // The width and the height of the molecule
         mol_width = max_x - min_x
         mol_height = max_y - min_y
 
+        // how much larger the drawing area is than the width and the height
         width_ratio = self.svgW / mol_width;
         height_ratio = self.svgH / mol_height;
 
+        // we need to fit it in both directions, so we scale according to
+        // the direction in which we need to shrink the most
         min_ratio = Math.min(width_ratio, height_ratio) * 0.8;
 
+        // the new dimensions of the molecule
         new_mol_width = mol_width * min_ratio
         new_mol_height = mol_height * min_ratio
 
-
-        //x_trans = -(((self.svgW / min_ratio) - mol_width) / 2.) * min_ratio
-        //x_trans = -(min_x - (self.svgW - new_mol_width) / (2. * min_ratio)) * min_ratio
+        // translate so that it's in the center of the window
         x_trans = -(min_x) * min_ratio + (self.svgW - new_mol_width) / 2.
         y_trans = -(min_y) * min_ratio + (self.svgH - new_mol_height) / 2.
 
+
+        // do the actual moving
         vis.attr("transform",
                  "translate(" + [x_trans, y_trans] + ")" + " scale(" + min_ratio + ")");
 
+        // tell the zoomer what we did so that next we zoom, it uses the
+        // transformation we entered here
         zoomer.translate([x_trans, y_trans ]);
         zoomer.scale(min_ratio);
 
-        /*
-        vis.attr("transform",
-                 "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-        */
     }
 
     var force = d3.layout.force()
@@ -471,7 +469,6 @@ function Graph() {
         .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
             all_links.exit().remove();
-
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
