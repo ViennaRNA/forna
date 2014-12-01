@@ -13,8 +13,17 @@ textarea {
   margin-top: 5px;
 }
 
+.form-group {
+    margin-bottom: 0px !important;
+    margin-top: 0px !important;
+}
+
 .modal-body {
   overflow-y: auto;
+}
+
+body {
+  margin-top: 10px;
 }
 
 .tooltip.left .tooltip-inner {
