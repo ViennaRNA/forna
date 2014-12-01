@@ -32,7 +32,8 @@ function Graph() {
     };
 
     self.customColors = {};
-    self.extraLinks = {}
+    self.extraLinks = {};
+    self.animation = true;
 
     self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
@@ -363,6 +364,7 @@ function Graph() {
     function keydown() {
         if (shift_keydown) return;
         key_is_down = true;
+        //console.log(d3.event.keyCode);
         switch (d3.event.keyCode) {
             case 16:
                 shift_keydown = true;
@@ -370,6 +372,14 @@ function Graph() {
             case 67: //c
                 center_view()
                 break;
+            case 65:
+                if (self.animation) {
+                  self.stopAnimation();
+                  rnaView.animation(false);
+                } else {
+                  self.startAnimation();
+                  rnaView.animation(true);
+                }
         }
 
         if (shift_keydown) {
@@ -404,12 +414,14 @@ function Graph() {
     };
     
     self.startAnimation = function() {
+      self.animation = true;
       vis.selectAll('g.gnode')
         .call(drag);
       force.start();
     }
     
     self.stopAnimation = function() {
+      self.animation = false;
       vis.selectAll('g.gnode')
            .on('mousedown.drag', null);
       force.stop();
@@ -419,7 +431,10 @@ function Graph() {
     var update = function () {
         force.nodes(graph.nodes)
         .links(graph.links)
-        .start();
+        
+        if (self.animation) {
+          force.start();
+        }
 
         var all_links = vis_links.selectAll("line.link")
         .data(graph.links, link_key);
@@ -593,9 +608,10 @@ function Graph() {
                     return 'translate(' + [d.x, d.y] + ')'; 
                 });
             });
-
-        force
-        .start();
+            
+        if (self.animation) {
+          force.start();
+        }
     };
 
     setSize();
