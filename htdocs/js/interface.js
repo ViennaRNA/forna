@@ -260,13 +260,14 @@ function AddPDBViewModel() {
                         console.log(data)
                         data = JSON.parse(data)
 
+                        self.animation(true);
                         // each chain has its own json containing d3 graph representations
                         for (i = 0; i < data['jsons'].length ; i++) {
                             rnaView.graph.addNodes(data.jsons[i]);
                         }
-
                         // the extra links contain supplementary information
                         rnaView.graph.changeColorScheme(rnaView.colors())
+                        
                    },
                    error: function (jqXHR) {
                         self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
@@ -398,6 +399,9 @@ function RNAViewModel() {
   self.molecules = ko.observableArray([]);
   
   self.addMolecules = function(array) {
+    // before we add molecules we need to enable animation
+    self.animation(true);
+    
     self.molecules().concat(array);
     // add a new molecule to the graph
     array.forEach( function(rna) {
