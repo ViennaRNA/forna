@@ -326,6 +326,8 @@ function Graph() {
                   { return 0.0; }
             else if (d.link_type == 'protein_chain')
                 { return 0.01; }
+            else if (d.link_type == 'chain_chain')
+                { return 0.01; }
             else
                 { return 8; } })
     .gravity(0.002)
@@ -480,10 +482,10 @@ function Graph() {
             fake_links = vis_links.selectAll("[link_type=fake]")
             fake_links.style('stroke-width', 0);
 
-            plink = vis_links.selectAll("[link_type=protein_chain]")
+            plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
             plink.style("stroke-dasharray", ("3,3"))
 
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain]");
+            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]");
             //link = all_links;
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
