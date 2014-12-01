@@ -520,6 +520,7 @@ def pdb_to_json(text, name):
         for j in jsons:
             for n in j['nodes']:
                 node_ids["{}_{}".format(n['struct_name'], n['id'])] = counter
+                fud.pv('counter, n')
                 counter += 1
 
         links = []
@@ -542,21 +543,21 @@ def pdb_to_json(text, name):
                 # get the index of this nucleotide in the secondary structure
                 sid = cgs[chain2].seq_ids.index(a2.parent.id)
 
-                """
-                links += [{"source": node_ids["{}_{}_{}".format(name, chain2, sid+1)] - len(node_ids.keys()) - 1,
-                           "target": node_ids["{}_{}_{}".format(name, chain1, 1)] - len(node_ids.keys()) - 1,
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain2, sid+1)] - counter,
+                           "target": node_ids["{}_{}_{}".format(name, chain1, 1)] - counter,
                            "link_type": "protein_chain",
                            "value": 3}]
-                """
+                fud.pv('links[-1]')
             elif (chain2 in proteins and chain1 in rnas):
                 # get the index of this nucleotide in the secondary structure
 
                 sid = cgs[chain1].seq_ids.index(a1.parent.id)
 
-                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid+1)] - len(node_ids.keys()) - 1,
-                           "target": node_ids["{}_{}_{}".format(name, chain2, 1)] - len(node_ids.keys()) - 1,
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid+1)] - counter,
+                           "target": node_ids["{}_{}_{}".format(name, chain2, 1)] - counter,
                            "link_type": "protein_chain",
                            "value": 3}]
+                fud.pv('links[-1]')
 
         #jsons += [{'nodes': [], "links": links}]
         jsons += [{"nodes": [], "links": links}]

@@ -238,7 +238,7 @@ function Graph() {
     .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
                   { return 0.0; }
             else if (d.link_type == 'protein_chain')
-                { return 0.5; }
+                { return 0.02; }
             else
                 { return 8; } })
     .gravity(0.002)
