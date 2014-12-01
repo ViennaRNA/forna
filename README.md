@@ -74,7 +74,9 @@ Color according to the nucleotide types:
 
 #### Runing Locally ####
 
-The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled.
+The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled. 
+Further, you need to downlaod the [MC-Tools](http://major.iric.ca/MajorLabEn/MC-Tools.html) program
+and make it executeable by the server script.
 To run it use the following command:
 
 ```shell
