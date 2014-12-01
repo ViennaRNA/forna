@@ -13,6 +13,9 @@ function Graph() {
     h = 600,
     fill = d3.scale.category20();
 
+    self.svgW = w;
+    self.svgH = h;
+
     // mouse event vars
     var mousedown_link = null,
         mousedown_node = null,
@@ -95,6 +98,9 @@ function Graph() {
         var svgW = parseInt(svgStyles.width);
         var svgH = parseInt(svgStyles.height);
 
+        self.svgW = svgW;
+        self.svgH = svgH;
+
         //Set the output range of the scales
         xScale.range([0, svgW]);
         yScale.range([0, svgH]);
@@ -112,7 +118,9 @@ function Graph() {
     }
 
     self.changeColorScheme = function(newColorScheme) {
-        var protein_nodes = vis_nodes.selectAll('[node_type=protein');
+        console.log("hi");
+        var protein_nodes = vis_nodes.selectAll('[node_type=protein]');
+        console.log("there");
 
         protein_nodes.style('fill', 'grey')
                     .style('fill-opacity', 0.5)
@@ -253,6 +261,23 @@ function Graph() {
     var vis_nodes = vis.append("svg:g");
 
     function redraw() {
+        min_x = d3.min(graph.nodes.map(function(d) {return d.x}))
+        min_y = d3.min(graph.nodes.map(function(d) {return d.y}))
+
+        max_x = d3.max(graph.nodes.map(function(d) {return d.x}))
+        max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
+
+
+        mol_width = max_x - min_x
+        mol_height = max_y - min_y
+
+
+        console.log('min_x:', min_x, 'min_y:', min_y)
+        console.log(self.svgW / mol_width, self.svgH / mol_height);
+        console.log('translate:', d3.event.translate);
+        console.log('scale:', d3.event.scale);
+        
+
         vis.attr("transform",
                  "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
     }
@@ -388,6 +413,9 @@ function Graph() {
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
             fake_links.style('stroke-width', 0);
+
+            plink = vis_links.selectAll("[link_type=protein_chain]")
+            plink.style("stroke-dasharray", ("3,3"))
 
             xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain]");
             //link = all_links;
