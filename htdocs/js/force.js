@@ -43,6 +43,29 @@ function Graph() {
             entry.target += graph.nodes.length;
         });
 
+        // Get the maximum x and y values of the current graph
+        // so that we don't place a new structure on top of the
+        // old one
+        if (graph.nodes.length > 0) {
+            max_x = d3.max(graph.nodes.map(function(d) {return d.x}))
+            max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
+        } else {
+            max_x = 0;
+            max_y = 0;
+        }
+
+
+        console.log("max_x:", max_x)
+        console.log("max_y:", max_y)
+
+        json.nodes.forEach(function(entry) {
+            entry.x += max_x;
+            entry.y += max_y;
+
+            entry.px += max_x;
+            entry.py += max_y;
+        });
+
         graph.nodes = graph.nodes.concat(json.nodes);
         graph.links = graph.links.concat(json.links);
 
@@ -58,7 +81,6 @@ function Graph() {
     self.addCustomColors = function addCustomColors(json) {
         // Add a json file containing the custom colors
         self.customColors = json;
-        console.log("customcolors:", self.customColors);
     };
 
     self.clearNodes = function clearNodes() {
@@ -90,6 +112,12 @@ function Graph() {
     }
 
     self.changeColorScheme = function(newColorScheme) {
+        var protein_nodes = vis_nodes.selectAll('[node_type=protein');
+
+        protein_nodes.style('fill', 'grey')
+                    .style('fill-opacity', 0.5)
+                    .attr('r', function(d) { return Math.sqrt(d.size) });
+
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
         data = nodes.data();
 
@@ -238,7 +266,7 @@ function Graph() {
     .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
                   { return 0.0; }
             else if (d.link_type == 'protein_chain')
-                { return 0.02; }
+                { return 0.01; }
             else
                 { return 8; } })
     .gravity(0.002)
@@ -356,20 +384,13 @@ function Graph() {
             console.log(vis_links.selectAll("line.link"))
             all_links.exit().remove();
 
-            console.log(vis_links.selectAll("line.link"))
-            console.log('nodes')
-            console.log(graph.nodes);
-            console.log(force.nodes());
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
             fake_links.style('stroke-width', 0);
-            console.log('fake_links', fake_links)
 
             xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain]");
             //link = all_links;
-            console.log('graph_link:', graph.links);
-            console.log("link:", xlink);
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
@@ -403,21 +424,14 @@ function Graph() {
 
                 //gnodes.attr('pointer-events',  'none');
 
-                /*
-                console.log('mousedown dragline:', drag_line)
-
-                update();
-                */
             };
 
             link_click = function(d) {
-                console.log('link click', d)
                 if (!shift_keydown) {
                     return;
                 }
 
                 index = graph.links.indexOf(d);
-                console.log('index', index)
 
                 if (index > -1) {
                     graph.links.splice(index, 1);
