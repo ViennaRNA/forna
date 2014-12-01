@@ -56,6 +56,26 @@ ko.onDemandObservable = function(callback, target) {
     return result;
 };
 
+// thanks to http://jsfiddle.net/meno/MBLP9/
+ko.bindingHandlers.bootstrapSwitchOn = {
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+        $elem = $(element);
+        $(element).bootstrapSwitch();
+        $(element).bootstrapSwitch('setState', ko.utils.unwrapObservable(valueAccessor())); // Set intial state
+        $elem.on('switch-change', function (e, data) {
+            valueAccessor()(data.value);
+        }); // Update the model when changed.
+    },
+    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+        var vStatus = $(element).bootstrapSwitch('state');
+        var vmStatus = ko.utils.unwrapObservable(valueAccessor());
+        if (vStatus != vmStatus) {
+            $(element).bootstrapSwitch('setState', vmStatus);
+        }
+    }
+};
+
+
 
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
@@ -400,6 +420,20 @@ function RNAViewModel() {
         }
         //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);
+    }
+  });
+  
+  self.animation = ko.observable(true);
+  
+  self.animation.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the animation state");
+    } else {
+      if (newValue == true) {
+        self.graph.startAnimation();
+      } else {
+        self.graph.stopAnimation();
+      }
     }
   });
   

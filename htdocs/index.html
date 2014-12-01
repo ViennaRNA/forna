@@ -17,6 +17,7 @@
   <!-- custom CSS -->
   <link rel='stylesheet' type='text/css' href='css/force.css' />
   <link rel='stylesheet' type='text/css' href='css/interface.css' />
+  <link rel='stylesheet' type='text/css' href='css/bootstrap-switch.css' />
 
   <!-- Java Script -->
   <!-- Get jQuery use local if unavailable -->
@@ -34,6 +35,8 @@
   <script type='text/javascript' src="js/FileSaver.min.js"></script>
   <!-- saveSvgAsPng.js -->
   <script type='text/javascript' src="js/saveSvgAsPng.js"></script>
+  <!-- bootstrap on off switch -->
+  <script type='text/javascript' src="js/bootstrap-switch.js"></script>
 </head>
 <body>
   <!-- 'Add new molecule' modal -->
@@ -240,7 +243,15 @@
     </div>
     
     <div class="row">
-      <div class="col-md-4 col-md-offset-8 col-xs-12">
+      <div class="col-md-4 col-xs-12">
+        <div class="form-group">
+          <div class="btn-group" data-toggle="tooltip" data-placement="right" title="Animation toggle" data-delay="800">
+            <input type="checkbox" data-bind="bootstrapSwitchOn: animation" name="animation-toggle">
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-8 col-xs-12">
         <form role="form">
           <div class="form-group pull-right">
               <div class="btn-group dropup">
@@ -263,6 +274,7 @@
     <script type="text/javascript" src="js/force.js"></script>
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
+    
   </div>
   <canvas width="960" height="500" style="display:none"></canvas>
 

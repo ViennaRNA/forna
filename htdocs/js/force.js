@@ -377,6 +377,20 @@ function Graph() {
         key = d.link_type + "," + d.source.index + "," + d.target.index;
         return key;
     };
+    
+    self.startAnimation = function() {
+      vis.selectAll('g.gnode')
+        .call(drag);
+      force.start();
+    }
+    
+    self.stopAnimation = function() {
+      vis.selectAll('g.gnode')
+           .on('mousedown.drag', null);
+      force.stop();
+    }
+    
+    
     var update = function () {
         force.nodes(graph.nodes)
         .links(graph.links)
