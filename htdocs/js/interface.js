@@ -179,6 +179,7 @@ function AddPDBViewModel() {
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
+    $('#PDBSubmit').button('reset');
   }
 
   self.uploadPDB = function (file) {
@@ -196,20 +197,21 @@ function AddPDBViewModel() {
       self.submitted(false);
       self.inputError('');
       console.log('Clicked');
+      $('#PDBSubmit').button('loading');
       //console.log('self.input()', self.inputFile());
 
       if (self.inputFile() == null) {
-        self.inputError("ERROR Please select a PDB file") ;
+        self.newInputError("ERROR Please select a PDB file");
         return;
       }
 
       if (!self.inputFile().type == 'chemical/x-pdb') {
-        self.inputError("ERROR: Invalid file type, please upload a PDB file");
+        self.newInputError("ERROR: Invalid file type, please upload a PDB file");
         return;
       }
 
       if (self.inputFile().size > 20000000) {
-        self.inputError("ERROR: Selected file is too large");
+        self.newInputError("ERROR: Selected file is too large");
         return;
       }
 
@@ -407,7 +409,7 @@ function RNAViewModel() {
   };
 
   self.showAddPDB = function() {
-    $('#Submit').button('reset');
+    $('#PDBSubmit').button('reset');
     $('#addPDB').modal('show');
   };
 
