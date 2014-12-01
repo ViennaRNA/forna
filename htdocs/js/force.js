@@ -382,11 +382,11 @@ function Graph() {
             case 67: //c
                 self.center_view();
                 break;
-            case 65:
+            case 32:
                 if (self.animation) {
-                  self.stopAnimation();
+                  rnaView.animation(false);
                 } else {
-                  self.startAnimation();
+                  rnaView.animation(true);
                 }
         }
 
