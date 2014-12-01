@@ -94,9 +94,13 @@ highlight hi 7-8 brown
 
 
     def test_from_pdb(self):
+        with open('test/data/4GV9.pdb') as f:
+            text = f.read()
+
+            forna.pdb_to_json(text, '4GV9')
+
         with open('test/data/1MFQ.pdb') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '1MFQ')
 
-        pass

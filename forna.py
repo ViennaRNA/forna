@@ -221,7 +221,6 @@ def bg_to_json(bg, circular=False):
             # we shouldn't make a pseudonode for a psueodknotted node
             continue
 
-        fud.pv('residue_list')
         residue_list = sorted(residue_list)
 
         create_loop_node(loop_elems, residue_list, num_nodes + counter)
@@ -232,7 +231,6 @@ def bg_to_json(bg, circular=False):
     eloops = bg.find_external_loops()
     if len(eloops) > 0:
         all_residues = it.chain(*[bg.define_residue_num_iterator(e, adjacent=True) for e in eloops])
-        fud.pv('all_residues')
         create_loop_node(eloops, sorted(all_residues), len(struct["nodes"]))
     '''
 
@@ -335,7 +333,6 @@ def parse_ranges(range_text):
                 raise Exception('Invalid range')
 
             try:
-                fud.pv('single_range.split()')
                 (f,t) = map(int, single_range.split('-'))
             except ValueError as ve:
                 raise Exception('Range components need to be integers')
@@ -388,7 +385,6 @@ def parse_colors_text(colors_text):
             continue
         
         if len(parts) != 4:
-            fud.pv('parts')
             raise Exception('Too many parts in line {}'.format(i+1))
 
         if parts[0] == 'color':
@@ -416,7 +412,6 @@ def add_colors_to_graph(struct, colors):
     @param struct: The structure returned by fasta_to_json
     @param colors: A color dictionary as specified above
     """
-    fud.pv('struct')
     for node in struct['nodes']:
         if node['node_type'] == 'nucleotide':
             if node['struct_name'] in colors:
@@ -455,7 +450,6 @@ def main():
         text = sys.stdin.read()
     else:
         fname, fext = op.splitext(args[0])
-        fud.pv('fext')
         if fext == '.cg' or fext == '.bg':
             print >> sys.stderr, "Detected BulgeGraph"
             bg = fgb.BulgeGraph(args[0])
@@ -515,7 +509,7 @@ def pdb_to_json(text, name):
             else:
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
-                cg = ftmc.from_pdb(fname, chain.id)
+                cg = ftmc.from_pdb(fname, chain_id=chain.id)
                 cgs[chain.id] = cg
                 jsons += [bg_to_json(cg)]
 
@@ -525,12 +519,16 @@ def pdb_to_json(text, name):
         node_ids = dict()
         for j in jsons:
             for n in j['nodes']:
-                fud.pv('n')
                 node_ids["{}_{}".format(n['struct_name'], n['id'])] = counter
                 counter += 1
 
         links = []
         for (a1, a2) in ftup.interchain_contacts(struct):
+            #fud.pv('a1.parent.id[0]')
+            if (a1.parent.id[0] != ' ' or a2.parent.id[0] != ' '):
+                #hetatm's will be ignored for now
+                continue
+
             chain1 = a1.parent.parent.id
             chain2 = a2.parent.parent.id
 
@@ -552,6 +550,7 @@ def pdb_to_json(text, name):
                 """
             elif (chain2 in proteins and chain1 in rnas):
                 # get the index of this nucleotide in the secondary structure
+
                 sid = cgs[chain1].seq_ids.index(a1.parent.id)
 
                 links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid+1)] - len(node_ids.keys()) - 1,
@@ -559,14 +558,8 @@ def pdb_to_json(text, name):
                            "link_type": "protein_chain",
                            "value": 3}]
 
-        fud.pv('links')
         #jsons += [{'nodes': [], "links": links}]
-        fud.pv('counter')
         jsons += [{"nodes": [], "links": links}]
-        """
-        jsons += [{'nodes': [], "links": [{"source": -40, "target":  -1, "value": 3, "link_type":"protein_chain"},
-                                          {"source": -153, "target": -1, "value": 3, "link_type":"protein_chain"}]}]
-        """
         return {"jsons": jsons, "extra_links": links}
 
 if __name__ == '__main__':
