@@ -57,10 +57,6 @@ function Graph() {
             max_y = 0;
         }
 
-
-        console.log("max_x:", max_x)
-        console.log("max_y:", max_y)
-
         json.nodes.forEach(function(entry) {
             entry.x += max_x;
             entry.y += max_y;
@@ -72,13 +68,8 @@ function Graph() {
         graph.nodes = graph.nodes.concat(json.nodes);
         graph.links = graph.links.concat(json.links);
 
-        console.log('graph.nodes', graph.nodes)
-        console.log('graph.links', graph.links)
-
-        console.log('graph.nodes.length', graph.nodes.length)
-        console.log('graph.links.length', graph.links.length)
-
         update();
+        center_view()
     };
 
     self.addCustomColors = function addCustomColors(json) {
@@ -118,9 +109,7 @@ function Graph() {
     }
 
     self.changeColorScheme = function(newColorScheme) {
-        console.log("hi");
         var protein_nodes = vis_nodes.selectAll('[node_type=protein]');
-        console.log("there");
 
         protein_nodes.style('fill', 'grey')
                     .style('fill-opacity', 0.5)
@@ -174,8 +163,6 @@ function Graph() {
                     //is the molecule name in the custom colors object
                     molecule_colors = self.customColors[d.struct_name];
 
-                    console.log('d.id', d.id);
-
                     if (molecule_colors.hasOwnProperty(d.id)) {
                         val = parseFloat(molecule_colors[d.id]);
 
@@ -203,7 +190,6 @@ function Graph() {
     function mousemove() {
         if (!mousedown_node) return;
 
-        //console.log('mousedown_node:', mousedown_node);
         mpos = d3.mouse(vis.node());
         // update drag line
         drag_line
@@ -215,13 +201,11 @@ function Graph() {
     }
 
     function mouseup() {
-        console.log('mouseup');
         if (mousedown_node) {
             drag_line
             .attr("class", "drag_line_hidden");
         }
 
-        console.log('clearing mouse vars');
         // clear mouse event vars
         resetMouseVars();
         //update()
@@ -261,6 +245,7 @@ function Graph() {
     var vis_nodes = vis.append("svg:g");
 
     function redraw() {
+
         min_x = d3.min(graph.nodes.map(function(d) {return d.x}))
         min_y = d3.min(graph.nodes.map(function(d) {return d.y}))
 
@@ -271,15 +256,53 @@ function Graph() {
         mol_width = max_x - min_x
         mol_height = max_y - min_y
 
+        width_ratio = self.svgW / mol_width;
+        height_ratio = self.svgH / mol_height;
 
-        console.log('min_x:', min_x, 'min_y:', min_y)
-        console.log(self.svgW / mol_width, self.svgH / mol_height);
-        console.log('translate:', d3.event.translate);
-        console.log('scale:', d3.event.scale);
-        
+        min_ratio = Math.min(width_ratio, height_ratio);
 
         vis.attr("transform",
                  "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+    }
+
+    function center_view() {
+        if (graph.nodes.length == 0)
+            return;
+
+        min_x = d3.min(graph.nodes.map(function(d) {return d.x}))
+        min_y = d3.min(graph.nodes.map(function(d) {return d.y}))
+
+        max_x = d3.max(graph.nodes.map(function(d) {return d.x}))
+        max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
+
+
+        mol_width = max_x - min_x
+        mol_height = max_y - min_y
+
+        width_ratio = self.svgW / mol_width;
+        height_ratio = self.svgH / mol_height;
+
+        min_ratio = Math.min(width_ratio, height_ratio) * 0.8;
+
+        new_mol_width = mol_width * min_ratio
+        new_mol_height = mol_height * min_ratio
+
+
+        //x_trans = -(((self.svgW / min_ratio) - mol_width) / 2.) * min_ratio
+        //x_trans = -(min_x - (self.svgW - new_mol_width) / (2. * min_ratio)) * min_ratio
+        x_trans = -(min_x) * min_ratio + (self.svgW - new_mol_width) / 2.
+        y_trans = -(min_y) * min_ratio + (self.svgH - new_mol_height) / 2.
+
+        vis.attr("transform",
+                 "translate(" + [x_trans, y_trans] + ")" + " scale(" + min_ratio + ")");
+
+        zoomer.translate([x_trans, y_trans ]);
+        zoomer.scale(min_ratio);
+
+        /*
+        vis.attr("transform",
+                 "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+        */
     }
 
     var force = d3.layout.force()
@@ -339,11 +362,13 @@ function Graph() {
 
     function keydown() {
         if (shift_keydown) return;
-        //console.log('keydown', d3.event.keyCode);
         key_is_down = true;
         switch (d3.event.keyCode) {
             case 16:
                 shift_keydown = true;
+                break;
+            case 67: //c
+                center_view()
                 break;
         }
 
@@ -396,7 +421,6 @@ function Graph() {
         .links(graph.links)
         .start();
 
-        console.log('prev_graph.links')
         var all_links = vis_links.selectAll("line.link")
         .data(graph.links, link_key);
 
@@ -420,7 +444,6 @@ function Graph() {
         .attr("link_type", function(d) { return d.link_type; } )
         .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
-            console.log(vis_links.selectAll("line.link"))
             all_links.exit().remove();
 
 
