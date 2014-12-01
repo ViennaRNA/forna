@@ -20,6 +20,8 @@ import os
 import RNA
 from optparse import OptionParser
 
+import forgi.utilities.debug as fud
+
 def create_app(static):
     '''
     Create the forna application given the options that were passed.
@@ -39,6 +41,8 @@ def create_app(static):
         #print >>sys.stderr, "dir(request)", dir(request)
         if not request.json:
            abort(400, "Missing a json in the request")
+
+        fud.pv('request.json')
         
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
@@ -46,14 +50,23 @@ def create_app(static):
         if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
-        if re.match("^[\(\)\.\[\]]+$", request.json['struct']) is None:
+        if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
-        fasta_text = ">some_id\n{}\n{}".format(request.json['seq'],
-                                               request.json['struct'])
+        print >>sys.stderr, "struct[-1]:", request.json['struct'][-1]
+        if request.json['struct'][-1] == '*':
+            circular = True
+            structure = request.json['struct'].strip('*')
+        else:
+            circular = False
+            structure = request.json['struct']
 
+        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
+                                               structure)
+
+        print >>sys.stderr, "hcirc:", circular
         try:
-            result = forna.fasta_to_json(fasta_text)
+            result = forna.fasta_to_json(fasta_text, circular)
         except Exception as ex:
             abort(400, "Secondary structure parsing error: {}".format(str(ex)))
 
@@ -74,7 +87,34 @@ def create_app(static):
 
         result = RNA.fold(str(request.json['seq']))[0]
         return json.dumps(result), 201
-    
+
+    @app.route('/colors_to_json', methods=['POST'])
+    def colors_to_json():
+        if not request.json:
+            abort(400, "Request has no json.")
+
+        if 'text' not in request.json:
+            abort(400, "Request has no text field.")
+
+        try:
+            color_json = forna.parse_colors_text(request.json['text'])
+        except Exception as ex:
+            abort(400, "Custom color error: {}".format(str(ex)))
+
+        return json.dumps(color_json)
+
+    @app.route('/pdb_to_graph', methods=['POST'])
+    def pdb_to_graph():
+        from werkzeug import secure_filename
+
+        name = secure_filename(request.files['pdb_file'].filename)
+
+        try:
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
+        except Exception as ex:
+            abort(400, "PDB file parsing error: {}".format(str(ex)))
+
+        return json.dumps(result), 201
     
     if static:
         print >> sys.stderr, " * Starting static"

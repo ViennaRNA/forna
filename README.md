@@ -32,6 +32,18 @@ not enter a structure, it will calculate the MFE structure at 37°C for you.
 **Zooming** can be accomplished using the mouse wheel.
 Dragging the canvas leads to **panning**.
 
+##### Circular RNA #####
+
+Circular RNA molecules can be specified by adding an asterisk(*) to the end
+of the structure. This simply adds a link between the first and last nucleotides.
+Example:
+
+```
+>x
+ACCCAAACAAAAAAAAAAAAAA
+...((...))..((..))...*
+```
+
 ##### Colors #####
 
 ###### Position ######
@@ -62,7 +74,9 @@ Color according to the nucleotide types:
 
 #### Runing Locally ####
 
-The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled.
+The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled. 
+Further, you need to downlaod the [MC-Tools](http://major.iric.ca/MajorLabEn/MC-Tools.html) program
+and make it executeable by the server script.
 To run it use the following command:
 
 ```shell
