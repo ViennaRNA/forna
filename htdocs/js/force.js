@@ -355,6 +355,9 @@ function Graph() {
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
         //d3.select(self).classed("dragging", true);
+        //
+        console.log('started dragging')
+        rnaView.animation(true);
     }
 
     function dragged(d) {

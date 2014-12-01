@@ -260,7 +260,7 @@ function AddPDBViewModel() {
                         console.log(data)
                         data = JSON.parse(data)
 
-                        self.animation(true);
+                        rnaView.animation(true);
                         // each chain has its own json containing d3 graph representations
                         for (i = 0; i < data['jsons'].length ; i++) {
                             rnaView.graph.addNodes(data.jsons[i]);
