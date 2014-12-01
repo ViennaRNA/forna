@@ -502,7 +502,8 @@ def pdb_to_json(text, name):
                 jsons += [{"nodes":[{"group":2, 
                                      "struct_name": "{}_{}".format(name, chain.id),
                                      "id": 1,
-                                     "name": "protein",
+                                     "size": len(chain.get_list()),
+                                     "name": chain.id,
                                      "node_type":"protein"}],
                            "links":[]}]
                 pass
