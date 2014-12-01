@@ -57,7 +57,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelAddMolecule">Cancel</button>
           <button type="submit" id="Submit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
         </div>
       </div><!-- /.modal-content -->
@@ -84,7 +84,7 @@
           <!-- <progress></progress> -->
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelAddPDB">Cancel</button>
           <button type="submit" id="PDBSubmit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
         </div>
       </div><!-- /.modal-content -->
@@ -109,7 +109,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelColor">Cancel</button>
           <button type="submit" id="ColorSubmit" data-bind="click: colorSubmit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
         </div>
       </div><!-- /.modal-content -->
@@ -121,7 +121,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <button type="button" class="close" data-dismiss="modal"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
           <h4 class="modal-title">About forna</h4>
         </div>
         <div class="modal-body">

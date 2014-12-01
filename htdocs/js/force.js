@@ -34,6 +34,8 @@ function Graph() {
     self.customColors = {};
     self.extraLinks = {};
     self.animation = true;
+    // don't listen to events because a model window is open somewhere
+    self.deaf = false;
 
     self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
@@ -373,6 +375,10 @@ function Graph() {
     .on("dragend", dragended);
 
     function keydown() {
+        if (self.deaf)
+            // lalalalal, not listening
+            return;
+
         if (shift_keydown) return;
         key_is_down = true;
         //console.log(d3.event.keyCode);

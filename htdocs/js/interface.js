@@ -160,6 +160,11 @@ function ColorViewModel() {
     }
   }
 
+  self.cancelColor = function() {
+    $('#addColors').modal('hide');
+    rnaView.graph.deaf = false;
+  }
+
   self.colorSubmit = function() {
       self.submitted(false);
       self.inputError('');
@@ -172,6 +177,7 @@ function ColorViewModel() {
         a.success( function(data) {
             console.log('data', data)
             $('#addColors').modal('hide');
+            rnaView.graph.deaf = false;
             console.log('updating colors')
 
             self.colorSchemeJson(data);
@@ -211,6 +217,11 @@ function AddPDBViewModel() {
       if(e.lengthComputable){
           $('progress').attr({value:e.loaded,max:e.total});
       }
+  }
+
+  self.cancelAddPDB = function() {
+    $('#addPDB').modal('hide');
+    rnaView.graph.deaf = false;
   }
 
   self.submit = function() {
@@ -256,6 +267,7 @@ function AddPDBViewModel() {
                    data: formData,
                    success: function (data) {
                         $('#addPDB').modal('hide');
+                        rnaView.graph.deaf = false;
                         console.log('data uploaded')
                         console.log(data)
                         data = JSON.parse(data)
@@ -335,6 +347,7 @@ function AddViewModel() {
     if((returnValue) && (self.inputError().length == 0)) {
       console.log("everything should be loaded now, updating graph!");
       $('#add').modal('hide');
+      rnaView.graph.deaf = false;
 
       if (self.newMolecules().length > 0) {
           console.log('trying to add molecules');
@@ -344,6 +357,11 @@ function AddViewModel() {
     }
     return (returnValue);
   });
+
+  self.cancelAddMolecule = function() {
+    $('#add').modal('hide');
+    rnaView.graph.deaf = false;
+  }
 
     
   self.submit = function() {
@@ -448,16 +466,19 @@ function RNAViewModel() {
   self.showAdd = function() {
     $('#Submit').button('reset');
     $('#add').modal('show');
+    self.graph.deaf = true;
   };
 
   self.showAddPDB = function() {
     $('#PDBSubmit').button('reset');
     $('#addPDB').modal('show');
+    self.graph.deaf = true;
   };
 
   self.showCustomColors = function() {
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
+    self.graph.deaf = true;
   }
   
   self.showAbout = function() {
