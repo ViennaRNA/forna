@@ -465,6 +465,10 @@ function RNAViewModel() {
     self.molecules([]);
     self.graph.clearNodes();
   }
+  
+  self.centerMolecules = function() {
+    self.graph.center_view();
+  }
 
   self.savePNG = function() {
     saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 1);

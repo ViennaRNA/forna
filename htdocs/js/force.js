@@ -70,7 +70,7 @@ function Graph() {
         graph.links = graph.links.concat(json.links);
 
         update();
-        center_view()
+        self.center_view();
     };
 
     self.addCustomColors = function addCustomColors(json) {
@@ -276,7 +276,7 @@ function Graph() {
                  "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
     }
 
-    function center_view() {
+    self.center_view = function() {
         if (graph.nodes.length == 0)
             return;
 
@@ -380,15 +380,13 @@ function Graph() {
                 shift_keydown = true;
                 break;
             case 67: //c
-                center_view()
+                self.center_view();
                 break;
             case 65:
                 if (self.animation) {
                   self.stopAnimation();
-                  rnaView.animation(false);
                 } else {
                   self.startAnimation();
-                  rnaView.animation(true);
                 }
         }
 
