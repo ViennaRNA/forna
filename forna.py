@@ -379,7 +379,6 @@ def parse_colors_text(colors_text):
 
     for i,line in enumerate(colors_text.split('\n')):
         parts = line.split()
-        fud.pv('parts')
 
         if len(parts) == 0:
             # we'll let empty lines slide
@@ -402,11 +401,8 @@ def parse_colors_text(colors_text):
             else:
                 colors[''][nucleotide] = color
 
-            fud.pv('nucleotide')
-
             #colors += [color_entry]
 
-    fud.pv('colors')
     return colors
 
 def add_colors_to_graph(struct, colors):
@@ -528,12 +524,10 @@ def pdb_to_json(text, name):
         for j in jsons:
             for n in j['nodes']:
                 node_ids["{}_{}".format(n['struct_name'], n['id'])] = counter
-                fud.pv('counter, n')
                 counter += 1
 
         links = []
         for (a1, a2) in ftup.interchain_contacts(struct):
-            #fud.pv('a1.parent.id[0]')
             if (a1.parent.id[0] != ' ' or a2.parent.id[0] != ' '):
                 #hetatm's will be ignored for now
                 continue
@@ -555,7 +549,6 @@ def pdb_to_json(text, name):
                            "target": node_ids["{}_{}_{}".format(name, chain1, 1)] - counter,
                            "link_type": "protein_chain",
                            "value": 3}]
-                fud.pv('links[-1]')
             elif (chain2 in proteins and chain1 in rnas):
                 # get the index of this nucleotide in the secondary structure
 
@@ -565,7 +558,6 @@ def pdb_to_json(text, name):
                            "target": node_ids["{}_{}_{}".format(name, chain2, 1)] - counter,
                            "link_type": "protein_chain",
                            "value": 3}]
-                fud.pv('links[-1]')
             elif (chain2 in rnas and chain1 in rnas):
                 # get the index of this nucleotide in the secondary structure
 
@@ -576,7 +568,6 @@ def pdb_to_json(text, name):
                            "target": node_ids["{}_{}_{}".format(name, chain2, sid2+1)] - counter,
                            "link_type": "chain_chain",
                            "value": 3}]
-                fud.pv('links[-1]')
 
         #jsons += [{'nodes': [], "links": links}]
         jsons += [{"nodes": [], "links": links}]

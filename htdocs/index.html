@@ -125,7 +125,7 @@
           <h4 class="modal-title">About forna</h4>
         </div>
         <div class="modal-body">
-          <h3 id="rna-secondary-structure-visualization-using-a-force-directed-graph-layout">RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h3>
+          <h1 id="rna-secondary-structure-visualization-using-a-force-directed-graph-layout">RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h1>
           <h4 id="overview">Overview</h4>
           <p>The <code>forna</code> package provides a web interface for displaying RNA secondary
           structures using the <a href="https://github.com/mbostock/d3/wiki/Force-Layout">force-directed graph
@@ -138,7 +138,7 @@
           using the python <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> RNA
           structure manipulation library and the provided <code>forna.py</code> script. We heavily
           depend on the python bindings of the <a href="http://www.tbi.univie.ac.at/RNA/">ViennaRNA</a> package.</p>
-          <h4 id="usage">Usage</h4>
+          <h2 id="usage">Usage</h2>
           <p>Click on <code>Add Molecule</code> to draw a new secondary structure. The input should
           contain a sequence and a secondary structure in dot-bracket notation:</p>
           <pre><code>GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG<br>((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))</code></pre>
@@ -146,12 +146,12 @@
           not enter a structure, it will calculate the MFE structure at 37°C for you.</p>
           <p><strong>Zooming</strong> can be accomplished using the mouse wheel.
           Dragging the canvas leads to <strong>panning</strong>.</p>
-          <h5 id="colors">Colors</h5>
-          <h6 id="position">Position</h6>
+          <h3 id="colors">Colors</h3>
+          <h4 id="position">Position</h4>
           <p>Color the nucleotides according to their position in the molecule. Lower numbered
           nucleotides are closer to the 5' end and are colored green. Nucleotides in the middle
           are colored yellow whereas nucleotides near the 3' end are colored red.</p>
-          <h6 id="structure">Structure</h6>
+          <h4 id="structure">Structure</h4>
           <p>Color the nucleotides according to the type of structure that they are in:</p>
           <p><strong><font color='lightgreen'>Green</font></strong>: Stems (canonical helices) <br>
           <strong><font color='#ff9896'>Red</font></strong>: Multiloops (junctions)<br>
@@ -159,31 +159,75 @@
           <strong><font color='lightblue'>Blue</font></strong>: Hairpin loops<br>
           <strong><font color='lightsalmon'>Orange</font></strong>: 5' unpaired region<br>
           <strong><font color='cyan'>Cyan</font></strong>: 3' unpaired region</p>
-          <h6 id="sequence">Sequence</h6>
+          <h4 id="sequence">Sequence</h4>
           <p>Color according to the nucleotide types: </p>
           <p><strong><font color='#dbdb8d'>Yellow</font></strong>: Adenine <br>
           <strong><font color="#98df8a">Green</font></strong>: Cytosine <br>
           <strong><font color='#ff9896'>Blue</font></strong>: Uridine <br>
           <strong><font color='#aec7e8'>Red</font></strong>: Guanine</p>
-          <h6 id="custom">Custom</h6>
+          <h4 id="custom">Custom</h4>
           <p> Create a custom coloring scheme. The colors for each nucleotide or sets of nucleotide are specified in the 
-          text box that appears when the tab is clicked. The format is simple. The first column should always be 'color',
-          since other types of coloring (i.e. highlighting) will be implemented in the future. The second column will
-          contain the name of the molecule (indicated by the '>' line in the 'Add Molecule' input area). The third 
-          column will contain a list of nucleotides. This can be individual nucleotides or ranges. Multiple nucleotides
-          or ranges can be separated by commas (i.e. '7,14-16' indicates nucleotides 7,14,15 and 16). The final line
-          contains the color (i.e. 'red', or '0xFF0000'). If a single number between 0 and 1 is specified in the final
-          column, it will be used to select a shade between white and steel blue. This is useful for showing values
-          associated with various nucleotides (i.e. conservation, reactivities, etc...).</p>
-          <h4 id="runing-locally">Runing Locally</h4>
-          <p>The server can be run locally on your machine. It depends on the <a href="http://www.tbi.univie.ac.at/~pkerp/forgi/">forgi</a> library and needs the <a href="http://www.tbi.univie.ac.at/RNA/">ViennaRNA</a> package installed with python bindings enabled.
-          To run it use the following command:</p>
-          <pre><code class="lang-shell">python forna_server.py -s -d</code></pre>
-          <p>Documentation about the available options is provided using the <code>-h</code> option.</p>
-          <h4 id="contact">Contact</h4>
+          text box that appears when the tab is clicked. The format is simple. The first column contains the numbers of the nucleotides to be colored. The second column contains the color:
+
+<pre>
+3-5,7 red
+</pre>
+
+          The line above will color the nucleotides between 3 and 4 (inclusive) and the nucleotide 7 in red. One can also limit the coloring to a molecule with a particular label:
+
+<pre>
+8-9 red 1GID
+</pre>
+
+          This will color nucleotides 8 and 9 red in the molecule labelled
+          1GID. The molecule label is specified in when it is entered: 
+
+<pre>
+>1GID
+AACCGG
+((..))
+</pre>
+
+          'purple', etc...), a hexadecimal color (')xFF0000') or simple a value
+          between 0 and 1 which will indicate its value within a gradient
+          between (white and steelblue).This is useful for displaying things
+          like probing or conservation data that varies continuously on a
+          per-nucleotide level.  
+
+          <h3>Editing the Structure</h3>
+
+          Links can artificially be added by holding down the <shift> key and
+          dragging from one nucleotide to another. This will form a
+          spring-loaded bond between two nucleotides. This is useful for
+          drawing interacting pairs of structures. Bonds can be deleted by
+          holding down the <shift> key and clicking on a bond.
+
+          <h3>Centering the view</h3>
+
+          The view can be centered on molecules being displayed by pressing the
+          'c' key or by clicking on the crosshairs button in the lower left
+          hand corner. 
+
+          <h3>Force</h3>
+
+          The force can be turned off by either hitting the <space> key or by
+          flipping the switch in the lower left hand corner of the screen.
+
+          <h3> PDB Files </h3>
+
+          Secondary structure can automatically be extracted from PDB files and displayed. Simply
+          click on the dropdown arrow next to 'Add Molecule' and select 'Add PDB File'. This will
+          import every RNA chain in the PDB file and display its secondary structure. Proteins
+          will be added as nodes with a size proportional to their length. Interactions between
+          separate protein and nucleotide chains are displayed as dashed lines. The secondary
+          structure is extracted using MC-Annotate [1].
+
+          <h2 id="contact">Contact</h2>
           <p>Questions and/or comments can be sent to <a href="mailto:forna@tbi.univie.ac.at">forna@tbi.univie.ac.at</a></p>
           <h4 id="acknowledgement">Acknowledgement</h4>
           <p>This project is, among others, supported by the European Commission under the Environment Theme of the 7th Framework Program for Research and Technological Development (Grant agreement no: 323987).</p>
+          <h4 id="citations">Citations</h4>
+           [1] Gendron P, Lemieux S, Major F(2001). Quantitative analysis of nucleic acid three-dimensional structures. J Mol Biol 308:919–936.
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
