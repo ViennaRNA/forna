@@ -334,7 +334,6 @@ function Graph() {
     .nodes(graph.nodes)
     .links(graph.links)
     .chargeDistance(110)
-    .friction(0.95)
     .size([w, h]);
 
     // line displayed when dragging new nodes
@@ -444,6 +443,9 @@ function Graph() {
       force.stop();
     }
     
+    self.setFriction = function(value) {
+      force.friction(value);
+    }
     
     var update = function () {
         force.nodes(graph.nodes)

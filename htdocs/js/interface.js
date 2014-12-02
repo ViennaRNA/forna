@@ -25,58 +25,6 @@ ajax = function(uri, method, data) {
   return $.ajax(request);
 };
 
-//an observable that retrieves its value when first bound
-ko.onDemandObservable = function(callback, target) {
-    var _value = ko.observable();  //private observable
-
-    var result = ko.computed({
-        read: function() {
-            //if it has not been loaded, execute the supplied function
-            if (!result.loaded()) {
-                callback.call(target);
-            }
-            //always return the current value
-            return _value();
-        },
-        write: function(newValue) {
-            //indicate that the value is now loaded and set it
-            result.loaded(true);
-            _value(newValue);
-        },
-        deferEvaluation: true  //do not evaluate immediately when created
-    });
-
-    //expose the current state, which can be bound against
-    result.loaded = ko.observable();
-    //load it again
-    result.refresh = function() {
-        result.loaded(false);
-    };
-
-    return result;
-};
-
-// thanks to http://jsfiddle.net/meno/MBLP9/
-ko.bindingHandlers.bootstrapSwitchOn = {
-    init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-        $elem = $(element);
-        $(element).bootstrapSwitch();
-        $(element).bootstrapSwitch('setState', ko.utils.unwrapObservable(valueAccessor())); // Set intial state
-        $elem.on('switch-change', function (e, data) {
-            valueAccessor()(data.value);
-        }); // Update the model when changed.
-    },
-    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-        var vStatus = $(element).bootstrapSwitch('state');
-        var vmStatus = ko.utils.unwrapObservable(valueAccessor());
-        if (vStatus != vmStatus) {
-            $(element).bootstrapSwitch('setState', vmStatus);
-        }
-    }
-};
-
-
-
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
 
@@ -460,6 +408,17 @@ function RNAViewModel() {
       } else {
         self.graph.stopAnimation();
       }
+    }
+  });
+  
+  self.friction = ko.observable(50);
+  
+  self.friction.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the animation state");
+    } else {
+      
+      self.graph.setFriction(newValue/100);
     }
   });
   
