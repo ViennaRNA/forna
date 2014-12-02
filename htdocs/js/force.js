@@ -447,6 +447,10 @@ function Graph() {
       force.friction(value);
     }
     
+    self.setGravity = function(value) {
+      force.gravity(value);
+    }
+    
     var update = function () {
         force.nodes(graph.nodes)
         .links(graph.links)

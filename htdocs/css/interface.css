@@ -31,6 +31,6 @@ label.btn > input[type='radio']
     display: none;
 }
 
-.slider {
-    margin-left: 20px;
+#settings-form {
+    padding: 20px;
 }

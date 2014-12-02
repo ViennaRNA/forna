@@ -307,13 +307,18 @@ AACCGG
                 Settings <span class="caret"></span>
                  <span class="sr-only">Toggle Dropdown</span>
             </button>
-            <ul class="dropdown-menu" role="menu">
-                <li><a href="#">Numbering</a></li>
-            </ul>
+            <form class="dropdown-menu" role="menu" id="settings-form">
+                <div class="form-group">
+                  <label for="friction">Force friction</label>
+                  <input type="text" id="friction" class="slider form-control"  data-bind="sliderValue: {value: friction, min:0, max: 100, step: 1}"/>
+                </div>
+                <div class="form-group">
+                  <label for="friction">Gravity</label>
+                  <input type="text" id="gravity" class="slider form-control"  data-bind="sliderValue: {value: gravity, min:0, max: 10, step: 0.1}"/>
+                </div>
+            </form>            
           </div>
-          <div class="btn-group" data-toggle="tooltip" data-placement="bottom" title="Set force friction" data-delay="800">
-            <input type="text" class="slider form-control"  data-bind="sliderValue: {value: friction, min:0, max: 100, step: 1}"/>
-          </div>
+          
         </div>
       </div>
       

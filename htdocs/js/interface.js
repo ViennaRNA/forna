@@ -422,6 +422,17 @@ function RNAViewModel() {
     }
   });
   
+  self.gravity = ko.observable(0);
+  
+  self.gravity.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the animation state");
+    } else {
+      
+      self.graph.setGravity(newValue/100);
+    }
+  });
+  
   self.showAdd = function() {
     $('#Submit').button('reset');
     $('#add').modal('show');
