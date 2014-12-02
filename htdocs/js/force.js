@@ -330,7 +330,7 @@ function Graph() {
                 { return 0.01; }
             else
                 { return 8; } })
-    .gravity(0.002)
+    .gravity(0.000)
     .nodes(graph.nodes)
     .links(graph.links)
     .chargeDistance(110)
