@@ -30,3 +30,7 @@ label.btn > input[type='radio']
 {
     display: none;
 }
+
+.slider {
+    margin-left: 20px;
+}
