@@ -411,7 +411,7 @@ function RNAViewModel() {
     }
   });
   
-  self.friction = ko.observable(95);
+  self.friction = ko.observable(50);
   
   self.friction.subscribe( function(newValue) {
     if (self.graph === null) {
