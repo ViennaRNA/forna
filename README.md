@@ -2,7 +2,7 @@ RNA Secondary Structure Visualization Using a Force Directed Graph Layout
 =========================================================================
 
 <div style="float: right;">
-    <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/develop/htdocs/img/logo.png" alt="forna logo" title="forna logo" width="100" align="right" />
+    <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/develop/htdocs/img/logo.png" alt="forna logo" title="forna logo" width="150" align="right" />
 </div>
 
 #### Overview ####
