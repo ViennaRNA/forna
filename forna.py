@@ -566,6 +566,17 @@ def pdb_to_json(text, name):
                            "link_type": "protein_chain",
                            "value": 3}]
                 fud.pv('links[-1]')
+            elif (chain2 in rnas and chain1 in rnas):
+                # get the index of this nucleotide in the secondary structure
+
+                sid1 = cgs[chain1].seq_ids.index(a1.parent.id)
+                sid2 = cgs[chain2].seq_ids.index(a2.parent.id)
+
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid1+1)] - counter,
+                           "target": node_ids["{}_{}_{}".format(name, chain2, sid2+1)] - counter,
+                           "link_type": "chain_chain",
+                           "value": 3}]
+                fud.pv('links[-1]')
 
         #jsons += [{'nodes': [], "links": links}]
         jsons += [{"nodes": [], "links": links}]
