@@ -3,6 +3,10 @@ RNA Secondary Structure Visualization Using a Force Directed Graph Layout
 
 #### Overview ####
 
+<div style="float: right">
+    <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/develop/htdocs/img/logo.png" alt="forna logo" title="forna logo"/>
+</div>
+
 The ``forna`` package provides a web interface for displaying RNA secondary
 structures using the [force-directed graph
 layout](https://github.com/mbostock/d3/wiki/Force-Layout) provided by the

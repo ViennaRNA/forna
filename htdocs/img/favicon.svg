@@ -13,9 +13,9 @@
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="favicon.svg"
-   inkscape:export-filename="/scr/minos/jango/Software/forna/htdocs/img/favicon-16x16.png"
-   inkscape:export-xdpi="5.7600002"
-   inkscape:export-ydpi="5.7600002">
+   inkscape:export-filename="/scr/minos/jango/Software/forna/htdocs/img/favicon-32x32.png"
+   inkscape:export-xdpi="11.52"
+   inkscape:export-ydpi="11.52">
   <metadata
      id="metadata1914">
     <rdf:RDF>
@@ -30,24 +30,6 @@
   </metadata>
   <defs
      id="defs1912">
-    <filter
-       inkscape:collect="always"
-       id="filter4857"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="2.1290561"
-         id="feGaussianBlur4859" />
-    </filter>
-    <filter
-       inkscape:collect="always"
-       id="filter4877"
-       color-interpolation-filters="sRGB">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="1.1793243"
-         id="feGaussianBlur4879" />
-    </filter>
     <clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath4903">
@@ -145,8 +127,8 @@
      id="namedview1910"
      showgrid="false"
      inkscape:zoom="1.541391"
-     inkscape:cx="206.17246"
-     inkscape:cy="81.636915"
+     inkscape:cx="92.314263"
+     inkscape:cy="80.339386"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -200,7 +182,7 @@
        id="title1906">81</title>
   </text>
   <rect
-     style="fill:#ffffff;fill-opacity:1;stroke:#f4f4f4;stroke-width:11.82520485;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#ffffff;fill-opacity:1;stroke:#cacaca;stroke-width:11.82520485000000043;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect5084"
      width="238.21797"
      height="238.13145"
