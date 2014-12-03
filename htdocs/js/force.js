@@ -145,8 +145,8 @@ function Graph() {
 
         if (newColorScheme == 'sequence') {
             scale = d3.scale.ordinal()
-            .range(['#dbdb8d', '#98df8a', '#ff9896', '#aec7e8'])
-            .domain(['A','C','G','U']);
+            .range(['#dbdb8d', '#98df8a', '#ff9896', '#aec7e8', '#aec7e8'])
+            .domain(['A','C','G','U','T']);
             nodes.style('fill', function(d) { 
                 return scale(d.name);
             });
