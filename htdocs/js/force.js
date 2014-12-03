@@ -522,7 +522,8 @@ function Graph() {
       } else {
         self.displayParameters["linkOpacity"]=0;
       }
-      svg.selectAll('line').style('stroke-opacity', self.displayParameters["linkOpacity"]);
+
+      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters["linkOpacity"]);
     }
     
     var update = function () {
