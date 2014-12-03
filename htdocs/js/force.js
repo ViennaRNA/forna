@@ -36,7 +36,20 @@ function Graph() {
         "protein_chain": 0.00,
         "chain_chain": 0.00,
         "other": 8.00
-    };
+    }
+    
+    self.displayParameters = {
+        "nodeStrokeWidth": 0.8,
+        "nodeStrokeWidthDefault": 0.8,
+        "nodeLabelFillDefault":  d3.rgb(50,50,50),
+        "nodeLabelFill":  d3.rgb(50,50,50),
+        "linkOpacityDefault": 0.8,
+        "linkOpacity": 0.8,
+        "labelTextFillDefault": d3.rgb(50,50,50),
+        "labelTextFill": d3.rgb(50,50,50),
+        "backgroundColorDefault": "white",
+        "backgroundColor": "white",
+    }
 
     self.customColors = {};
     self.extraLinks = {};
@@ -329,7 +342,7 @@ function Graph() {
         else 
             return -80;})
     .linkDistance(function(d) { return 18 * d.value; })
-    .linkStrength(function(d) { if (self.linkStrengths[d.link_type] !== undefined) {
+    .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
                                   return self.linkStrengths[d.link_type];
                                 } else {
                                   return self.linkStrengths["other"]; }
@@ -460,6 +473,52 @@ function Graph() {
       update();
     }
     
+    self.displayBackground = function(value) {
+      if (value == true) {
+        self.displayParameters["backgroundColor"]=self.displayParameters["backgroundColorDefault"]
+      } else {
+        self.displayParameters["backgroundColor"]='transparent';
+      }
+      rect.attr('fill', self.displayParameters["backgroundColor"]);
+      //vis_nodes.selectAll('[label_type=label]').attr('fill', self.displayParameters["backgroundColor"]);
+    }
+    
+    self.displayNumbering = function(value) {
+      if (value == true) {
+        self.displayParameters["labelTextFill"]=self.displayParameters["labelTextFillDefault"]
+      } else {
+        self.displayParameters["labelTextFill"]='transparent';
+      }
+      vis_nodes.selectAll('[label_type=label]').attr('fill', self.displayParameters["labelTextFill"]);
+    }
+    
+    self.displayNodeOutline = function(value) {
+      if (value == true) {
+        self.displayParameters["nodeStrokeWidth"]=self.displayParameters["nodeStrokeWidthDefault"]
+      } else {
+        self.displayParameters["nodeStrokeWidth"]=0;
+      }
+      svg.selectAll('circle').style('stroke-width', self.displayParameters["nodeStrokeWidth"]);
+    }
+    
+    self.displayNodeLabel = function(value) {
+      if (value == true) {
+        self.displayParameters["nodeLabelFill"]=self.displayParameters["nodeLabelFillDefault"]
+      } else {
+        self.displayParameters["nodeLabelFill"]='transparent';
+      }
+      vis_nodes.selectAll('[label_type=nucleotide]').attr('fill', self.displayParameters["nodeLabelFill"]);
+    }
+    
+    self.displayLinks = function(value) {
+      if (value == true) {
+        self.displayParameters["linkOpacity"]=self.displayParameters["linkOpacityDefault"];
+      } else {
+        self.displayParameters["linkOpacity"]=0;
+      }
+      svg.selectAll('line').style('stroke-opacity', self.displayParameters["linkOpacity"]);
+    }
+    
     var update = function () {
         force.nodes(graph.nodes)
         .links(graph.links)
@@ -478,7 +537,7 @@ function Graph() {
 
         link_lines.attr("class", "link")
         .style("stroke", "#999")
-        .style("stroke-opacity", 0.8)
+        .style("stroke-opacity", self.displayParameters["linkOpacity"])
         .style("stroke-width", function(d) { 
             return 2;
             //return Math.sqrt(d.value); 
@@ -584,7 +643,7 @@ function Graph() {
             node_stroke = function(d) {
                 node_strokes = {};
 
-                node_strokes.nucleotide = 'grey';
+                node_strokes.nucleotide = 'gray';
                 node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
 
@@ -603,23 +662,24 @@ function Graph() {
 
 
             xlink.on('click', link_click);
-
+            
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
             .attr("r", function(d) {if (d.node_type == 'pseudo') return 1; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
-            .style('stroke-width', 0.8)
+            .style('stroke-width', self.displayParameters["nodeStrokeWidth"])
             .style("fill", node_fill);
-
+            
             var labels = gnodes_enter.append("text")
             .text(function(d) { return d.name; })
             .attr('text-anchor', 'middle')
             .attr('font-size', 8.0)
             .attr('font-weight', 'bold')
             .attr('y', 2.5)
-            .attr('fill', d3.rgb(50,50,50))
+            .attr('fill', self.displayParameters["nodeLabelFill"])
             .attr('class', 'node-label')
+            .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")
             .text(function(d) { return d.id; });
 

@@ -307,7 +307,31 @@ AACCGG
                 Settings <span class="caret"></span>
                  <span class="sr-only">Toggle Dropdown</span>
             </button>
-            <form class="dropdown-menu" role="menu" id="settings-form">
+            <form class="dropdown-menu noclose" role="menu" id="settings-form">
+                <H4>Display Options</H4>
+                <div class="form-group">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" data-bind="checked: numbering"> Sequence numbering
+                    </label>
+                  </div>
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" data-bind="checked: nodeLabel"> Nucleotide label
+                    </label>
+                  </div>
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" data-bind="checked: nodeOutline"> Nucleotide outline
+                    </label>
+                  </div>
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" data-bind="checked: displayLinks"> Links
+                    </label>
+                  </div>
+                </div>
+                <H4>Force Field Options</H4>
                 <div class="form-group">
                   <label for="pseudoknotStrength">Pseudoknot strength</label>
                   <input type="text" id="pseudoknotStrength" class="slider form-control"  data-bind="sliderValue: {value: pseudoknotStrength, min:0, max: 2, step: 0.1}"/>
@@ -336,6 +360,10 @@ AACCGG
                   </button>
                   <ul class="dropdown-menu dropdown-menu-right" role="menu">
                       <!-- Dropdown menu links -->
+                      <li style="padding-left: 20px;">
+                        <input type="checkbox" data-bind="checked: background" id="background_check">
+                        <label for="background_check">Background</label>
+                      </li>
                       <li role="presentation"><a role="menuitem" data-bind="click: saveSVG" download="rna.svg" data-toggle="tooltip" data-placement="left" title="Save as SVG file" data-delay="800">SVG</a></li>
                       <li role="presentation"><a role="menuitem" data-bind="click: savePNG" download="rna.png" data-toggle="tooltip" data-placement="left" title="Save as PNG file" data-delay="800">PNG</a></li>
                   </ul>

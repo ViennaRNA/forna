@@ -443,6 +443,56 @@ function RNAViewModel() {
     }
   });
   
+  self.background = ko.observable(true);
+  
+  self.background.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the background option");
+    } else {
+      self.graph.displayBackground(newValue);
+    }
+  });
+  
+  self.numbering = ko.observable(true);
+  
+  self.numbering.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the nubering option");
+    } else {
+      self.graph.displayNumbering(newValue);
+    }
+  });
+  
+  self.nodeLabel = ko.observable(true);
+  
+  self.nodeLabel.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the node label option");
+    } else {
+      self.graph.displayNodeLabel(newValue);
+    }
+  });
+  
+  self.displayLinks = ko.observable(true);
+  
+  self.displayLinks.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the display links option");
+    } else {
+      self.graph.displayLinks(newValue);
+    }
+  });
+  
+  self.nodeOutline = ko.observable(true);
+  
+  self.nodeOutline.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the outline option");
+    } else {
+      self.graph.displayNodeOutline(newValue);
+    }
+  });
+  
   self.showAdd = function() {
     $('#Submit').button('reset');
     $('#add').modal('show');
