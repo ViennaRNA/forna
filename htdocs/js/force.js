@@ -45,6 +45,7 @@ function Graph() {
         "nodeLabelFill":  d3.rgb(50,50,50),
         "linkOpacityDefault": 0.8,
         "linkOpacity": 0.8,
+        "labelLinkOpacityDefault": 0.8,
         "labelTextFillDefault": d3.rgb(50,50,50),
         "labelTextFill": d3.rgb(50,50,50),
         "backgroundColorDefault": "white",
@@ -486,10 +487,14 @@ function Graph() {
     self.displayNumbering = function(value) {
       if (value == true) {
         self.displayParameters["labelTextFill"]=self.displayParameters["labelTextFillDefault"]
+        self.displayParameters["labelLinkOpacity"]=self.displayParameters["labelLinkOpacityDefault"]
       } else {
         self.displayParameters["labelTextFill"]='transparent';
+        self.displayParameters["labelLinkOpacity"]=0;
       }
       vis_nodes.selectAll('[label_type=label]').attr('fill', self.displayParameters["labelTextFill"]);
+      console.log('opacity:', self.displayParameters['labelLinkOpacity'])
+      vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters["labelLinkOpacity"]);
     }
     
     self.displayNodeOutline = function(value) {
@@ -559,7 +564,7 @@ function Graph() {
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
             plink.style("stroke-dasharray", ("3,3"))
 
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]");
+            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link]");
             //link = all_links;
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
