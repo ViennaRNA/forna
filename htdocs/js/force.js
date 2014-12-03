@@ -30,6 +30,13 @@ function Graph() {
         "nodes":[],
         "links":[]
     };
+    
+    self.linkStrengths = {
+        "pseudoknot": 0.00,
+        "protein_chain": 0.00,
+        "chain_chain": 0.00,
+        "other": 8.00
+    };
 
     self.customColors = {};
     self.extraLinks = {};
@@ -322,14 +329,11 @@ function Graph() {
         else 
             return -80;})
     .linkDistance(function(d) { return 18 * d.value; })
-    .linkStrength(function(d) { if (d.link_type == 'pseudoknot') 
-                  { return 0.0; }
-            else if (d.link_type == 'protein_chain')
-                { return 0.01; }
-            else if (d.link_type == 'chain_chain')
-                { return 0.01; }
-            else
-                { return 8; } })
+    .linkStrength(function(d) { if (self.linkStrengths[d.link_type] !== undefined) {
+                                  return self.linkStrengths[d.link_type];
+                                } else {
+                                  return self.linkStrengths["other"]; }
+    })
     .gravity(0.000)
     .nodes(graph.nodes)
     .links(graph.links)
@@ -449,6 +453,11 @@ function Graph() {
     
     self.setGravity = function(value) {
       force.gravity(value);
+    }
+    
+    self.setPseudoknotStrength = function(value) {
+      self.linkStrengths["pseudoknot"] = value;
+      update();
     }
     
     var update = function () {

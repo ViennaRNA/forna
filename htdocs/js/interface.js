@@ -415,7 +415,7 @@ function RNAViewModel() {
   
   self.friction.subscribe( function(newValue) {
     if (self.graph === null) {
-      console.log("graph is null, won't change the animation state");
+      console.log("graph is null, won't change the friction");
     } else {
       
       self.graph.setFriction(newValue/100);
@@ -426,10 +426,20 @@ function RNAViewModel() {
   
   self.gravity.subscribe( function(newValue) {
     if (self.graph === null) {
-      console.log("graph is null, won't change the animation state");
+      console.log("graph is null, won't change the gravity");
     } else {
       
       self.graph.setGravity(newValue/100);
+    }
+  });
+  
+  self.pseudoknotStrength = ko.observable(0);
+  
+  self.pseudoknotStrength.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the pseudoknotStrength");
+    } else {
+      self.graph.setPseudoknotStrength(newValue);
     }
   });
   
