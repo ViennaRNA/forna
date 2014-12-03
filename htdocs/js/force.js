@@ -342,6 +342,7 @@ function Graph() {
             return -200; 
         else 
             return -80;})
+    .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
                                   return self.linkStrengths[d.link_type];

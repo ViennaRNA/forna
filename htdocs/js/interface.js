@@ -411,7 +411,7 @@ function RNAViewModel() {
     }
   });
   
-  self.friction = ko.observable(50);
+  self.friction = ko.observable(35);
   
   self.friction.subscribe( function(newValue) {
     if (self.graph === null) {
@@ -526,7 +526,7 @@ function RNAViewModel() {
   }
 
   self.savePNG = function() {
-    saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 1);
+    saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);
   }
   
   self.saveSVG = function() {
