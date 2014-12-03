@@ -25,58 +25,6 @@ ajax = function(uri, method, data) {
   return $.ajax(request);
 };
 
-//an observable that retrieves its value when first bound
-ko.onDemandObservable = function(callback, target) {
-    var _value = ko.observable();  //private observable
-
-    var result = ko.computed({
-        read: function() {
-            //if it has not been loaded, execute the supplied function
-            if (!result.loaded()) {
-                callback.call(target);
-            }
-            //always return the current value
-            return _value();
-        },
-        write: function(newValue) {
-            //indicate that the value is now loaded and set it
-            result.loaded(true);
-            _value(newValue);
-        },
-        deferEvaluation: true  //do not evaluate immediately when created
-    });
-
-    //expose the current state, which can be bound against
-    result.loaded = ko.observable();
-    //load it again
-    result.refresh = function() {
-        result.loaded(false);
-    };
-
-    return result;
-};
-
-// thanks to http://jsfiddle.net/meno/MBLP9/
-ko.bindingHandlers.bootstrapSwitchOn = {
-    init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-        $elem = $(element);
-        $(element).bootstrapSwitch();
-        $(element).bootstrapSwitch('setState', ko.utils.unwrapObservable(valueAccessor())); // Set intial state
-        $elem.on('switch-change', function (e, data) {
-            valueAccessor()(data.value);
-        }); // Update the model when changed.
-    },
-    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-        var vStatus = $(element).bootstrapSwitch('state');
-        var vmStatus = ko.utils.unwrapObservable(valueAccessor());
-        if (vStatus != vmStatus) {
-            $(element).bootstrapSwitch('setState', vmStatus);
-        }
-    }
-};
-
-
-
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
 
@@ -463,6 +411,88 @@ function RNAViewModel() {
     }
   });
   
+  self.friction = ko.observable(35);
+  
+  self.friction.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the friction");
+    } else {
+      
+      self.graph.setFriction(newValue/100);
+    }
+  });
+  
+  self.gravity = ko.observable(0);
+  
+  self.gravity.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the gravity");
+    } else {
+      
+      self.graph.setGravity(newValue/100);
+    }
+  });
+  
+  self.pseudoknotStrength = ko.observable(0);
+  
+  self.pseudoknotStrength.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the pseudoknotStrength");
+    } else {
+      self.graph.setPseudoknotStrength(newValue);
+    }
+  });
+  
+  self.background = ko.observable(true);
+  
+  self.background.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the background option");
+    } else {
+      self.graph.displayBackground(newValue);
+    }
+  });
+  
+  self.numbering = ko.observable(true);
+  
+  self.numbering.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the nubering option");
+    } else {
+      self.graph.displayNumbering(newValue);
+    }
+  });
+  
+  self.nodeLabel = ko.observable(true);
+  
+  self.nodeLabel.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the node label option");
+    } else {
+      self.graph.displayNodeLabel(newValue);
+    }
+  });
+  
+  self.displayLinks = ko.observable(true);
+  
+  self.displayLinks.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the display links option");
+    } else {
+      self.graph.displayLinks(newValue);
+    }
+  });
+  
+  self.nodeOutline = ko.observable(true);
+  
+  self.nodeOutline.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the outline option");
+    } else {
+      self.graph.displayNodeOutline(newValue);
+    }
+  });
+  
   self.showAdd = function() {
     $('#Submit').button('reset');
     $('#add').modal('show');
@@ -496,7 +526,7 @@ function RNAViewModel() {
   }
 
   self.savePNG = function() {
-    saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 1);
+    saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);
   }
   
   self.saveSVG = function() {

@@ -138,6 +138,12 @@ def create_app(static):
         # pylint: disable=W0612
         def static_fonts(path):
             return app.send_static_file(os.path.join('fonts', path)) 
+
+        @app.route('/img/<path:path>')
+        # pylint: disable=W0612
+        def static_img(path):
+            return app.send_static_file(os.path.join('img', path)) 
+
         # end serving static files
 
     return app
