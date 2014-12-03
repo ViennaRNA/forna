@@ -28,22 +28,30 @@ def create_app(static):
 
     '''
     app = Flask(__name__, static_folder='htdocs')
+    import logging
+    from logging import Formatter
+
+    file_handler = logging.FileHandler('server.log')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(Formatter(
+            '%(asctime)s %(levelname)s: %(message)s '
+            '[in %(pathname)s:%(lineno)d]'
+    ))
+    app.logger.addHandler(file_handler)
 
     @app.errorhandler(400)
     # pylint: disable=W0612
     def custom405(error):
+        app.logger.info(error)
         return error.description, 400
 
     @app.route('/struct_graph', methods=['POST'])
     # pylint: disable=W0612
     def struct_graph():
-        print >>sys.stderr, "request.json:", request.json
-        #print >>sys.stderr, "dir(request)", dir(request)
+        app.logger.info(request.json);
         if not request.json:
            abort(400, "Missing a json in the request")
 
-        fud.pv('request.json')
-        
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
 
@@ -64,10 +72,10 @@ def create_app(static):
         fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
                                                structure)
 
-        print >>sys.stderr, "hcirc:", circular
         try:
             result = forna.fasta_to_json(fasta_text, circular)
         except Exception as ex:
+            app.logger.exception(ex)
             abort(400, "Secondary structure parsing error: {}".format(str(ex)))
 
         return json.dumps(result), 201
@@ -75,6 +83,7 @@ def create_app(static):
     @app.route('/mfe_struct', methods=['POST'])
     # pylint: disable=W0612
     def mfe_struct():
+        app.logger.info(request.json);
         if not request.json:
             abort(400, "Request has no json.")
             
@@ -90,6 +99,7 @@ def create_app(static):
 
     @app.route('/colors_to_json', methods=['POST'])
     def colors_to_json():
+        app.logger.info(request.json);
         if not request.json:
             abort(400, "Request has no json.")
 
@@ -99,6 +109,7 @@ def create_app(static):
         try:
             color_json = forna.parse_colors_text(request.json['text'])
         except Exception as ex:
+            app.logger.exception(ex)
             abort(400, "Custom color error: {}".format(str(ex)))
 
         return json.dumps(color_json)
@@ -112,6 +123,7 @@ def create_app(static):
         try:
             result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
         except Exception as ex:
+            app.logger.exception(ex)
             abort(400, "PDB file parsing error: {}".format(str(ex)))
 
         return json.dumps(result), 201
