@@ -48,6 +48,8 @@ function Graph() {
         "labelLinkOpacityDefault": 0.8,
         "labelTextFillDefault": d3.rgb(50,50,50),
         "labelTextFill": d3.rgb(50,50,50),
+        "labelNodeFillDefault": 'white',
+        "labelNodeFill": 'white',
         "backgroundColorDefault": "white",
         "backgroundColor": "white",
     }
@@ -464,6 +466,7 @@ function Graph() {
     
     self.setFriction = function(value) {
       force.friction(value);
+      force.start()
     }
     
     self.setGravity = function(value) {
@@ -489,11 +492,16 @@ function Graph() {
       if (value == true) {
         self.displayParameters["labelTextFill"]=self.displayParameters["labelTextFillDefault"]
         self.displayParameters["labelLinkOpacity"]=self.displayParameters["labelLinkOpacityDefault"]
+        self.displayParameters["labelNodeFill"] = self.displayParameters["labelNodeFillDefault"]
       } else {
         self.displayParameters["labelTextFill"]='transparent';
         self.displayParameters["labelLinkOpacity"]=0;
+        self.displayParameters["labelNodeFill"] = 'transparent'
       }
-      vis_nodes.selectAll('[label_type=label]').attr('fill', self.displayParameters["labelTextFill"]);
+      console.log('sd', self.displayParameters['labelNodeFill'])
+      console.log(vis_nodes.selectAll('[node_type=label]'))
+      vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters['labelNodeFill'])
+      vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters["labelTextFill"]);
       console.log('opacity:', self.displayParameters['labelLinkOpacity'])
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters["labelLinkOpacity"]);
     }
