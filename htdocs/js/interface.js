@@ -13,10 +13,15 @@ $(window).resize(function() {
 }); 
 
 setPlottingArea = function() {
-  var bodyheight = $(window).height()-120;
-  $("#plotting-area").height(bodyheight);
-  var bodywidth = $("#chart").width();
-  $("#plotting-area").width(bodywidth);
+  var chartheight = $(window).height();
+  if (!document.fullscreenElement &&    // alternative standard method
+    !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {
+    chartheight = chartheight-120;
+  }
+  
+  $("#plotting-area").height(chartheight);
+  var chartwidth = $("#chart").width();
+  $("#plotting-area").width(chartwidth);
 }
 
 // thanks to https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Using_full_screen_mode
