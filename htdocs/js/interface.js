@@ -19,6 +19,7 @@ setPlottingArea = function() {
   $("#plotting-area").width(bodywidth);
 }
 
+// thanks to https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Using_full_screen_mode
 function toggleFullScreen(id) {
   var elem = document.getElementById(id);
   
