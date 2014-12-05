@@ -8,6 +8,17 @@
 
 serverURL = "";
 
+$(window).resize(function() {
+ setPlottingArea();
+}); 
+
+setPlottingArea = function() {
+  var bodyheight = $(window).height()-120;
+  $("#plotting-area").height(bodyheight);
+  var bodywidth = $("#chart").width();
+  $("#plotting-area").width(bodywidth);
+}
+
 // custom ajax call
 ajax = function(uri, method, data) {
   var request = {
@@ -365,7 +376,7 @@ function AddViewModel() {
 function RNAViewModel() {
   var self = this;
   
-  self.graph = new Graph();
+  self.graph = new Graph("#chart");
   self.molecules = ko.observableArray([]);
   
   self.addMolecules = function(array) {
@@ -560,7 +571,7 @@ var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
 var colorView = new ColorViewModel();
 
-ko.applyBindings(rnaView, document.getElementById('main'));
+ko.applyBindings(rnaView, document.getElementById('chart'));
 ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));

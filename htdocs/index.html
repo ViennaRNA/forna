@@ -23,6 +23,8 @@
   <link rel='stylesheet' type='text/css' href='css/interface.css' />
   <link rel='stylesheet' type='text/css' href='css/bootstrap-switch.css' />
   <link rel='stylesheet' type='text/css' href='css/bootstrap-slider.min.css'/>
+  <!-- Custom CSS for our Institut -->
+  <link rel='stylesheet' type='text/css' href='css/tbi_main.css' />
 
   <!-- Java Script -->
   <!-- Get jQuery use local if unavailable -->
@@ -243,11 +245,22 @@ AACCGG
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
   
+  <!-- Header starts here! -->
+  <header>
+      <img class="unilogo" src="img/unilogo_small.png" alt="Univiersity of Vienna"/>
+      <hgroup>
+          <span class="name">forna</span><br>
+          <span class="institute">Institute for Theoretical Chemistry</span>
+      </hgroup>
+      <img class="logo" src="img/favicon.svg">
+  </header>
+  
   <!-- Main content starts here! -->
-  <div class="container" role="main" id="main">
+  <!-- the graph goes here -->
+  <div class="gallery" id='chart'>
 
-    <div class="row">
-      <div class="col-md-4 col-xs-12">
+    <div class="menu-top">
+      <div class="menu-left">
         <form role="form">
           <div class="form-group">
             <div class="btn-group">
@@ -265,7 +278,7 @@ AACCGG
           </div>
         </form>
       </div>
-      <div class="col-md-8 col-xs-12">
+      <div class="menu-right">
         <form role="form">
           <div class="form-group pull-right">
             <div class="btn-group" id="Colors" data-toggle="tooltip" data-placement="left" title="Choose the color scheme" data-delay="800">
@@ -286,15 +299,8 @@ AACCGG
       </div>
     </div>
     
-    <div class="row">
-      <div class="col-md-12 col-xs-12">
-        <!-- the graph goes here -->
-        <div class="gallery" id='chart'> </div>
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="col-md-8 col-xs-12">
+    <div class="menu-bottom">
+      <div class="menu-left">
         <div class="form-group">
           <div class="btn-group" data-toggle="tooltip" data-placement="bottom" title="Animation toggle" data-delay="800">
             <input type="checkbox" class="bootstrap-switch"  data-bind="bootstrapSwitchOn: animation" name="animation-toggle">
@@ -350,7 +356,7 @@ AACCGG
         </div>
       </div>
       
-      <div class="col-md-4 col-xs-12">
+      <div class="menu-right">
         <form role="form">
           <div class="form-group pull-right">
               <div class="btn-group dropup">
@@ -371,15 +377,14 @@ AACCGG
 
         </form>
       </div>
-    </div>
     
     <!-- foce field javascript -->
     <script type="text/javascript" src="js/force.js"></script>
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
     
-  </div>
-  <canvas width="960" height="500" style="display:none"></canvas>
+  </div></div>
+  
 
   <script>  
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

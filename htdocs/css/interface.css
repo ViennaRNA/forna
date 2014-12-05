@@ -1,3 +1,53 @@
+body {
+	margin:0;
+	padding:0;
+	height:100%; /* needed for container min-height */
+	overflow: hidden;
+}
+
+header {
+  height: 120px;
+  max-width: 1100px;
+  width: 100%;
+  margin: auto;
+}
+
+div.gallery {
+	position:relative; /* needed for footer positioning*/
+	margin:0 auto; /* center, not in IE5 */
+	background:#fff;
+	max-width: 1100px;
+	width: 100%;
+	height:auto !important; /* real browsers */
+	height:100%; /* IE6: treaded as min-height*/
+	min-height:100%; /* real browsers */
+	border: 1px solid #ccc;
+}
+
+.menu-top {
+  position: absolute;
+  top: 0px;
+  padding: 10px;
+  width: 100%;
+}
+
+.menu-bottom {
+  position: absolute;
+  bottom: 0px;
+  padding: 10px;
+  width: 100%;
+}
+
+.menu-left {
+  position: relative;
+  float: left;
+}
+
+.menu-right {
+  position: relative;
+  float: right;
+}
+
 textarea {
   font-family: "Lucida Console", Monaco, monospace;
   height: 400px !important;
@@ -20,10 +70,6 @@ textarea {
 
 .modal-body {
   overflow-y: auto;
-}
-
-body {
-  margin-top: 10px;
 }
 
 label.btn > input[type='radio']
