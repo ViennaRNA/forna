@@ -274,14 +274,16 @@ AACCGG
                     <li><a data-bind="click: showAddPDB">Add PDB File</a></li>
                 </ul>
             </div>
-            <button class="btn btn-default" data-bind="click: clearGraph">Clear</button>
+            <div class="btn-group" data-toggle="tooltip" data-placement="right" title="Delete everyting" data-delay="800">
+              <button class="btn btn-default" data-bind="click: clearGraph">Clear</button>
+            </div>
           </div>
         </form>
       </div>
       <div class="menu-right">
         <form role="form">
           <div class="form-group pull-right">
-            <div class="btn-group" id="Colors" data-toggle="tooltip" data-placement="left" title="Choose the color scheme" data-delay="800">
+            <div class="btn-group" id="Colors" data-toggle="tooltip" data-placement="bottom" title="Choose the color scheme" data-delay="800">
               <label class="btn btn-default" data-bind="css: { active: colors() == 'positions' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'">Positions</label>
               <label class="btn btn-default" data-bind="css: { active: colors() == 'structure' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'">Structure</label>
               <label class="btn btn-default" data-bind="css: { active: colors() == 'sequence' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'">Sequence</label>
@@ -290,7 +292,7 @@ AACCGG
                 <label class="btn btn-default dropdown-toggle" data-bind="css: { active: colors() == 'custom' }"><input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'custom', click: showCustomColors"><span class="caret"></span></label>
               </div>
             </div>
-            <div class="btn-group" id="About">
+            <div class="btn-group" id="About" data-toggle="tooltip" data-placement="bottom" title="About" data-delay="800">
               <button data-bind="click: showAbout" class="btn btn-default"><span class="glyphicon glyphicon-question-sign"></span></button>
             
             </div>
@@ -302,16 +304,17 @@ AACCGG
     <div class="menu-bottom">
       <div class="menu-left">
         <div class="form-group">
-          <div class="btn-group" data-toggle="tooltip" data-placement="bottom" title="Animation toggle" data-delay="800">
+          <div class="btn-group" data-toggle="tooltip" data-placement="top" title="Animation toggle" data-delay="800">
             <input type="checkbox" class="bootstrap-switch"  data-bind="bootstrapSwitchOn: animation" name="animation-toggle">
           </div>
-          <div class="btn-group" data-toggle="tooltip" data-placement="bottom" title="Center molecules" data-delay="800">
+          <div class="btn-group" data-toggle="tooltip" data-placement="top" title="Center molecules" data-delay="800">
             <button data-bind="click: centerMolecules" class="btn btn-default"><span class="glyphicon glyphicon-screenshot"></span></button>
           </div>
-          <div class="btn-group dropup">
+          <div class="btn-group dropup" data-toggle="tooltip" data-placement="top" title="Settings" data-delay="800">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                Settings <span class="caret"></span>
-                 <span class="sr-only">Toggle Dropdown</span>
+              <span class="glyphicon glyphicon-cog">&nbsp;</span>
+              <span class="caret"></span>
+              <span class="sr-only">Toggle Dropdown</span>
             </button>
             <form class="dropdown-menu noclose" role="menu" id="settings-form">
                 <H4>Display Options</H4>
@@ -359,8 +362,9 @@ AACCGG
       <div class="menu-right">
         <form role="form">
           <div class="form-group pull-right">
-              <div class="btn-group dropup">
-                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Save As
+              <div class="btn-group dropup" data-toggle="tooltip" data-placement="top" title="Save Image" data-delay="800">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                      <span class="glyphicon glyphicon-download-alt">&nbsp;</span>
                       <span class="caret"></span>
                       <span class="sr-only">Toggle Dropdown</span>
                   </button>
