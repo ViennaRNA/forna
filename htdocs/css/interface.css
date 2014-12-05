@@ -12,7 +12,7 @@ header {
   margin: auto;
 }
 
-div.gallery {
+#chart {
 	position:relative; /* needed for footer positioning*/
 	margin:0 auto; /* center, not in IE5 */
 	background:#fff;
@@ -23,6 +23,12 @@ div.gallery {
 	min-height:100%; /* real browsers */
 	border: 1px solid #ccc;
 }
+
+#chart:-webkit-full-screen	{ max-width: 100% !important }
+#chart:-moz-full-screen		{ max-width: 100% !important }
+#chart:-ms-full-screen		{ max-width: 100% !important }
+#chart:-o-full-screen		{ max-width: 100% !important }
+#chart:full-screen			{ max-width: 100% !important }
 
 .menu-top {
   position: absolute;
