@@ -37,12 +37,14 @@ header hgroup .name {
   font-weight: 400;
   line-height: 1.2em;
   color: white;
+  text-decoration: none;
 }
 
 header hgroup .institute {
   font-size: 1.1em;
   font-weight: 400;
   color: #FFF;
+  text-decoration: none;
 }
 
 header img.unilogo {
