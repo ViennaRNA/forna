@@ -21,7 +21,7 @@ header {
 	height:auto !important; /* real browsers */
 	height:100%; /* IE6: treaded as min-height*/
 	min-height:100%; /* real browsers */
-	border: 1px solid #ccc;
+	border: 2px solid #bbb;
 }
 
 #chart:-webkit-full-screen	{ max-width: 100% !important }
