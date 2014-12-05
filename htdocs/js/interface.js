@@ -10,7 +10,7 @@ serverURL = "";
 
 $(window).resize(function() {
  setPlottingArea();
-}); 
+});
 
 setPlottingArea = function() {
   var chartheight = $(window).height();
@@ -40,15 +40,19 @@ function toggleFullScreen(id) {
       elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
     }
   } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.msExitFullscreen) {
-      document.msExitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
+    exitFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
   }
 }
 
@@ -538,24 +542,28 @@ function RNAViewModel() {
   });
   
   self.showAdd = function() {
+    exitFullscreen();
     $('#Submit').button('reset');
     $('#add').modal('show');
     self.graph.deaf = true;
   };
 
   self.showAddPDB = function() {
+    exitFullscreen();
     $('#PDBSubmit').button('reset');
     $('#addPDB').modal('show');
     self.graph.deaf = true;
   };
 
   self.showCustomColors = function() {
+    exitFullscreen();
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
     self.graph.deaf = true;
   }
   
   self.showAbout = function() {
+    exitFullscreen();
     $('#about').modal('show');
   };
   
