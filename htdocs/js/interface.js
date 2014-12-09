@@ -8,6 +8,54 @@
 
 serverURL = "";
 
+$(window).resize(function() {
+ setPlottingArea();
+});
+
+setPlottingArea = function() {
+  var chartheight = $(window).height();
+  if (!document.fullscreenElement &&    // alternative standard method
+    !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {
+    chartheight = chartheight-2;
+  }
+  
+  $("#plotting-area").height(chartheight);
+  var chartwidth = $("#chart").width();
+  $("#plotting-area").width(chartwidth);
+}
+
+// thanks to https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Using_full_screen_mode
+function toggleFullScreen(id) {
+  var elem = document.getElementById(id);
+  
+  if (!document.fullscreenElement &&    // alternative standard method
+      !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  // current working methods
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+  } else {
+    exitFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  }
+}
+
 // custom ajax call
 ajax = function(uri, method, data) {
   var request = {
@@ -130,6 +178,7 @@ function ColorViewModel() {
 
             self.colorSchemeJson(data);
             rnaView.graph.addCustomColors(self.colorSchemeJson());
+            rnaView.colors('custom');
             rnaView.graph.changeColorScheme(rnaView.colors());
         }).error( function(jqXHR) {
             console.log('error again')
@@ -365,7 +414,7 @@ function AddViewModel() {
 function RNAViewModel() {
   var self = this;
   
-  self.graph = new Graph();
+  self.graph = new Graph("#chart");
   self.molecules = ko.observableArray([]);
   
   self.addMolecules = function(array) {
@@ -494,24 +543,28 @@ function RNAViewModel() {
   });
   
   self.showAdd = function() {
+    exitFullscreen();
     $('#Submit').button('reset');
     $('#add').modal('show');
     self.graph.deaf = true;
   };
 
   self.showAddPDB = function() {
+    exitFullscreen();
     $('#PDBSubmit').button('reset');
     $('#addPDB').modal('show');
     self.graph.deaf = true;
   };
 
   self.showCustomColors = function() {
+    exitFullscreen();
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
     self.graph.deaf = true;
   }
   
   self.showAbout = function() {
+    exitFullscreen();
     $('#about').modal('show');
   };
   
@@ -560,7 +613,7 @@ var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
 var colorView = new ColorViewModel();
 
-ko.applyBindings(rnaView, document.getElementById('main'));
+ko.applyBindings(rnaView, document.getElementById('chart'));
 ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));
