@@ -42,6 +42,7 @@
   <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
 </head>
 <body>
+<div id="main">
   <!-- 'Add new molecule' modal -->
   <div class="modal fade" id="add" > <!-- data-bind="showModal: loaded"-->
     <div class="modal-dialog">
@@ -128,6 +129,9 @@
           <h4 class="modal-title">About forna</h4>
         </div>
         <div class="modal-body">
+          <div style="float: right;">
+            <img src="/img/favicon-192x192.png" alt="forna logo" title="forna logo" width="150" align="right" />
+          </div>
           <h1 id="rna-secondary-structure-visualization-using-a-force-directed-graph-layout">RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h1>
           <h4 id="overview">Overview</h4>
           <p>The <code>forna</code> package provides a web interface for displaying RNA secondary
@@ -197,6 +201,18 @@ AACCGG
           like probing or conservation data that varies continuously on a
           per-nucleotide level.  
 
+          <h3>Psuedoknots</h3>
+          Feel free to enter structures with pseudoknots. Here's the format:
+
+<pre>
+>1GID
+AACCGG
+((.[[.)).]]
+</pre>
+
+          Use your imagination!
+
+
           <h3>Editing the Structure</h3>
 
           Links can artificially be added by holding down the shift key and
@@ -215,6 +231,13 @@ AACCGG
 
           The force can be turned off by either hitting the space key or by
           flipping the switch in the lower left hand corner of the screen.
+
+          <h3>Friction / Wobbliness</h3>
+
+          How 'wobbly' a molecule appears can be adjusted by the friction
+          slider in the settings menu just to the right of the colors menu.
+          Lowering the friction (paradoxically) makes the molecule less wobbly
+          and increasing it makes it more so.
 
           <h3> PDB Files </h3>
 
@@ -360,7 +383,7 @@ AACCGG
       
       <div class="menu-right">
         <div class="btn-group" data-toggle="tooltip" data-placement="top" title="Fullscreen" data-delay='{"show":"800", "hide":"50"}'>
-          <button onclick="toggleFullScreen('chart'); return false;" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen"></span></button>
+          <button onclick="toggleFullScreen('main'); return false;" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen"></span></button>
         </div>
         <div class="btn-group dropup">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -391,7 +414,7 @@ AACCGG
     <script type="text/javascript" src="js/interface.js"></script>
     
   </div>
-  
+</div> 
 
   <script>  
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
