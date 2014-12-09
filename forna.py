@@ -132,7 +132,11 @@ def bg_to_json(bg, circular=False):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i + 1), "id": node_id,
-                                 "color": 'transparent', 'node_type': 'label', "struct_name": bg.name}]
+                                 "color": 'transparent', 'node_type': 'label', 
+                                 "struct_name": bg.name, "x": struct['nodes'][i]['x'], 
+                                 "y": struct['nodes'][i]['y'],
+                                 "px": struct['nodes'][i]['px'], 
+                                             'py': struct['nodes'][i]['py']}]
             struct["links"] += [{"source": i, "target": node_id, "value": 1, "link_type": "label_link"}]
 
     # store the node id of the center id for each loop
