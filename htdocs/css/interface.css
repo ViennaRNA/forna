@@ -1,3 +1,53 @@
+body {
+	margin:0;
+	padding:0;
+	height:100%; /* needed for container min-height */
+	overflow: hidden;
+}
+
+#chart {
+	position:relative; /* needed for footer positioning*/
+	margin:0 auto; /* center, not in IE5 */
+	background:#fff;
+	width: 100%;
+	height:auto !important; /* real browsers */
+	height:100%; /* IE6: treaded as min-height*/
+	min-height:100%; /* real browsers */
+	border: 1px solid #bbb;
+}
+
+#chart:-webkit-full-screen	{ max-width: 100% !important }
+#chart:-moz-full-screen		{ max-width: 100% !important }
+#chart:-ms-full-screen		{ max-width: 100% !important }
+#chart:-o-full-screen		{ max-width: 100% !important }
+#chart:full-screen			{ max-width: 100% !important }
+
+.menu-top {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  padding-top: 6px;
+}
+
+.menu-bottom {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+.menu-left {
+  position: relative;
+  float: left;
+  padding: 4px 4px 0px 10px;
+}
+
+.menu-right {
+  position: relative;
+  float: right;
+  padding: 4px 10px 0px 4px;
+}
+
 textarea {
   font-family: "Lucida Console", Monaco, monospace;
   height: 400px !important;
@@ -9,10 +59,6 @@ textarea {
   max-width: 1100px;
 }
 
-.btn {
-  margin-top: 5px;
-}
-
 .form-group {
     margin-bottom: 0px !important;
     margin-top: 0px !important;
@@ -22,15 +68,28 @@ textarea {
   overflow-y: auto;
 }
 
-body {
-  margin-top: 10px;
+.dropdown-menu > li > a, .dropdown-menu > li > label {
+  cursor: pointer;
 }
 
-label.btn > input[type='radio']
-{
-    display: none;
+.dropdown-menu > li > label > input[type='radio'], .dropdown-menu > li > label > input[type='checkbox'] {
+    /*display: none;*/
 }
 
-#settings-form {
-    padding: 20px;
+.dropdown-menu > li > label {
+  display: block;
+  padding: 3px 20px;
+  margin-bottom: 0px;
+  clear: both;
+  white-space: nowrap;
+  font-weight: normal;
+}
+
+.dropdown-menu > li > label:hover, .dropdown-menu > li > label:focus, .dropdown-menu > li > label:active {
+  background-color: #F5F5F5;
+}
+
+.dropdown-menu > li.active, .dropdown-menu > li.active :hover, .dropdown-menu > li.active :active {
+  color: white;
+  background-color: #428BCA;
 }

@@ -6,15 +6,13 @@
 * Date: 2014-10-15
 */
 
-function Graph() {
+function Graph(element) {
     var self = this;
 
-    var w = 679,
-    h = 600,
-    fill = d3.scale.category20();
+    var fill = d3.scale.category20();
 
-    self.svgW = w;
-    self.svgH = h;
+    self.svgW = 800;
+    self.svgH = 600;
 
     // mouse event vars
     var mousedown_link = null,
@@ -22,9 +20,9 @@ function Graph() {
         mouseup_node = null;
 
     var xScale = d3.scale.linear()
-    .domain([0,w]);
+    .domain([0,self.svgW]);
     var yScale = d3.scale.linear()
-    .domain([0,h]);
+    .domain([0,self.svgH]);
 
     var graph = self.graph = {
         "nodes":[],
@@ -111,9 +109,8 @@ function Graph() {
     };
 
     function setSize() {
-        var svgStyles = window.getComputedStyle(svg.node());
-        var svgW = parseInt(svgStyles.width);
-        var svgH = parseInt(svgStyles.height);
+        var svgW = $(element).width();
+        var svgH = $(element).height();
 
         self.svgW = svgW;
         self.svgH = svgH;
@@ -259,12 +256,12 @@ function Graph() {
         scaleExtent([0.1,10]).
         on("zoom", redraw);
 
-    d3.select("#chart").select("svg").remove();
+    d3.select(element).select("svg").remove();
 
-    var svg = d3.select("#chart")
+    var svg = d3.select(element)
     .append("svg:svg")
-    .attr("width", w)
-    .attr("height", h)
+    .attr("width", self.svgW)
+    .attr("height", self.svgH)
     .attr("id", 'plotting-area');
 
     var svg_graph = svg.append('svg:g')
@@ -274,8 +271,8 @@ function Graph() {
     .on('mouseup', mouseup);
 
     var rect = svg_graph.append('svg:rect')
-    .attr('width', w)
-    .attr('height', h)
+    .attr('width', self.svgW)
+    .attr('height', self.svgH)
     .attr('fill', 'white')
     .attr('stroke', 'transparent')
     .attr('stroke-width', 1)
@@ -355,7 +352,7 @@ function Graph() {
     .nodes(graph.nodes)
     .links(graph.links)
     .chargeDistance(110)
-    .size([w, h]);
+    .size([self.svgW, self.svgH]);
 
     // line displayed when dragging new nodes
     var drag_line = vis.append("line")
@@ -719,6 +716,7 @@ function Graph() {
           force.start();
         }
     };
-
+    
+    setPlottingArea();
     setSize();
 }

@@ -1,3 +1,10 @@
+svg {
+  display: block;
+  min-width: 100%
+  width: 100%
+  min-height: 100%;
+}
+
 circle.node {
   stroke: #fff;
   stroke-width: 1.5px;
@@ -43,21 +50,6 @@ text {
 
 g.gnode {
 
-}
-
-svg { 
-    display:block; /* required for firefox to give valid
-    height and width used values for getComputedStyle()
-    see https://bugzilla.mozilla.org/show_bug.cgi?id=874919 
-                    */
-    margin:1em;
-    height:calc(100% - 2em) - 1em;
-    width: calc(100% - 2em);
-}
-
-#zrect {
-    stroke-width: 1;
-    stroke: grey;
 }
 
 .noselect {

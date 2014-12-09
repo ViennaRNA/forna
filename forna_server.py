@@ -125,6 +125,11 @@ def create_app(static):
         def index():
             return app.send_static_file('index.html')
 
+        @app.route('/<file>')
+        # pylint: disable=W0612
+        def static_root(file):
+            return app.send_static_file(file)
+
         @app.route('/js/<path:path>')
         # pylint: disable=W0612
         def static_js(path):
