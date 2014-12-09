@@ -49,5 +49,16 @@ header hgroup .institute {
 
 header img.unilogo {
   float: right;
-  padding: 5px 5px 0 0;
+  padding: 5px 5px 0 5px;
 }
+
+@media only screen and (max-width: 560px){
+  header hgroup {
+    width: 75%;
+  }
+
+  header img.unilogo {
+    float: left;
+  }
+}
+
