@@ -543,28 +543,24 @@ function RNAViewModel() {
   });
   
   self.showAdd = function() {
-    exitFullscreen();
     $('#Submit').button('reset');
     $('#add').modal('show');
     self.graph.deaf = true;
   };
 
   self.showAddPDB = function() {
-    exitFullscreen();
     $('#PDBSubmit').button('reset');
     $('#addPDB').modal('show');
     self.graph.deaf = true;
   };
 
   self.showCustomColors = function() {
-    exitFullscreen();
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
     self.graph.deaf = true;
   }
   
   self.showAbout = function() {
-    exitFullscreen();
     $('#about').modal('show');
   };
   
