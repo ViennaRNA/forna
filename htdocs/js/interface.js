@@ -178,6 +178,7 @@ function ColorViewModel() {
 
             self.colorSchemeJson(data);
             rnaView.graph.addCustomColors(self.colorSchemeJson());
+            rnaView.colors('custom');
             rnaView.graph.changeColorScheme(rnaView.colors());
         }).error( function(jqXHR) {
             console.log('error again')
