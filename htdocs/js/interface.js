@@ -16,7 +16,7 @@ setPlottingArea = function() {
   var chartheight = $(window).height();
   if (!document.fullscreenElement &&    // alternative standard method
     !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {
-    chartheight = chartheight-124;
+    chartheight = chartheight-2;
   }
   
   $("#plotting-area").height(chartheight);
