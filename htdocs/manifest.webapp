@@ -3,7 +3,7 @@
   "description": "RNA Secondary Structure Visualization",
   "launch_path": "/forna/index.html",
   "icons": {
-    "128": "/img/icon-128.png"
+    "128": "/forna/img/icon-128.png"
   },
   "developer": {
     "name": "Theoretical Biochemistry Group, University of Vienna",
