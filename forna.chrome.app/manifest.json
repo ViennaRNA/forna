@@ -1,0 +1,11 @@
+{
+  "name": "forna",
+  "description": "RNA Secondary Structure Visualization",
+  "version": "0.4",
+  "manifest_version": 2,
+  "app": {
+    "urls": ["http://nibiru.tbi.univie.ac.at/forna/"],
+    "launch": { "web_url": "http://nibiru.tbi.univie.ac.at/forna/" }
+  },
+  "icons": { "16": "icon-16.png", "128": "icon-128.png" }
+}
