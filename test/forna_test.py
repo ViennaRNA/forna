@@ -1,8 +1,8 @@
-import unittest
 import forna
 import forgi.graph.bulge_graph as fgb
 import forgi.utilities.debug as fud
-
+import json
+import unittest
 
 class FornaTest(unittest.TestCase):
     def setUp(self):
@@ -55,10 +55,9 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
         bg.from_fasta(pk_fasta)
 
         colors_text = """
-color hi 4 orange
-color hi 5 orange
-color bye 6-9 blue
-highlight hi 7-8 brown
+4 orange hi
+5 orange hi
+6-9 blue bye
 """
 
         colors = forna.parse_colors_text(colors_text)
@@ -93,23 +92,27 @@ highlight hi 7-8 brown
         self.assertEqual(nucs, [6,7,8,9])
 
 
+    """
     def test_from_pdb(self):
+        '''
         with open('test/data/3UZT.pdb', 'r') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '4G0A')
-
         '''
+
         with open('test/data/4GV9.pdb') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '4GV9')
 
+        '''
         with open('test/data/1MFQ.pdb') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '1MFQ')
         '''
+    """
 
     def test_json_to_bulgegraph(self):
         pk_fasta = """>4QK8_A
@@ -118,4 +121,5 @@ GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUC
         """
         struct = forna.fasta_to_json(pk_fasta)
         #fud.pv('struct')
-        forna.json_to_fasta(json.dumps(struct))
+        fasta_new = forna.json_to_fasta(json.dumps(struct))
+        fud.pv('fasta_new')

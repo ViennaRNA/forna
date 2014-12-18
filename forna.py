@@ -420,20 +420,32 @@ def json_to_fasta(rna_json_str):
 
     for link in rna_json['links']:
         # only consider base-pair links
-        if link['link_type'] != 'basepair':
+        if link['link_type'] != 'basepair' and link['link_type'] != 'pseudoknot' :
             continue
         
         from_node = rna_json['nodes'][link['source']]
         to_node = rna_json['nodes'][link['target']]
+
+        fud.pv('from_node["struct_name"], to_node["struct_name"]')
 
         if from_node['struct_name'] == to_node['struct_name']:
             # the position of each node in the RNA is one greater than its id
             pair_list[from_node['struct_name']] += [(int(from_node['id']) + 1,
                                                      int(to_node['id']) + 1)]
 
+            pair_list[from_node['struct_name']] += [(int(to_node['id']) + 1,
+                                                     int(from_node['id']) + 1)]
+
+    out_str = ""
     for key in pair_list.keys():
         fud.pv('pair_list[key]')
+        fud.pv('sorted(pair_list[key])')
+        pair_table = fus.tuples_to_pairtable(pair_list[key])
+        fud.pv('pair_table')
         dotbracket = fus.pairtable_to_dotbracket(fus.tuples_to_pairtable(pair_list[key]))
+        out_str += ">{}\n{}".format(key, dotbracket)
+
+    return out_str
 
 def add_colors_to_graph(struct, colors):
     """
