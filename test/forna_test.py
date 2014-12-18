@@ -111,3 +111,11 @@ highlight hi 7-8 brown
             forna.pdb_to_json(text, '1MFQ')
         '''
 
+    def test_json_to_bulgegraph(self):
+        pk_fasta = """>4QK8_A
+GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUCCCGCACCCGACAGCUAACUCCGGAGGCAAUAAAGGAAGGA
+..((((....((....))..(((((....(.....(.[((((....((((((.....))))))..(((((.{{{{{{)))))..)))).)].)....)))))..)))).....}}}}}}.
+        """
+        struct = forna.fasta_to_json(pk_fasta)
+        #fud.pv('struct')
+        forna.json_to_fasta(json.dumps(struct))

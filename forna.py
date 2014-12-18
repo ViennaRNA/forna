@@ -405,6 +405,36 @@ def parse_colors_text(colors_text):
 
     return colors
 
+def json_to_fasta(rna_json_str):
+    '''
+    Convert an RNA json as returned by fasta to json into a fasta string
+    (which will later be used to create a BulgeGraph and the another json.
+
+    :param rna_json_str: A json string representation of an RNA as returned by fasta_to_json
+    :return: A fasta string representing this molecule
+    '''
+    rna_json = json.loads(rna_json_str)
+
+    # store the pair tables for each molecule separately
+    pair_list = col.defaultdict(list)
+
+    for link in rna_json['links']:
+        # only consider base-pair links
+        if link['link_type'] != 'basepair':
+            continue
+        
+        from_node = rna_json['nodes'][link['source']]
+        to_node = rna_json['nodes'][link['target']]
+
+        if from_node['struct_name'] == to_node['struct_name']:
+            # the position of each node in the RNA is one greater than its id
+            pair_list[from_node['struct_name']] += [(int(from_node['id']) + 1,
+                                                     int(to_node['id']) + 1)]
+
+    for key in pair_list.keys():
+        fud.pv('pair_list[key]')
+        dotbracket = fus.pairtable_to_dotbracket(fus.tuples_to_pairtable(pair_list[key]))
+
 def add_colors_to_graph(struct, colors):
     """
     Change the colors in the structure graph. Colors should be a dictionary-fied
