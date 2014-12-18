@@ -34,6 +34,7 @@ body {
   top: 0px;
   width: 100%;
   padding-top: 6px;
+  pointer-events: none;
 }
 
 .menu-bottom {
@@ -41,18 +42,21 @@ body {
   bottom: 0px;
   width: 100%;
   padding-bottom: 10px;
+  pointer-events: none;
 }
 
 .menu-left {
   position: relative;
   float: left;
   padding: 4px 4px 0px 10px;
+  pointer-events: all;
 }
 
 .menu-right {
   position: relative;
   float: right;
   padding: 4px 10px 0px 4px;
+  pointer-events: all;
 }
 
 textarea {
