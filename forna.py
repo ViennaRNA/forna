@@ -118,11 +118,11 @@ def bg_to_json(bg, circular=False):
         # the numbers for source and target indicate the indices of the nodes
         # in the "nodes" array, not their id or name
         if 0 < i < bg.seq_length:
-            link = {"source": i - 1, "target": i, "value": 1, "link_type": "real"}
+            link = {"source": i - 1, "target": i, "value": 1, "link_type": "backbone"}
             struct["links"] += [link]
 
     if circular:
-        struct["links"] += [{"source": 0, "target": bg.seq_length-1, "value":1, "link_type": "real"}]
+        struct["links"] += [{"source": 0, "target": bg.seq_length-1, "value":1, "link_type": "backbone"}]
 
     num_nodes = len(struct["nodes"])
     num_labels = 0
@@ -281,7 +281,7 @@ def bg_to_json(bg, circular=False):
         prev_f, prev_t = None, None
 
         for (f, t) in bg.stem_bp_iterator(d):
-            link = {"source": f - 1, "target": t - 1, "value": 1, "link_type": "real"}
+            link = {"source": f - 1, "target": t - 1, "value": 1, "link_type": "basepair"}
             struct["links"] += [link]
 
             if prev_f is not None and prev_t is not None:
