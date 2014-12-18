@@ -60,12 +60,11 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 
-def bg_to_json(bg, circular=False):
+def bg_to_json(bg, circular=False, xs = None, ys = None):
     """
     Convert a BulgeGraph to a json file containing a graph layout designed
     to create a nice force-directed graph using the d3 library.
     """
-
     # the json structure that will hold everything
     struct = {"nodes": [], "links": []}
 
@@ -78,19 +77,21 @@ def bg_to_json(bg, circular=False):
 
     # the X and Y coordinates of each nucleotide as returned by RNAplot
     bp_string = bg.to_dotbracket_string()
-    coords = RNA.get_xy_coordinates(bp_string)
-    xs = np.array([coords.get(i).X for i in range(bg.seq_length)])
-    ys = np.array([coords.get(i).Y for i in range(bg.seq_length)])
 
-    # center the structure on the screen
-    center_x = np.mean(xs)
-    center_y = np.mean(ys)
+    if xs is None and ys is None:
+        coords = RNA.get_xy_coordinates(bp_string)
+        xs = np.array([coords.get(i).X for i in range(bg.seq_length)])
+        ys = np.array([coords.get(i).Y for i in range(bg.seq_length)])
 
-    center_width = scr_width / 2.
-    center_height = scr_height / 2.
+        # center the structure on the screen
+        center_x = np.mean(xs)
+        center_y = np.mean(ys)
 
-    new_xs = (xs - center_x) + center_width
-    new_ys = (ys - center_y) + center_height
+        center_width = scr_width / 2.
+        center_height = scr_height / 2.
+
+        xs = (xs - center_x) + center_width
+        ys = (ys - center_y) + center_height
 
     # corresponds to the colors in d3's category10 color scale
     colors = {'s': 'lightgreen', 'm': '#ff9896', 'i': '#dbdb8d', 'f': 'lightsalmon', 't': 'lightcyan', 'h': 'lightblue',
@@ -101,8 +102,8 @@ def bg_to_json(bg, circular=False):
 
     for i in range(bg.seq_length):
         # use the centered coordinates for each nucleotide
-        x = new_xs[i]
-        y = new_ys[i]
+        x = xs[i]
+        y = ys[i]
 
         # create the nodes with initial positions
         # the  node_name comes from the forgi representation
@@ -132,7 +133,7 @@ def bg_to_json(bg, circular=False):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i + 1), "id": node_id,
-                                 "color": 'transparent', 'node_type': 'label', "struct_name": bg.name}]
+                "color": 'transparent', "elem_type": 'l', 'node_type': 'label', "struct_name": bg.name}]
             struct["links"] += [{"source": i, "target": node_id, "value": 1, "link_type": "label_link"}]
 
     # store the node id of the center id for each loop
@@ -146,16 +147,21 @@ def bg_to_json(bg, circular=False):
         nodes.
         """
         # get the coordinates of the nodes which are part of this loop
+        '''
         xs = np.array([coords.get(r).X for r in res_list])
         ys = np.array([coords.get(r).Y for r in res_list])
+        '''
+        nxs = np.array([xs[r] for r in res_list])
+        nys = np.array([ys[r] for r in res_list])
 
         # center them on the viewport
-        x_pos = np.mean(xs) - center_x + center_width
-        y_pos = np.mean(ys) - center_y + center_height
+        x_pos = np.mean(nxs)
+        y_pos = np.mean(nys)
 
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id,
                              "x": x_pos, "y": y_pos, "px": x_pos, "py": y_pos,
+                             'elem_type':'pseudo',
                              "color": colors['x'], 'node_type': 'pseudo', 'struct_name': bg.name}]
 
         # some geometric calculations for deciding how long to make
@@ -405,47 +411,80 @@ def parse_colors_text(colors_text):
 
     return colors
 
+def json_to_json(rna_json_str):
+    '''
+    Convert an RNA json string to fasta file, then to a bulge_graph
+    and then back to a json.
+
+    The purpose is to maintain the integrity of the molecule and to
+    maintain the positions of all the hidden nodes after modification.
+    '''
+    (fasta_text, xs, ys) = json_to_fasta(rna_json_str)
+    fud.pv('fasta_text')
+    bg = fgb.BulgeGraph()
+    bg.from_fasta(fasta_text)
+    return bg_to_json(bg, xs=xs, ys=ys)
+
 def json_to_fasta(rna_json_str):
     '''
     Convert an RNA json as returned by fasta to json into a fasta string
     (which will later be used to create a BulgeGraph and the another json.
 
-    :param rna_json_str: A json string representation of an RNA as returned by fasta_to_json
-    :return: A fasta string representing this molecule
+    :param rna_json_str: A json string representation of an RNA as returned by
+    fasta_to_json 
+    :return: A fasta string representing this molecule along with
+    the x and y coordinates... (fasta, xs, ys), where xs and ys are lists
+
     '''
     rna_json = json.loads(rna_json_str)
+    fud.pv('rna_json.keys()')
 
     # store the pair tables for each molecule separately
     pair_list = col.defaultdict(list)
+    node_list = col.defaultdict(list)
 
     for link in rna_json['links']:
         # only consider base-pair links
         if link['link_type'] != 'basepair' and link['link_type'] != 'pseudoknot' :
             continue
         
-        from_node = rna_json['nodes'][link['source']]
-        to_node = rna_json['nodes'][link['target']]
+        #fud.pv("link['source']")
+
+        from_node = link['source']
+        to_node = link['target']
+        #from_node = rna_json['nodes'][link['source']]
+        #to_node = rna_json['nodes'][link['target']]
 
         fud.pv('from_node["struct_name"], to_node["struct_name"]')
 
         if from_node['struct_name'] == to_node['struct_name']:
             # the position of each node in the RNA is one greater than its id
-            pair_list[from_node['struct_name']] += [(int(from_node['id']) + 1,
-                                                     int(to_node['id']) + 1)]
+            pair_list[from_node['struct_name']] += [(int(from_node['id']),
+                                                     int(to_node['id']))]
 
-            pair_list[from_node['struct_name']] += [(int(to_node['id']) + 1,
-                                                     int(from_node['id']) + 1)]
+            pair_list[from_node['struct_name']] += [(int(to_node['id']),
+                                                     int(from_node['id']))]
+
+    for node in rna_json['nodes']:
+        node_list[node['struct_name']] += [(node['id'], node['name'], node['x'], node['y'])]
 
     out_str = ""
-    for key in pair_list.keys():
-        fud.pv('pair_list[key]')
-        fud.pv('sorted(pair_list[key])')
-        pair_table = fus.tuples_to_pairtable(pair_list[key])
-        fud.pv('pair_table')
-        dotbracket = fus.pairtable_to_dotbracket(fus.tuples_to_pairtable(pair_list[key]))
-        out_str += ">{}\n{}".format(key, dotbracket)
 
-    return out_str
+    xs = []
+    ys = []
+
+    for key in pair_list.keys():
+        pair_table = fus.tuples_to_pairtable(pair_list[key])
+        dotbracket = fus.pairtable_to_dotbracket(fus.tuples_to_pairtable(pair_list[key]))
+
+        seq = "".join(n[1] for n in node_list[key])[:len(dotbracket)]
+
+        xs += [n[2] for n in node_list[key]] 
+        ys += [n[3] for n in node_list[key]]
+
+        out_str += ">{}\n{}\n{}".format(key, seq, dotbracket)
+
+    return (out_str, xs, ys)
 
 def add_colors_to_graph(struct, colors):
     """
@@ -549,6 +588,7 @@ def pdb_to_json(text, name):
                                      "id": 1,
                                      "size": len(chain.get_list()),
                                      "name": chain.id,
+                                     'elem_type':'p',
                                      "node_type":"protein"}],
                            "links":[]}]
                 pass

@@ -45,6 +45,21 @@ def create_app(static):
         app.logger.info(error)
         return error.description, 400
 
+    @app.route('/json_to_json', methods=['POST'])
+    # pylint: disable=W0612
+    def json_to_json():
+        #app.logger.info(request.json);
+        if not request.json:
+           abort(400, "Missing a json in the request")
+
+        try:
+            result = forna.json_to_json(json.dumps(request.json))
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Error editing the graph")
+
+        return json.dumps(result)
+
     @app.route('/struct_graph', methods=['POST'])
     # pylint: disable=W0612
     def struct_graph():

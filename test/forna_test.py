@@ -7,6 +7,10 @@ import unittest
 class FornaTest(unittest.TestCase):
     def setUp(self):
         self.fasta = '>hi\nAACCGG\n((..))'
+
+        with open('test/data/simple.json', 'r') as f:
+            self.simple_json = f.read()  
+
         pass
 
     def test_fasta_to_json(self):
@@ -115,11 +119,13 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
     """
 
     def test_json_to_bulgegraph(self):
-        pk_fasta = """>4QK8_A
-GUUGCCGAAUCCGAAAGGUACGGAGGAACCGCUUUUUGGGGUUAAUCUGCAGUGAAGCUGCAGUAGGGAUACCUUCUGUCCCGCACCCGACAGCUAACUCCGGAGGCAAUAAAGGAAGGA
-..((((....((....))..(((((....(.....(.[((((....((((((.....))))))..(((((.{{{{{{)))))..)))).)].)....)))))..)))).....}}}}}}.
-        """
-        struct = forna.fasta_to_json(pk_fasta)
-        #fud.pv('struct')
-        fasta_new = forna.json_to_fasta(json.dumps(struct))
-        fud.pv('fasta_new')
+        (fasta_new, xs, ys) = forna.json_to_fasta(self.simple_json)
+        self.assertEqual(fasta_new, '>some_molecule\nACCGGGUUU\n(.(...).)')
+        #self.assertEqual(fasta_new, '>some_molecule(.(...).)')
+        #fud.pv('fasta_new')
+
+    def test_json_to_json(self):
+        new_json = forna.json_to_json(self.simple_json)
+
+        fud.pv('new_json')
+        pass

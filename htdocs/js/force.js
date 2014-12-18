@@ -6,6 +6,25 @@
 * Date: 2014-10-15
 */
 
+serverURL = "";
+
+// custom ajax call
+ajax = function(uri, method, data) {
+  var request = {
+    url: uri,
+    type: method,
+    contentType: "application/json",
+    accepts: "application/json",
+    cache: false,
+    dataType: 'json',
+    data: data,
+    error: function(jqXHR) {
+        console.log("ajax error " + jqXHR.status + jqXHR.responseText);
+    }
+  };
+  return $.ajax(request);
+};
+
 function Graph(element) {
     var self = this;
 
@@ -446,6 +465,11 @@ function Graph(element) {
         key = d.link_type + "," + d.source.index + "," + d.target.index;
         return key;
     };
+
+    node_key = function(d) {
+        key = d.node_type + ":" + d.struct_name + ":" + d.elem_type + ":" + d.id;
+        return key;
+    }
     
     self.startAnimation = function() {
       self.animation = true;
@@ -551,7 +575,7 @@ function Graph(element) {
         .style("stroke-opacity", self.displayParameters["linkOpacity"])
         .style("stroke-width", function(d) { 
             return 2;
-            //return Math.sqrt(d.value); 
+            return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
         .attr("x1", function(d) { return d.source.x; })
@@ -570,9 +594,8 @@ function Graph(element) {
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
             plink.style("stroke-dasharray", ("3,3"))
 
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair]");
-            //xlink = vis_links.selectAll("[link_type!=fake]");
-            //link = all_links;
+            //xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair]");
+            xlink = all_links;
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
@@ -617,6 +640,28 @@ function Graph(element) {
 
                 if (index > -1) {
                     graph.links.splice(index, 1);
+
+                    // this means we have a new json, which means we have
+                    // to recalculate the structure and change the colors
+                    // appropriately
+                    //
+                    // send ajax request to forna
+                    console.log('here');
+                    console.log('graph:', graph);
+                    ajax(serverURL + '/json_to_json', 'POST', 
+                         JSON.stringify( graph )).success( function(data) {
+                             console.log('success1')
+                             console.log(data)
+                             graph = data
+                             //JSON.parse(data)
+                             console.log('success2')
+                             update();
+                             // calculate new hidden node positions
+                         })
+                         .error( function(jqXHR) {
+                            console.log('removed node error', jqXHR.responseText);
+                         })
+                    console.log('there')
                 }
 
                 update();
@@ -631,6 +676,10 @@ function Graph(element) {
             .append('g')
             .classed('noselect', true)
             .classed('gnode', true)
+            .each(function(d) { console.log('entering', d); })
+
+            gnodes_exit = gnodes.exit()
+                .each(function (d) { console.log('exiting', d); })
 
             gnodes_enter
             .call(drag)
@@ -647,7 +696,8 @@ function Graph(element) {
 
                 node_fills.nucleotide = 'white';
                 node_fills.label = 'white';
-                node_fills.pseudo = 'transparent';
+                //node_fills.pseudo = 'transparent';
+                node_fills.pseudo = 'black';
 
                 return node_fills[d.node_type];
             };

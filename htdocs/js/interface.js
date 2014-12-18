@@ -310,10 +310,7 @@ function AddPDBViewModel() {
 function AddViewModel() {
   var self = this;
   
-  self.input = ko.observable(
-      '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
-((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
-  );
+  self.input = ko.observable('>some_molecule\nACCGGGUUU\n(((...)))');
   
   self.newMolecules = ko.observableArray([]);
   
