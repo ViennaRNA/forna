@@ -574,7 +574,7 @@ function Graph(element) {
         .style("stroke", "#999")
         .style("stroke-opacity", self.displayParameters["linkOpacity"])
         .style("stroke-width", function(d) { 
-            return 2;
+            //return 2;
             return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
@@ -589,13 +589,13 @@ function Graph(element) {
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
-            fake_links.style('stroke-width', 0);
+            fake_links.style('stroke-width', 1);
 
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
             plink.style("stroke-dasharray", ("3,3"))
 
-            //xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair]");
-            xlink = all_links;
+            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake]");
+            //xlink = all_links;
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);

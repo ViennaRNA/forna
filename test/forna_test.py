@@ -13,6 +13,10 @@ class FornaTest(unittest.TestCase):
 
         pass
 
+    def test_fasta_to_json1(self):
+        fasta = '>hi\nACCGGGUUU\n(.(...).)'
+        struct = forna.fasta_to_json(fasta)
+
     def test_fasta_to_json(self):
         fasta = self.fasta
 

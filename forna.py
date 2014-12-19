@@ -151,13 +151,14 @@ def bg_to_json(bg, circular=False, xs = None, ys = None):
         xs = np.array([coords.get(r).X for r in res_list])
         ys = np.array([coords.get(r).Y for r in res_list])
         '''
-        nxs = np.array([xs[r] for r in res_list])
-        nys = np.array([ys[r] for r in res_list])
+        nxs = np.array([xs[r-1] for r in res_list])
+        nys = np.array([ys[r-1] for r in res_list])
 
         # center them on the viewport
         x_pos = np.mean(nxs)
         y_pos = np.mean(nys)
 
+        fud.pv('res_list')
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id,
                              "x": x_pos, "y": y_pos, "px": x_pos, "py": y_pos,
@@ -466,16 +467,17 @@ def json_to_fasta(rna_json_str):
                                                      int(from_node['id']))]
 
     for node in rna_json['nodes']:
-        node_list[node['struct_name']] += [(node['id'], node['name'], node['x'], node['y'])]
+        if node['node_type'] == 'nucleotide':
+            node_list[node['struct_name']] += [(node['id'], node['name'], node['x'], node['y'])]
 
     out_str = ""
 
     xs = []
     ys = []
 
-    for key in pair_list.keys():
-        pair_table = fus.tuples_to_pairtable(pair_list[key])
-        dotbracket = fus.pairtable_to_dotbracket(fus.tuples_to_pairtable(pair_list[key]))
+    for key in node_list.keys():
+        pair_table = fus.tuples_to_pairtable(pair_list[key], len(node_list[key]))
+        dotbracket = fus.pairtable_to_dotbracket(pair_table)
 
         seq = "".join(n[1] for n in node_list[key])[:len(dotbracket)]
 
