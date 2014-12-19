@@ -3,6 +3,7 @@ import forgi.graph.bulge_graph as fgb
 import forgi.utilities.debug as fud
 import json
 import unittest
+from nose.tools import raises
 
 class FornaTest(unittest.TestCase):
     def setUp(self):
@@ -10,6 +11,9 @@ class FornaTest(unittest.TestCase):
 
         with open('test/data/simple.json', 'r') as f:
             self.simple_json = f.read()  
+
+        with open('test/data/simple1.json', 'r') as f:
+            self.simple1_json = f.read()
 
         pass
 
@@ -122,14 +126,17 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
         '''
     """
 
-    def test_json_to_bulgegraph(self):
+    def test_json_to_fasta(self):
         (fasta_new, xs, ys) = forna.json_to_fasta(self.simple_json)
         self.assertEqual(fasta_new, '>some_molecule\nACCGGGUUU\n(.(...).)')
         #self.assertEqual(fasta_new, '>some_molecule(.(...).)')
         #fud.pv('fasta_new')
 
-    def test_json_to_json(self):
-        new_json = forna.json_to_json(self.simple_json)
+    @raises(ValueError)
+    def test_json_to_fasta1(self):
+        # Should contain invalid base pairs
+        (fasta_new, xs, ys) = forna.json_to_fasta(self.simple1_json)
+        #self.assertEqual(fasta_new, '>some_molecule\nACCGGGUUU\n(.(...).)')
+        #self.assertEqual(fasta_new, '>some_molecule(.(...).)')
+        #fud.pv('fasta_new')
 
-        fud.pv('new_json')
-        pass

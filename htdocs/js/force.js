@@ -605,12 +605,64 @@ function Graph(element) {
                     mouseup_node = d;
 
                     if (mouseup_node == mousedown_node) { resetMouseVars(); return; }
-                    var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'real', value: 1};
-                    graph.links.push(new_link);
+                    var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1};
 
-                    //throw new Error("Something went badly wrong!");
+                    for (i = 0; i < graph.links.length; i++) {
+                        if ((graph.links[i].source == mousedown_node)  
+                            || (graph.links[i].target == mousedown_node) ||
+                           (graph.links[i].source == mouseup_node) ||
+                           (graph.links[i].target == mouseup_node)) {
 
-                    update();
+                                console.log('graph.links[i].link_type', graph.links[i].link_type);
+
+                                if (graph.links[i].link_type == 'basepair') {
+                                    console.log('basepair_exists');
+                                    return;
+                                }
+                            }
+
+                            if (((graph.links[i].source == mouseup_node)  
+                                 && (graph.links[i].target == mousedown_node)) ||
+                                 ((graph.links[i].source == mousedown_node)  
+                                  && (graph.links[i].target == mouseup_node))) {
+
+                                      if (graph.links[i].link_type == 'backbone') {
+                                          console.log('backbone exists');
+                                          return;
+                                      }
+                        }
+                    }
+
+
+                    // this means we have a new json, which means we have
+                    // to recalculate the structure and change the colors
+                    // appropriately
+                    //
+                    // send ajax request to forna
+                    console.log('here');
+                    console.log('graph:', graph);
+                    new_graph = {"nodes": graph.nodes, "links":graph.links.concat(new_link)};
+
+                    ajax(serverURL + '/json_to_json', 'POST', 
+                         JSON.stringify( new_graph )).success( function(data) {
+                             console.log('success1')
+                             console.log(data)
+                             graph = data
+                             //JSON.parse(data)
+                             console.log('success2')
+                             //graph.links.push(new_link);
+                             update();
+                             // calculate new hidden node positions
+                         })
+                         .error( function(jqXHR) {
+                             //reverse the addition of the new link
+                             index = graph.links.indexOf(new_link);
+
+                             graph.links.splice(index, 1);
+
+                            console.log('removed node error', jqXHR.responseText);
+                         })
+                    console.log('there')
                 }
             };
 

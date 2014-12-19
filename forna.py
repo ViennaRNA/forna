@@ -420,6 +420,10 @@ def json_to_json(rna_json_str):
     The purpose is to maintain the integrity of the molecule and to
     maintain the positions of all the hidden nodes after modification.
     '''
+    with open('test.out', 'w') as f:
+        f.write(rna_json_str)
+
+    #fud.pv('rna_json_str')
     (fasta_text, xs, ys) = json_to_fasta(rna_json_str)
     fud.pv('fasta_text')
     bg = fgb.BulgeGraph()
@@ -460,6 +464,7 @@ def json_to_fasta(rna_json_str):
 
         if from_node['struct_name'] == to_node['struct_name']:
             # the position of each node in the RNA is one greater than its id
+
             pair_list[from_node['struct_name']] += [(int(from_node['id']),
                                                      int(to_node['id']))]
 
@@ -476,8 +481,11 @@ def json_to_fasta(rna_json_str):
     ys = []
 
     for key in node_list.keys():
+        fud.pv('key')
         pair_table = fus.tuples_to_pairtable(pair_list[key], len(node_list[key]))
+        fud.pv('pair_table')
         dotbracket = fus.pairtable_to_dotbracket(pair_table)
+        fud.pv('dotbracket')
 
         seq = "".join(n[1] for n in node_list[key])[:len(dotbracket)]
 
