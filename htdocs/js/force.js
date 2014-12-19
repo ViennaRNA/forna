@@ -467,7 +467,7 @@ function Graph(element) {
     };
 
     node_key = function(d) {
-        key = d.node_type + ":" + d.struct_name + ":" + d.elem_type + ":" + d.id;
+        key = d.uid;
         return key;
     }
     
@@ -725,7 +725,7 @@ function Graph(element) {
             }
 
             var gnodes = vis_nodes.selectAll('g.gnode')
-            .data(graph.nodes)
+            .data(graph.nodes, node_key)
             //.attr('pointer-events', 'all');
 
             gnodes_enter = gnodes.enter()

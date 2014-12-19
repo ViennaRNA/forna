@@ -314,8 +314,9 @@ function AddViewModel() {
       /*
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
-    */
    '>molecule_name\nACCGGGUUU\n(.(...).)'
+    */
+   '>molecule1\nAAAA\n(..)\n>molecule1\nCCCC\n(..)'
   );
   
   self.newMolecules = ko.observableArray([]);

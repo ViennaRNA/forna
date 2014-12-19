@@ -9,15 +9,6 @@ class FornaTest(unittest.TestCase):
     def setUp(self):
         self.fasta = '>hi\nAACCGG\n((..))'
 
-        with open('test/data/simple.json', 'r') as f:
-            self.simple_json = f.read()  
-
-        with open('test/data/simple1.json', 'r') as f:
-            self.simple1_json = f.read()
-
-        with open('test/data/simple2.json', 'r') as f:
-            self.simple2_json = f.read()
-
         pass
 
     def test_fasta_to_json1(self):
@@ -128,22 +119,4 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
             forna.pdb_to_json(text, '1MFQ')
         '''
     """
-
-    def test_json_to_fasta2(self):
-        (fasta_new, xs, ys) = forna.json_to_fasta(self.simple2_json)
-        fud.pv('fasta_new, xs, ys')
-
-    def test_json_to_fasta(self):
-        (fasta_new, xs, ys) = forna.json_to_fasta(self.simple_json)
-        self.assertEqual(fasta_new, ['>some_molecule\nACCGGGUUU\n(.(...).)'])
-        #self.assertEqual(fasta_new, '>some_molecule(.(...).)')
-        #fud.pv('fasta_new')
-
-    @raises(ValueError)
-    def test_json_to_fasta1(self):
-        # Should contain invalid base pairs
-        (fasta_new, xs, ys) = forna.json_to_fasta(self.simple1_json)
-        #self.assertEqual(fasta_new, '>some_molecule\nACCGGGUUU\n(.(...).)')
-        #self.assertEqual(fasta_new, '>some_molecule(.(...).)')
-        #fud.pv('fasta_new')
 

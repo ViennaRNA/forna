@@ -24,6 +24,7 @@ import os.path as op
 import RNA
 import tempfile
 import forgi.utilities.stuff as fus
+import uuid
 
 import sys
 from optparse import OptionParser
@@ -60,7 +61,7 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 
-def bg_to_json(bg, circular=False, xs = None, ys = None):
+def bg_to_json(bg, circular=False, xs = None, ys = None, uids=None):
     """
     Convert a BulgeGraph to a json file containing a graph layout designed
     to create a nice force-directed graph using the d3 library.
@@ -100,16 +101,21 @@ def bg_to_json(bg, circular=False, xs = None, ys = None):
     for (f, t) in pseudoknot_pairs:
         struct["links"] += [{"source": f - 1, "target": t - 1, "value": 1, "link_type": "pseudoknot"}]
 
+    if uids is None:
+        uids = [uuid.uuid4().hex for i in range(bg.seq_length)]
+
     for i in range(bg.seq_length):
         # use the centered coordinates for each nucleotide
         x = xs[i]
         y = ys[i]
+        uid = uids[i]
 
         # create the nodes with initial positions
         # the  node_name comes from the forgi representation
         node_name = bg.get_node_from_residue_num(i + 1)
         node = {"group": 1, "elem": node_name, "elem_type": node_name[0], "name": bg.seq[i], "id": i + 1,
                 "x": x, "y": y, "px": x, "py": y, "color": colors[node_name[0]],
+                "uid": uid,
                 "node_type": "nucleotide", 'struct_name': bg.name}
 
         # node = {"group": 1, "name": i+1, "id": i+1}
@@ -133,6 +139,7 @@ def bg_to_json(bg, circular=False, xs = None, ys = None):
             num_labels += 1
 
             struct["nodes"] += [{"group": 1, "name": "{}".format(i + 1), "id": node_id,
+                "uid": uuid.uuid4().hex,
                 "color": 'transparent', "elem_type": 'l', 'node_type': 'label', "struct_name": bg.name}]
             struct["links"] += [{"source": i, "target": node_id, "value": 1, "link_type": "label_link"}]
 
@@ -161,7 +168,7 @@ def bg_to_json(bg, circular=False, xs = None, ys = None):
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id,
                              "x": x_pos, "y": y_pos, "px": x_pos, "py": y_pos,
-                             'elem_type':'pseudo',
+                             'elem_type':'pseudo', 'uid' : uuid.uuid4().hex,
                              "color": colors['x'], 'node_type': 'pseudo', 'struct_name': bg.name}]
 
         # some geometric calculations for deciding how long to make
@@ -422,14 +429,14 @@ def json_to_json(rna_json_str):
     with open('test.out', 'w') as f:
         f.write(rna_json_str)
 
-    #fud.pv('rna_json_str')
-    (all_fastas, all_xs, all_ys) = json_to_fasta(rna_json_str)
+    (all_fastas, all_xs, all_ys, all_uids, different_tree_links) = json_to_fasta(rna_json_str)
     big_json = {'nodes': [], 'links': []}
 
-    for fasta_text, xs, ys in zip(all_fastas, all_xs, all_ys):
+    coords_to_index = dict()
+    for fasta_text, xs, ys, uids in zip(all_fastas, all_xs, all_ys, all_uids):
         bg = fgb.BulgeGraph()
         bg.from_fasta(fasta_text)
-        new_json = bg_to_json(bg, xs=xs, ys=ys)
+        new_json = bg_to_json(bg, xs=xs, ys=ys, uids=uids)
         
         for l in new_json['links']:
             # the indices of the new nodes will be offset, so the links
@@ -438,9 +445,27 @@ def json_to_json(rna_json_str):
             l['target'] += len(big_json['nodes'])
             big_json['links'] += [l]
 
-        big_json['nodes'] += new_json['nodes']
+        # Create a mapping between the coordinates of a node and its index
+        # in the node list. To be used when creating links between different
+        # molecules, which are stored according to the coordinates of the nodes
+        # being linked
+        for i,n in enumerate(new_json['nodes']):
+            if n['node_type'] == 'nucleotide':
+                coords_to_index[(n['x'], n['y'])] = i + len(big_json['nodes'])
 
-    fud.pv('new_json')
+        big_json['nodes'] += new_json['nodes']
+  
+    # add the links that are between different molecules
+    for dtl in different_tree_links:
+        fud.pv('dtl')
+        n1 = coords_to_index[(dtl[0])]
+        n2 = coords_to_index[(dtl[1])]
+        
+        fud.pv('n1,n2')
+        big_json['links'] += [{'source':n1, 'target':n2, 'link_type':'basepair', 'value':1}]
+
+    fud.pv('big_json["nodes"]')
+
     return big_json
 
 def json_to_fasta(rna_json_str):
@@ -455,7 +480,6 @@ def json_to_fasta(rna_json_str):
 
     '''
     rna_json = json.loads(rna_json_str)
-    fud.pv('rna_json.keys()')
 
     # store the pair tables for each molecule separately
     pair_list = col.defaultdict(list)
@@ -488,7 +512,6 @@ def json_to_fasta(rna_json_str):
     # different trees do not share backbone bonds
     while len(all_nodes) > 0:
         # if there's nodes left, then there's a new tree to be made
-        fud.pv('len(all_nodes)')
         to_visit += [list(all_nodes)[0]]
         curr_tree = set()
 
@@ -508,37 +531,33 @@ def json_to_fasta(rna_json_str):
 
         trees += [curr_tree]
 
-    fud.pv('len(trees)')
-    for t in trees:
-        fud.pv('[n["id"] for n in t]')
-
+    different_tree_links = []
     for link in rna_json['links']:
         # only consider base-pair links
         if link['link_type'] != 'basepair' and link['link_type'] != 'pseudoknot' :
             continue
         
-        #fud.pv("link['source']")
-
         from_node = hashabledict(link['source'])
         to_node = hashabledict(link['target'])
         #from_node = rna_json['nodes'][link['source']]
         #to_node = rna_json['nodes'][link['target']]
-
-        fud.pv('from_node["struct_name"], to_node["struct_name"]')
 
         if nodes_to_trees[from_node] == nodes_to_trees[to_node]:
             # the position of each node in the RNA is one greater than its id
 
             pair_list[frozenset(nodes_to_trees[from_node])] += [(int(from_node['id']),
                                                      int(to_node['id']))]
-
             pair_list[frozenset(nodes_to_trees[from_node])] += [(int(to_node['id']),
                                                      int(from_node['id']))]
+        else:
+            print >>sys.stderr, "Different trees"
+            different_tree_links += [((from_node['x'], from_node['y']),
+                                      (to_node['x'], to_node['y']))]
 
-
+    # list the nods in each molecule
     for node in hashable_nodes:
         if node['node_type'] == 'nucleotide':
-            node_list[frozenset(nodes_to_trees[node])] += [(node['id'], node['name'], node['x'], node['y'], node['struct_name'])]
+            node_list[frozenset(nodes_to_trees[node])] += [(node['id'], node['name'], node['x'], node['y'], node['struct_name'], node['uid'])]
 
     out_str = ""
 
@@ -548,24 +567,23 @@ def json_to_fasta(rna_json_str):
     all_fastas = []
     all_xs = []
     all_ys = []
-    for key in node_list.keys():
-        fud.pv('key')
-        pair_table = fus.tuples_to_pairtable(pair_list[key], len(node_list[key]))
-        fud.pv('pair_table')
-        dotbracket = fus.pairtable_to_dotbracket(pair_table)
-        print >>sys.stderr, "AHLFJDS"
-        fud.pv('dotbracket')
+    all_uids = []
 
-        seq = "".join(n[1] for n in node_list[key])[:len(dotbracket)]
+    for key in node_list.keys():
+        pair_table = fus.tuples_to_pairtable(pair_list[key], len(node_list[key]))
+        dotbracket = fus.pairtable_to_dotbracket(pair_table)
+
+        seq = "".join(n[1] for n in node_list[key])
+        fud.pv('seq')
 
         all_xs += [[n[2] for n in node_list[key]]]
         all_ys += [[n[3] for n in node_list[key]]]
+        all_uids += [[n[5] for n in node_list[key]]]
 
-        fud.pv('node_list[key]')
         all_fastas += [">{}\n{}\n{}".format(node_list[key][0][4], seq, dotbracket)]
+        fud.pv('all_fastas')
 
-    fud.pv('out_str')
-    return (all_fastas, all_xs, all_ys)
+    return (all_fastas, all_xs, all_ys, all_uids, different_tree_links)
 
 def add_colors_to_graph(struct, colors):
     """
