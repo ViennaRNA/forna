@@ -158,7 +158,6 @@ def bg_to_json(bg, circular=False, xs = None, ys = None):
         x_pos = np.mean(nxs)
         y_pos = np.mean(nys)
 
-        fud.pv('res_list')
         # create a pseudo node for each of the loops
         struct["nodes"] += [{"group": 1, "name": "", "id": node_id,
                              "x": x_pos, "y": y_pos, "px": x_pos, "py": y_pos,
@@ -424,11 +423,25 @@ def json_to_json(rna_json_str):
         f.write(rna_json_str)
 
     #fud.pv('rna_json_str')
-    (fasta_text, xs, ys) = json_to_fasta(rna_json_str)
-    fud.pv('fasta_text')
-    bg = fgb.BulgeGraph()
-    bg.from_fasta(fasta_text)
-    return bg_to_json(bg, xs=xs, ys=ys)
+    (all_fastas, all_xs, all_ys) = json_to_fasta(rna_json_str)
+    big_json = {'nodes': [], 'links': []}
+
+    for fasta_text, xs, ys in zip(all_fastas, all_xs, all_ys):
+        bg = fgb.BulgeGraph()
+        bg.from_fasta(fasta_text)
+        new_json = bg_to_json(bg, xs=xs, ys=ys)
+        
+        for l in new_json['links']:
+            # the indices of the new nodes will be offset, so the links
+            # have to have their node pointers adjusted as well
+            l['source'] += len(big_json['nodes'])
+            l['target'] += len(big_json['nodes'])
+            big_json['links'] += [l]
+
+        big_json['nodes'] += new_json['nodes']
+
+    fud.pv('new_json')
+    return big_json
 
 def json_to_fasta(rna_json_str):
     '''
@@ -448,6 +461,57 @@ def json_to_fasta(rna_json_str):
     pair_list = col.defaultdict(list)
     node_list = col.defaultdict(list)
 
+    # make dictionaries hashable, it's ok here because it will only be used
+    # for the nodes and the links and their values don't change
+    class hashabledict(dict):
+        def __hash__(self):
+            return hash(tuple(sorted(self.items())))
+
+    # store which molecule each node is in
+    hashable_links = [hashabledict(l) for l in rna_json['links']]
+    hashable_nodes = [hashabledict(n) for n in rna_json['nodes']]
+
+    all_nodes = set([n for n in hashable_nodes if n['node_type'] != 'pseudo'])
+    links_dict = col.defaultdict(list)
+
+    for link in hashable_links:
+        if link['link_type'] == 'backbone':
+            links_dict[hashabledict(link['source'])] += [hashabledict(link['target'])]
+            links_dict[hashabledict(link['target'])] += [hashabledict(link['source'])]
+
+    trees = []
+    to_visit = []
+    nodes_to_trees = dict()
+
+    # calculate the list of trees in the forest of RNA molecules
+    # trees correspond to individual molecules 
+    # different trees do not share backbone bonds
+    while len(all_nodes) > 0:
+        # if there's nodes left, then there's a new tree to be made
+        fud.pv('len(all_nodes)')
+        to_visit += [list(all_nodes)[0]]
+        curr_tree = set()
+
+        while len(to_visit) > 0:
+            # the current tree has more nodes
+            curr_node = to_visit.pop()
+            all_nodes.remove(curr_node)
+            curr_tree.add(curr_node)
+            nodes_to_trees[curr_node] = curr_tree
+
+            for neighbor in links_dict[curr_node]:
+                # add all of the neighbors
+                if neighbor not in all_nodes:
+                    # we've already seen this neighbor
+                    continue
+                to_visit.append(neighbor)
+
+        trees += [curr_tree]
+
+    fud.pv('len(trees)')
+    for t in trees:
+        fud.pv('[n["id"] for n in t]')
+
     for link in rna_json['links']:
         # only consider base-pair links
         if link['link_type'] != 'basepair' and link['link_type'] != 'pseudoknot' :
@@ -455,46 +519,53 @@ def json_to_fasta(rna_json_str):
         
         #fud.pv("link['source']")
 
-        from_node = link['source']
-        to_node = link['target']
+        from_node = hashabledict(link['source'])
+        to_node = hashabledict(link['target'])
         #from_node = rna_json['nodes'][link['source']]
         #to_node = rna_json['nodes'][link['target']]
 
         fud.pv('from_node["struct_name"], to_node["struct_name"]')
 
-        if from_node['struct_name'] == to_node['struct_name']:
+        if nodes_to_trees[from_node] == nodes_to_trees[to_node]:
             # the position of each node in the RNA is one greater than its id
 
-            pair_list[from_node['struct_name']] += [(int(from_node['id']),
+            pair_list[frozenset(nodes_to_trees[from_node])] += [(int(from_node['id']),
                                                      int(to_node['id']))]
 
-            pair_list[from_node['struct_name']] += [(int(to_node['id']),
+            pair_list[frozenset(nodes_to_trees[from_node])] += [(int(to_node['id']),
                                                      int(from_node['id']))]
 
-    for node in rna_json['nodes']:
+
+    for node in hashable_nodes:
         if node['node_type'] == 'nucleotide':
-            node_list[node['struct_name']] += [(node['id'], node['name'], node['x'], node['y'])]
+            node_list[frozenset(nodes_to_trees[node])] += [(node['id'], node['name'], node['x'], node['y'], node['struct_name'])]
 
     out_str = ""
 
     xs = []
     ys = []
 
+    all_fastas = []
+    all_xs = []
+    all_ys = []
     for key in node_list.keys():
         fud.pv('key')
         pair_table = fus.tuples_to_pairtable(pair_list[key], len(node_list[key]))
         fud.pv('pair_table')
         dotbracket = fus.pairtable_to_dotbracket(pair_table)
+        print >>sys.stderr, "AHLFJDS"
         fud.pv('dotbracket')
 
         seq = "".join(n[1] for n in node_list[key])[:len(dotbracket)]
 
-        xs += [n[2] for n in node_list[key]] 
-        ys += [n[3] for n in node_list[key]]
+        all_xs += [[n[2] for n in node_list[key]]]
+        all_ys += [[n[3] for n in node_list[key]]]
 
-        out_str += ">{}\n{}\n{}".format(key, seq, dotbracket)
+        fud.pv('node_list[key]')
+        all_fastas += [">{}\n{}\n{}".format(node_list[key][0][4], seq, dotbracket)]
 
-    return (out_str, xs, ys)
+    fud.pv('out_str')
+    return (all_fastas, all_xs, all_ys)
 
 def add_colors_to_graph(struct, colors):
     """

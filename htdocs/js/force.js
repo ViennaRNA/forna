@@ -102,10 +102,10 @@ function Graph(element) {
 
         json.nodes.forEach(function(entry) {
             entry.x += max_x;
-            entry.y += max_y;
+            //entry.y += max_y;
 
             entry.px += max_x;
-            entry.py += max_y;
+            //entry.py += max_y;
         });
 
         graph.nodes = graph.nodes.concat(json.nodes);
