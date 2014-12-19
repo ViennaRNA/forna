@@ -71,6 +71,7 @@ function Graph(element) {
         "backgroundColor": "white",
     }
 
+    self.colorScheme = 'structure';
     self.customColors = {};
     self.extraLinks = {};
     self.animation = true;
@@ -159,6 +160,7 @@ function Graph(element) {
 
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
         data = nodes.data();
+        self.colorScheme = newColorScheme;
 
 
         if (newColorScheme == 'sequence') {
@@ -175,8 +177,10 @@ function Graph(element) {
             .range(['lightgreen', '#ff9896', '#dbdb8d', 'lightsalmon',
                    'lightcyan', 'lightblue', 'transparent']);
                    nodes.style('fill', function(d) { 
+                       console.log('d.elem_type', d.elem_type);
                        return scale(d.elem_type);
                    });
+
         } else if (newColorScheme == 'positions') {
             data_values = data.map(function(d) { return d.id; });
             data_min = d3.min(data_values);
@@ -780,6 +784,10 @@ function Graph(element) {
 
 
             xlink.on('click', link_click);
+
+            circle_update = gnodes.select('circle')
+            console.log('circle_update:', circle_update);
+
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
@@ -818,6 +826,8 @@ function Graph(element) {
                 });
             });
             
+        self.changeColorScheme(self.colorScheme);
+
         if (self.animation) {
           force.start();
         }
