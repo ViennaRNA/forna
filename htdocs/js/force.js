@@ -578,8 +578,8 @@ function Graph(element) {
         .style("stroke", "#999")
         .style("stroke-opacity", self.displayParameters["linkOpacity"])
         .style("stroke-width", function(d) { 
-            //return 2;
-            return Math.sqrt(d.value); 
+            return 2;
+            //return Math.sqrt(d.value); 
             if (d.value != 1) return 0;
             else return Math.sqrt(d.value); })
         .attr("x1", function(d) { return d.source.x; })
@@ -593,8 +593,8 @@ function Graph(element) {
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
-            fake_links.style('stroke-width', 1);
-            fake_links.style('stroke', 'blue')
+            fake_links.style('stroke-width', 0);
+            //fake_links.style('stroke', 'blue')
 
             basepair_links = vis_links.selectAll("[link_type=basepair]")
             basepair_links.style('stroke', 'red')
@@ -651,6 +651,7 @@ function Graph(element) {
                     console.log('graph:', graph);
                     new_graph = {"nodes": graph.nodes, "links":graph.links.concat(new_link)};
 
+                    force.stop()
                     ajax(serverURL + '/json_to_json', 'POST', 
                          JSON.stringify( new_graph )).success( function(data) {
                              console.log('success1')
@@ -669,6 +670,7 @@ function Graph(element) {
                              graph.links.splice(index, 1);
 
                             console.log('removed node error', jqXHR.responseText);
+                            update();
                          })
                     console.log('there')
                 }
@@ -708,6 +710,7 @@ function Graph(element) {
                     // send ajax request to forna
                     console.log('here');
                     console.log('graph:', graph);
+                    force.stop()
                     ajax(serverURL + '/json_to_json', 'POST', 
                          JSON.stringify( graph )).success( function(data) {
                              console.log('success1')
@@ -720,6 +723,7 @@ function Graph(element) {
                          })
                          .error( function(jqXHR) {
                             console.log('removed node error', jqXHR.responseText);
+                            update()
                          })
                     console.log('there')
                 }
@@ -757,7 +761,7 @@ function Graph(element) {
                 node_fills.nucleotide = 'white';
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
-                node_fills.pseudo = 'black';
+                node_fills.pseudo = 'transparent';
 
                 return node_fills[d.node_type];
             };
@@ -791,7 +795,7 @@ function Graph(element) {
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'pseudo') return 1; else return 6;})
+            .attr("r", function(d) {if (d.node_type == 'pseudo') return 3; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters["nodeStrokeWidth"])

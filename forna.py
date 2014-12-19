@@ -138,8 +138,20 @@ def bg_to_json(bg, circular=False, xs = None, ys = None, uids=None):
             node_id = num_nodes + num_labels
             num_labels += 1
 
+            if len(xs) <= bg.seq_length:
+                x = xs[i]
+                y = ys[i]
+                print >>sys.stderr, "here1"
+            else:
+                # xs and ys have been passed in because the molecule is being updated
+                print >>sys.stderr, "here", node_id
+                x = xs[node_id]
+                y = ys[node_id]
+
             struct["nodes"] += [{"group": 1, "name": "{}".format(i + 1), "id": node_id,
                 "uid": uuid.uuid4().hex,
+                "x": x, "y": y,
+                "px": x, "py": y,
                 "color": 'transparent', "elem_type": 'l', 'node_type': 'label', "struct_name": bg.name}]
             struct["links"] += [{"source": i, "target": node_id, "value": 1, "link_type": "label_link"}]
 
@@ -464,7 +476,7 @@ def json_to_json(rna_json_str):
         fud.pv('n1,n2')
         big_json['links'] += [{'source':n1, 'target':n2, 'link_type':'basepair', 'value':1}]
 
-    fud.pv('big_json["nodes"]')
+    #fud.pv('big_json["nodes"]')
 
     return big_json
 
@@ -484,6 +496,7 @@ def json_to_fasta(rna_json_str):
     # store the pair tables for each molecule separately
     pair_list = col.defaultdict(list)
     node_list = col.defaultdict(list)
+    label_list = col.defaultdict(list)
 
     # make dictionaries hashable, it's ok here because it will only be used
     # for the nodes and the links and their values don't change
@@ -499,7 +512,7 @@ def json_to_fasta(rna_json_str):
     links_dict = col.defaultdict(list)
 
     for link in hashable_links:
-        if link['link_type'] == 'backbone':
+        if link['link_type'] == 'backbone' or link['link_type'] == 'label_link':
             links_dict[hashabledict(link['source'])] += [hashabledict(link['target'])]
             links_dict[hashabledict(link['target'])] += [hashabledict(link['source'])]
 
@@ -559,6 +572,10 @@ def json_to_fasta(rna_json_str):
         if node['node_type'] == 'nucleotide':
             node_list[frozenset(nodes_to_trees[node])] += [(node['id'], node['name'], node['x'], node['y'], node['struct_name'], node['uid'])]
 
+        if node['node_type'] == 'label':
+            print >>sys.stderr, "adding label"
+            label_list[frozenset(nodes_to_trees[node])] += [(node['x'], node['y'])]
+
     out_str = ""
 
     xs = []
@@ -575,9 +592,14 @@ def json_to_fasta(rna_json_str):
 
         seq = "".join(n[1] for n in node_list[key])
         fud.pv('seq')
+        fud.pv('len(seq)')
+        fud.pv('len(label_list[key])')
 
-        all_xs += [[n[2] for n in node_list[key]]]
-        all_ys += [[n[3] for n in node_list[key]]]
+        all_xs += [[n[2] for n in node_list[key]] + [n[0] for n in label_list[key]]]
+        all_ys += [[n[3] for n in node_list[key]] + [n[1] for n in label_list[key]]]
+
+        fud.pv('len(all_xs[-1])')
+
         all_uids += [[n[5] for n in node_list[key]]]
 
         all_fastas += [">{}\n{}\n{}".format(node_list[key][0][4], seq, dotbracket)]
