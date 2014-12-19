@@ -590,6 +590,10 @@ function Graph(element) {
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
             fake_links.style('stroke-width', 1);
+            fake_links.style('stroke', 'blue')
+
+            basepair_links = vis_links.selectAll("[link_type=basepair]")
+            basepair_links.style('stroke', 'red')
 
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
             plink.style("stroke-dasharray", ("3,3"))
