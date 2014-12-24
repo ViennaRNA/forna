@@ -126,7 +126,7 @@ function RNAUtilities() {
 
 rnaUtilities = new RNAUtilities();
 
-function RNA(seq, dotbracket) {
+function RNAGraph(seq, dotbracket) {
     var self = this;
     self.seq = seq;
     self.dotbracket = dotbracket;  //i.e. ..((..))..
@@ -135,6 +135,17 @@ function RNA(seq, dotbracket) {
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
+
+    self.add_positions = function(positions) {
+        for (var i = 0; i < positions.length; i++) {
+            self.nodes[i].x = positions[i][0];
+            self.nodes[i].px = positions[i][0];
+            self.nodes[i].y = positions[i][1];
+            self.nodes[i].py = positions[i][1];
+        }
+
+        return self;
+    };
 
     self.reinforce_stems = function() {
         pt = self.pairtable;
@@ -184,13 +195,18 @@ function RNA(seq, dotbracket) {
         var radius = 0.5 / Math.cos(angle);
         console.log('radius:', radius);
         
-        self.nodes.push({'name': 'f',
+        new_node = {'name': 'f',
                          'num': i,
                          //'radius': 18 * radius -6,
                          'radius':2,
                          'node_type': 'middle',
                          'elem_type': 'f',
-                         'uid': generateUUID() });
+                         'uid': generateUUID() };
+        self.nodes.push(new_node);
+
+        new_x = 0;
+        new_y = 0;
+        coords_counted = 0;
 
         for (j = 0; j < nucs.length; j++) {
             if (nucs[j] === 0 || nucs[j] > self.dotbracket.length)
@@ -200,14 +216,14 @@ function RNA(seq, dotbracket) {
             //link to the center node
             self.links.push({'source': nucs[j] - 1,
                              'target': self.nodes.length-1,
-                             'link_type': 'basepair',
+                             'link_type': 'fake',
                              'value': radius});
 
             if (nucs.length > 4) {
                 //link across the loop
                 self.links.push({'source': nucs[j] - 1,
                                  'target': nucs[(j + Math.floor(nucs.length / 2)) % nucs.length] - 1,
-                                 'link_type': 'basepair',
+                                 'link_type': 'fake',
                                  'value': radius * 2});
             }
 
@@ -216,9 +232,31 @@ function RNA(seq, dotbracket) {
             //link to over-neighbor
             self.links.push({'source': nucs[j] - 1,
                              'target': nucs[(j + 2) % nucs.length] - 1,
-                             'link_type': 'basepair',
+                             'link_type': 'fake',
                              'value': c});
+
+            // calculate the mean of the coordinats in this loop
+            // and place the fake node there
+            from_node = self.nodes[nucs[j]-1];
+            if ('x' in from_node) {
+                new_x += from_node.x;
+                new_y += from_node.y;
+
+                coords_counted += 1;
+            }
         }
+
+        if (coords_counted > 0) {
+            // the nucleotides had set positions so we can calculate the position
+            // of the fake node
+            new_node.x = new_x / coords_counted;
+            new_node.y = new_y / coords_counted;
+            new_node.px = new_node.x;
+            new_node.py = new_node.y;
+        }
+
+        console.log('new_node:', new_node);
+
 
         console.log('angle', angle);
         console.log('radius', radius);

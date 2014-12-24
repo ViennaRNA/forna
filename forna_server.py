@@ -60,9 +60,13 @@ def create_app(static):
 
         return json.dumps(result)
 
-    @app.route('/struct_graph', methods=['POST'])
+    @app.route('/struct_positions', methods=['POST'])
     # pylint: disable=W0612
-    def struct_graph():
+    def struct_positions():
+        '''
+        Get the positions for each nucleotide as calculated by the NARview
+        algorithm.
+        '''
         app.logger.info(request.json);
         if not request.json:
            abort(400, "Missing a json in the request")
@@ -76,19 +80,11 @@ def create_app(static):
         if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
-        print >>sys.stderr, "struct[-1]:", request.json['struct'][-1]
-        if request.json['struct'][-1] == '*':
-            circular = True
-            structure = request.json['struct'].strip('*')
-        else:
-            circular = False
-            structure = request.json['struct']
-
         fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
-                                               structure)
+                                               request.json['struct'])
 
         try:
-            result = forna.fasta_to_json(fasta_text, circular)
+            result = forna.fasta_to_positions(fasta_text)
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "Secondary structure parsing error: {}".format(str(ex)))

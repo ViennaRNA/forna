@@ -361,9 +361,9 @@ function Graph(element) {
 
     var force = d3.layout.force()
     .charge(function(d) { if (d.node_type == 'pseudo') 
-            return -200; 
+            return 0; 
         else 
-            return -80;})
+            return 0;})
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
@@ -740,7 +740,7 @@ function Graph(element) {
             .append('g')
             .classed('noselect', true)
             .classed('gnode', true)
-            .each(function(d) { console.log('entering', d); })
+            //.each(function(d) { console.log('entering', d); })
 
             gnodes_exit = gnodes.exit()
                 .each(function (d) { console.log('exiting', d); })

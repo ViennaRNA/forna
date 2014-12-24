@@ -60,6 +60,15 @@ def remove_pseudoknots(bg):
 
     return dissolved_bp
 
+def fasta_to_positions(fasta_text):
+    bp_string = fasta_text.split('\n')[2]
+
+    print >>sys.stderr, 'bp_string', bp_string;
+    coords = RNA.get_xy_coordinates(bp_string)
+    xs = np.array([coords.get(i).X for i in range(len(bp_string))])
+    ys = np.array([coords.get(i).Y for i in range(len(bp_string))])
+
+    return zip(xs,ys)
 
 def bg_to_json(bg, circular=False, xs = None, ys = None, uids=None):
     """

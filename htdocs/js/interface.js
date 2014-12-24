@@ -98,8 +98,16 @@ function RNA(sequence, structure, header) {
   );
   
   self.json = ko.onDemandObservable( function() {
-      ajax(serverURL + '/struct_graph', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
-        self.json(data);
+      ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
+        r = new RNAGraph(self.sequence(), self.structure())
+        .elements_to_json()
+        .add_positions(data)
+        .reinforce_stems()
+        .reinforce_loops();
+
+        console.log('r', r);
+
+        self.json(r);
         self.done(true);
       }).error( function(jqXHR) {
         addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
