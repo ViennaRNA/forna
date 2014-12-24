@@ -80,6 +80,7 @@ function Graph(element) {
 
     self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
+        console.log('json:', json);
 
         // offset the source and target since we already
         // have a number of nodes present
@@ -156,7 +157,7 @@ function Graph(element) {
 
         protein_nodes.style('fill', 'grey')
                     .style('fill-opacity', 0.5)
-                    .attr('r', function(d) { return Math.sqrt(d.size) });
+                    .attr('r', function(d) { return Math.sqrt(d.size); });
 
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
         data = nodes.data();
@@ -205,7 +206,6 @@ function Graph(element) {
             function change_colors(molecule_colors, d) {
                 if (molecule_colors.hasOwnProperty(d.id)) {
                     val = parseFloat(molecule_colors[d.id]);
-                    console.log('val', val)
 
                     if (isNaN(val)) {
                         // passed in color is not a scalar, so 
@@ -741,9 +741,6 @@ function Graph(element) {
             .classed('noselect', true)
             .classed('gnode', true)
             //.each(function(d) { console.log('entering', d); })
-
-            gnodes_exit = gnodes.exit()
-                .each(function (d) { console.log('exiting', d); })
 
             gnodes_enter
             .call(drag)

@@ -279,10 +279,17 @@ function RNAGraph(seq, dotbracket) {
         //create a reverse lookup so we can find out the type
         //of element that a node is part of
         elem_types = {};
-        for (i = 0; i < self.elements.length; i++)
-            for (j = 0; j < self.elements[i][2].length; j++)
-                elem_types[j] = self.elements[i][0];
-       
+
+        //sort so that we count stems last
+        self.elements.sort();
+
+        for (i = 0; i < self.elements.length; i++) {
+            nucs = self.elements[i][2];
+            for (j = 0; j < nucs.length; j++) {
+                elem_types[nucs[j]] = self.elements[i][0];
+            }
+        }
+
         for (i = 1; i <= pt[0]; i++) {
             //create a node for each nucleotide
             self.nodes.push({'name': seq[i-1],
