@@ -312,17 +312,19 @@ function AddPDBViewModel() {
             //$('#ColorSubmit').button('reset');
         });
     */
-  }
+  };
 }
 
 function AddViewModel() {
   var self = this;
   
   self.input = ko.observable(
+      /*
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
-      /*
+*/
    '>molecule_name\nACCGGGUUU\n(.(...).)'
+   /*
    '>molecule1\nAAAA\n(..)\n>molecule1\nCCCC\n(..)'
    '>molecule1\nAAAA\n(..)'
    */
@@ -334,12 +336,12 @@ function AddViewModel() {
   self.submitted = ko.observable(false);
 
   self.newInputError = function(message) {
-    if (self.inputError() == '') {
+    if (self.inputError() === '') {
       self.inputError(message);
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
-  }
+  };
   
   self.loaded = ko.computed(function() {
     var returnValue = true;

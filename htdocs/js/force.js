@@ -178,7 +178,6 @@ function Graph(element) {
             .range(['lightgreen', '#ff9896', '#dbdb8d', 'lightsalmon',
                    'lightcyan', 'lightblue', 'transparent']);
                    nodes.style('fill', function(d) { 
-                       console.log('d.elem_type', d.elem_type);
                        return scale(d.elem_type);
                    });
 
@@ -464,8 +463,7 @@ function Graph(element) {
     .on('keyup', keyup);
 
     link_key = function(d) {
-        key = d.link_type + "," + d.source.index + "," + d.target.index;
-        return key;
+        return d.uid;
     };
 
     node_key = function(d) {
@@ -587,7 +585,7 @@ function Graph(element) {
         .attr("link_type", function(d) { return d.link_type; } )
         .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
-            all_links.exit().remove();
+            all_links.exit().each(function(d) { console.log('exiting', d); }).remove();
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
@@ -645,32 +643,22 @@ function Graph(element) {
                     // appropriately
                     //
                     // send ajax request to forna
-                    console.log('here');
-                    console.log('graph:', graph);
-                    new_graph = {"nodes": graph.nodes, "links":graph.links.concat(new_link)};
+                    if (new_link.source.rna == new_link.target.rna) {
+                        r = new_link.source.rna;
 
-                    force.stop()
-                    ajax(serverURL + '/json_to_json', 'POST', 
-                         JSON.stringify( new_graph )).success( function(data) {
-                             console.log('success1')
-                             console.log(data)
-                             graph = data
-                             //JSON.parse(data)
-                             console.log('success2')
-                             //graph.links.push(new_link);
-                             update();
-                             // calculate new hidden node positions
-                         })
-                         .error( function(jqXHR) {
-                             //reverse the addition of the new link
-                             index = graph.links.indexOf(new_link);
+                        r.pairtable[new_link.source.num] = new_link.target.num;
+                        r.pairtable[new_link.target.num] = new_link.source.num;
 
-                             graph.links.splice(index, 1);
+                        positions = r.get_positions();
+                        r.recalculate_elements()
+                        .elements_to_json()
+                        .add_positions(positions)
+                        .reinforce_stems()
+                        .reinforce_loops();
 
-                            console.log('removed node error', jqXHR.responseText);
-                            update();
-                         })
-                    console.log('there')
+                        graph = r;
+                    }
+                    update();
                 }
             };
 
@@ -699,31 +687,38 @@ function Graph(element) {
                 index = graph.links.indexOf(d);
 
                 if (index > -1) {
+                    //remove a link
                     graph.links.splice(index, 1);
+
+                    // there should be two cases
+                    // 1. The link is within a single molecule
+                    console.log('removing:', d);
+
+                    if (d.source.rna == d.target.rna) {
+                        r = d.source.rna;
+                        console.log('r.pairtable', r.pairtable);
+
+                        r.pairtable[d.source.num] = 0;
+                        r.pairtable[d.target.num] = 0;
+                        console.log('r.pairtable', r.pairtable);
+
+                        positions = r.get_positions();
+                        r.recalculate_elements()
+                        .elements_to_json()
+                        .add_positions(positions)
+                        .reinforce_stems()
+                        .reinforce_loops();
+
+                        graph = r;
+                    }
+                    
+                    // 2. The link is between two different molecules
+                    // We'll ignore this for now
 
                     // this means we have a new json, which means we have
                     // to recalculate the structure and change the colors
                     // appropriately
                     //
-                    // send ajax request to forna
-                    console.log('here');
-                    console.log('graph:', graph);
-                    force.stop()
-                    ajax(serverURL + '/json_to_json', 'POST', 
-                         JSON.stringify( graph )).success( function(data) {
-                             console.log('success1')
-                             console.log(data)
-                             graph = data
-                             //JSON.parse(data)
-                             console.log('success2')
-                             update();
-                             // calculate new hidden node positions
-                         })
-                         .error( function(jqXHR) {
-                            console.log('removed node error', jqXHR.responseText);
-                            update()
-                         })
-                    console.log('there')
                 }
 
                 update();
