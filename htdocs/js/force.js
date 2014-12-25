@@ -53,7 +53,7 @@ function Graph(element) {
         "protein_chain": 0.00,
         "chain_chain": 0.00,
         "other": 8.00
-    }
+    };
     
     self.displayParameters = {
         "nodeStrokeWidth": 0.8,
@@ -69,7 +69,7 @@ function Graph(element) {
         "labelNodeFill": 'white',
         "backgroundColorDefault": "white",
         "backgroundColor": "white",
-    }
+    };
 
     self.colorScheme = 'structure';
     self.customColors = {};
@@ -95,8 +95,8 @@ function Graph(element) {
         // so that we don't place a new structure on top of the
         // old one
         if (graph.nodes.length > 0) {
-            max_x = d3.max(graph.nodes.map(function(d) {return d.x}))
-            max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
+            max_x = d3.max(graph.nodes.map(function(d) {return d.x;}));
+            max_y = d3.max(graph.nodes.map(function(d) {return d.y;}));
         } else {
             max_x = 0;
             max_y = 0;
@@ -198,7 +198,7 @@ function Graph(element) {
         } else if (newColorScheme == 'custom') {
             // scale to be used in case the user passes scalar
             // values rather than color names
-            var scale = d3.scale.linear()
+            scale = d3.scale.linear()
             .range(['white', 'steelblue'])
             .interpolate(d3.interpolateLab)
             .domain([0, 1]);
@@ -233,11 +233,10 @@ function Graph(element) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
                     molecule_colors = self.customColors[d.struct_name];
-                    return change_colors(molecule_colors, d)
+                    return change_colors(molecule_colors, d);
                 } else if (self.customColors.hasOwnProperty('')) {
-                    console.log('here')
                     molecule_colors = self.customColors[''];
-                    return change_colors(molecule_colors, d)
+                    return change_colors(molecule_colors, d);
                 }
 
                 return 'white';
@@ -316,20 +315,20 @@ function Graph(element) {
         // fits in the window
 
         //no molecules, nothing to do
-        if (graph.nodes.length == 0)
+        if (graph.nodes.length === 0)
             return;
 
         // Get the bounding box
-        min_x = d3.min(graph.nodes.map(function(d) {return d.x}))
-        min_y = d3.min(graph.nodes.map(function(d) {return d.y}))
+        min_x = d3.min(graph.nodes.map(function(d) {return d.x;}));
+        min_y = d3.min(graph.nodes.map(function(d) {return d.y;}));
 
-        max_x = d3.max(graph.nodes.map(function(d) {return d.x}))
-        max_y = d3.max(graph.nodes.map(function(d) {return d.y}))
+        max_x = d3.max(graph.nodes.map(function(d) {return d.x;}));
+        max_y = d3.max(graph.nodes.map(function(d) {return d.y;}));
 
 
         // The width and the height of the molecule
-        mol_width = max_x - min_x
-        mol_height = max_y - min_y
+        mol_width = max_x - min_x;
+        mol_height = max_y - min_y;
 
         // how much larger the drawing area is than the width and the height
         width_ratio = self.svgW / mol_width;
@@ -340,12 +339,12 @@ function Graph(element) {
         min_ratio = Math.min(width_ratio, height_ratio) * 0.8;
 
         // the new dimensions of the molecule
-        new_mol_width = mol_width * min_ratio
-        new_mol_height = mol_height * min_ratio
+        new_mol_width = mol_width * min_ratio;
+        new_mol_height = mol_height * min_ratio;
 
         // translate so that it's in the center of the window
-        x_trans = -(min_x) * min_ratio + (self.svgW - new_mol_width) / 2.
-        y_trans = -(min_y) * min_ratio + (self.svgH - new_mol_height) / 2.
+        x_trans = -(min_x) * min_ratio + (self.svgW - new_mol_width) / 2;
+        y_trans = -(min_y) * min_ratio + (self.svgH - new_mol_height) / 2;
 
 
         // do the actual moving
@@ -357,7 +356,7 @@ function Graph(element) {
         zoomer.translate([x_trans, y_trans ]);
         zoomer.scale(min_ratio);
 
-    }
+    };
 
     var force = d3.layout.force()
     .charge(function(d) { if (d.node_type == 'pseudo') 
@@ -369,7 +368,7 @@ function Graph(element) {
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
                                   return self.linkStrengths[d.link_type];
                                 } else {
-                                  return self.linkStrengths["other"]; }
+                                  return self.linkStrengths.other; }
     })
     .gravity(0.000)
     .nodes(graph.nodes)
@@ -398,7 +397,6 @@ function Graph(element) {
         d3.event.sourceEvent.stopPropagation();
         //d3.select(self).classed("dragging", true);
         //
-        console.log('started dragging')
         rnaView.animation(true);
     }
 
@@ -473,37 +471,37 @@ function Graph(element) {
     node_key = function(d) {
         key = d.uid;
         return key;
-    }
+    };
     
     self.startAnimation = function() {
       self.animation = true;
       vis.selectAll('g.gnode')
         .call(drag);
       force.start();
-    }
+    };
     
     self.stopAnimation = function() {
       self.animation = false;
       vis.selectAll('g.gnode')
            .on('mousedown.drag', null);
       force.stop();
-    }
+    };
     
     self.setFriction = function(value) {
       force.friction(value);
-    }
+    };
     
     self.setGravity = function(value) {
       force.gravity(value);
-    }
+    };
     
     self.setPseudoknotStrength = function(value) {
-      self.linkStrengths["pseudoknot"] = value;
+      self.linkStrength.pseudoknot = value;
       update();
-    }
+    };
     
     self.displayBackground = function(value) {
-      if (value == true) {
+      if (value === true) {
         self.displayParameters["backgroundColor"]=self.displayParameters["backgroundColorDefault"]
       } else {
         self.displayParameters["backgroundColor"]='transparent';
