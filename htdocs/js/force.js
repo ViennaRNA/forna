@@ -52,6 +52,7 @@ function Graph(element) {
         "pseudoknot": 0.00,
         "protein_chain": 0.00,
         "chain_chain": 0.00,
+        "intermolecule": 8.00,
         "other": 8.00
     };
     
@@ -78,6 +79,7 @@ function Graph(element) {
     // don't listen to events because a model window is open somewhere
     self.deaf = false;
     self.rnas = {};
+    self.extraLinks = []; //store links between different RNAs
 
     self.addRNA = function(rnaGraph) {
         // Add an RNAGraph, which contains nodes and links as part of the
@@ -99,6 +101,23 @@ function Graph(element) {
             graph.links = self.graph.links.concat(self.rnas[uid].links);
 
             console.log('graph.nodes:', graph.nodes);
+        }
+
+        // Create a lookup table so that we can access each node
+        // based on its uid. This will be used to create the links
+        // between different RNAs
+        var uids_to_nodes = {};
+        for (var i = 0; i < graph.nodes.length; i++)
+            uids_to_nodes[graph.nodes[i].uid] = graph.nodes[i];
+
+        for (i = 0; i < self.extraLinks.length; i++) {
+            // the actual node objects may have changed, so we hae to recreate
+            // the extra links based on the uids
+            self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
+            self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
+
+            console.log('pushing:', self.extraLinks[i]);
+            graph.links.push(self.extraLinks[i]);
         }
 
         console.log('graph:', graph);
@@ -635,10 +654,13 @@ function Graph(element) {
             basepair_links = vis_links.selectAll("[link_type=basepair]")
             basepair_links.style('stroke', 'red')
 
+            intermolecule_links = vis_links.selectAll("[link_type=intermolecule]")
+            intermolecule_links.style('stroke', 'blue')
+
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
             plink.style("stroke-dasharray", ("3,3"))
 
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake]");
+            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
             //xlink = all_links;
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -649,7 +671,7 @@ function Graph(element) {
                     mouseup_node = d;
 
                     if (mouseup_node == mousedown_node) { resetMouseVars(); return; }
-                    var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1};
+                    var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1, uid:generateUUID()};
 
                     for (i = 0; i < graph.links.length; i++) {
                         if ((graph.links[i].source == mousedown_node)  
@@ -690,14 +712,22 @@ function Graph(element) {
                         r.pairtable[new_link.target.num] = new_link.source.num;
 
                         positions = r.get_positions();
+                        uids = r.get_uids();
+
                         r.recalculate_elements()
                         .elements_to_json()
                         .add_positions(positions)
+                        .add_uids(uids)
                         .reinforce_stems()
                         .reinforce_loops();
 
-                        self.recalculateGraph();
+                    } else {
+                        //Add an extra link
+                        console.log('adding link:', new_link);
+                        new_link.link_type = 'intermolecule';
+                        self.extraLinks.push(new_link);
                     }
+                    self.recalculateGraph();
                     update();
                 }
             };
@@ -728,7 +758,7 @@ function Graph(element) {
 
                 if (index > -1) {
                     //remove a link
-                    graph.links.splice(index, 1);
+                    //graph.links.splice(index, 1);
 
                     // there should be two cases
                     // 1. The link is within a single molecule
@@ -744,23 +774,26 @@ function Graph(element) {
                         r.pairtable[d.target.num] = 0;
 
                         positions = r.get_positions();
+                        uids = r.get_uids();
+
+                        console.log('uids', uids);
 
                         r.recalculate_elements()
                         .elements_to_json()
                         .add_positions(positions)
+                        .add_uids(uids)
                         .reinforce_stems()
                         .reinforce_loops();
 
-                        self.recalculateGraph();
-                    }
-                    
-                    // 2. The link is between two different molecules
-                    // We'll ignore this for now
+                    } else {
+                        // 2. The link is between two different molecules
+                        extraLinkIndex = self.extraLinks.indexOf(d);
 
-                    // this means we have a new json, which means we have
-                    // to recalculate the structure and change the colors
-                    // appropriately
-                    //
+                        console.log('extraLinkIndex:', extraLinkIndex);
+                        self.extraLinks.splice(extraLinkIndex, 1);
+                    }
+
+                    self.recalculateGraph();
                 }
 
                 update();

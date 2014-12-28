@@ -137,6 +137,13 @@ function RNAGraph(seq, dotbracket) {
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
 
+    self.add_uids = function(uids) {
+        for (var i = 0; i < uids.length; i++)
+            self.nodes[i].uid = uids[i];
+
+        return self;
+    };
+
     self.add_positions = function(positions) {
         for (var i = 0; i < positions.length; i++) {
             self.nodes[i].x = positions[i][0];
@@ -146,6 +153,17 @@ function RNAGraph(seq, dotbracket) {
         }
 
         return self;
+    };
+
+    self.get_uids = function() {
+        /* Get the positions of each node so that they
+         * can be passed to elements_to_json later
+         */
+        uids = [];
+        for (var i = 0; i < self.dotbracket.length; i++)
+            uids.push(self.nodes[i].uid);
+
+        return uids;
     };
 
     self.get_positions = function() {
