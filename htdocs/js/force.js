@@ -559,63 +559,63 @@ function Graph(element) {
     
     self.displayBackground = function(value) {
       if (value === true) {
-        self.displayParameters["backgroundColor"]=self.displayParameters["backgroundColorDefault"]
+        self.displayParameters.backgroundColor=self.displayParameters.backgroundColorDefault;
       } else {
-        self.displayParameters["backgroundColor"]='transparent';
+        self.displayParameters.backgroundColor='transparent';
       }
-      rect.attr('fill', self.displayParameters["backgroundColor"]);
+      rect.attr('fill', self.displayParameters.backgroundColor);
       //vis_nodes.selectAll('[label_type=label]').attr('fill', self.displayParameters["backgroundColor"]);
-    }
+    };
     
     self.displayNumbering = function(value) {
-      if (value == true) {
-        self.displayParameters["labelTextFill"]=self.displayParameters["labelTextFillDefault"]
-        self.displayParameters["labelLinkOpacity"]=self.displayParameters["labelLinkOpacityDefault"]
-        self.displayParameters["labelNodeFill"] = self.displayParameters["labelNodeFillDefault"]
+      if (value === true) {
+        self.displayParameters.labelTextFill=self.displayParameters.labelTextFillDefault;
+        self.displayParameters.labelLinkOpacity=self.displayParameters.labelLinkOpacityDefault;
+        self.displayParameters.labelNodeFill = self.displayParameters.labelNodeFillDefault;
       } else {
-        self.displayParameters["labelTextFill"]='transparent';
-        self.displayParameters["labelLinkOpacity"]=0;
-        self.displayParameters["labelNodeFill"] = 'transparent'
+        self.displayParameters.labelTextFill='transparent';
+        self.displayParameters.labelLinkOpacity=0;
+        self.displayParameters.labelNodeFill = 'transparent';
       }
-      console.log('sd', self.displayParameters['labelNodeFill'])
-      console.log(vis_nodes.selectAll('[node_type=label]'))
-      vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters['labelNodeFill'])
-      vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters["labelTextFill"]);
-      console.log('opacity:', self.displayParameters['labelLinkOpacity'])
-      vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters["labelLinkOpacity"]);
-    }
+      console.log('sd', self.displayParameters.labelNodeFill);
+      console.log(vis_nodes.selectAll('[node_type=label]'));
+      vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
+      vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
+      console.log('opacity:', self.displayParameters.labelLinkOpacity);
+      vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
+    };
     
     self.displayNodeOutline = function(value) {
-      if (value == true) {
-        self.displayParameters["nodeStrokeWidth"]=self.displayParameters["nodeStrokeWidthDefault"]
+      if (value === true) {
+        self.displayParameters.nodeStrokeWidth=self.displayParameters.nodeStrokeWidthDefault;
       } else {
-        self.displayParameters["nodeStrokeWidth"]=0;
+        self.displayParameters.nodeStrokeWidth=0;
       }
-      svg.selectAll('circle').style('stroke-width', self.displayParameters["nodeStrokeWidth"]);
-    }
+      svg.selectAll('circle').style('stroke-width', self.displayParameters.nodeStrokeWidth);
+    };
     
     self.displayNodeLabel = function(value) {
-      if (value == true) {
-        self.displayParameters["nodeLabelFill"]=self.displayParameters["nodeLabelFillDefault"]
+      if (value === true) {
+        self.displayParameters.nodeLabelFill=self.displayParameters.nodeLabelFillDefault;
       } else {
-        self.displayParameters["nodeLabelFill"]='transparent';
+        self.displayParameters.nodeLabelFill='transparent';
       }
-      vis_nodes.selectAll('[label_type=nucleotide]').attr('fill', self.displayParameters["nodeLabelFill"]);
-    }
+      vis_nodes.selectAll('[label_type=nucleotide]').attr('fill', self.displayParameters.nodeLabelFill);
+    };
     
     self.displayLinks = function(value) {
-      if (value == true) {
-        self.displayParameters["linkOpacity"]=self.displayParameters["linkOpacityDefault"];
+      if (value === true) {
+        self.displayParameters.linkOpacity=self.displayParameters.linkOpacityDefault;
       } else {
-        self.displayParameters["linkOpacity"]=0;
+        self.displayParameters.linkOpacity=0;
       }
 
-      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters["linkOpacity"]);
-    }
+      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
+    };
     
     var update = function () {
         force.nodes(graph.nodes)
-        .links(graph.links)
+        .links(graph.links);
         
         if (self.animation) {
           force.start();
@@ -631,12 +631,10 @@ function Graph(element) {
 
         link_lines.attr("class", "link")
         .style("stroke", "#999")
-        .style("stroke-opacity", self.displayParameters["linkOpacity"])
+        .style("stroke-opacity", self.displayParameters.linkOpacity)
         .style("stroke-width", function(d) { 
             return 2;
-            //return Math.sqrt(d.value); 
-            if (d.value != 1) return 0;
-            else return Math.sqrt(d.value); })
+        })
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
@@ -647,18 +645,18 @@ function Graph(element) {
             all_links.exit().each(function(d) { /*console.log('exiting', d);*/ }).remove();
 
             /* We don't need to update the positions of the stabilizing links */
-            fake_links = vis_links.selectAll("[link_type=fake]")
+            fake_links = vis_links.selectAll("[link_type=fake]");
             fake_links.style('stroke-width', 0);
             //fake_links.style('stroke', 'blue')
 
-            basepair_links = vis_links.selectAll("[link_type=basepair]")
-            basepair_links.style('stroke', 'red')
+            basepair_links = vis_links.selectAll("[link_type=basepair]");
+            basepair_links.style('stroke', 'red');
 
-            intermolecule_links = vis_links.selectAll("[link_type=intermolecule]")
-            intermolecule_links.style('stroke', 'blue')
+            intermolecule_links = vis_links.selectAll("[link_type=intermolecule]");
+            intermolecule_links.style('stroke', 'blue');
 
-            plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
-            plink.style("stroke-dasharray", ("3,3"))
+            plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
+            plink.style("stroke-dasharray", ("3,3"));
 
             xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
             //xlink = all_links;
@@ -674,8 +672,8 @@ function Graph(element) {
                     var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1, uid:generateUUID()};
 
                     for (i = 0; i < graph.links.length; i++) {
-                        if ((graph.links[i].source == mousedown_node)  
-                            || (graph.links[i].target == mousedown_node) ||
+                        if ((graph.links[i].source == mousedown_node)  || 
+                            (graph.links[i].target == mousedown_node) ||
                            (graph.links[i].source == mouseup_node) ||
                            (graph.links[i].target == mouseup_node)) {
 
@@ -687,11 +685,10 @@ function Graph(element) {
                                 }
                             }
 
-                            if (((graph.links[i].source == mouseup_node)  
-                                 && (graph.links[i].target == mousedown_node)) ||
-                                 ((graph.links[i].source == mousedown_node)  
-                                  && (graph.links[i].target == mouseup_node))) {
-
+                            if (((graph.links[i].source == mouseup_node)  && 
+                                 (graph.links[i].target == mousedown_node)) ||
+                                 ((graph.links[i].source == mousedown_node)  && 
+                                  (graph.links[i].target == mouseup_node))) {
                                       if (graph.links[i].link_type == 'backbone') {
                                           console.log('backbone exists');
                                           return;
@@ -798,16 +795,16 @@ function Graph(element) {
 
                 update();
 
-            }
+            };
 
             var gnodes = vis_nodes.selectAll('g.gnode')
-            .data(graph.nodes, node_key)
+            .data(graph.nodes, node_key);
             //.attr('pointer-events', 'all');
 
             gnodes_enter = gnodes.enter()
             .append('g')
             .classed('noselect', true)
-            .classed('gnode', true)
+            .classed('gnode', true);
             //.each(function(d) { console.log('entering', d); })
 
             gnodes_enter
@@ -854,7 +851,7 @@ function Graph(element) {
 
             xlink.on('click', link_click);
 
-            circle_update = gnodes.select('circle')
+            circle_update = gnodes.select('circle');
             console.log('circle_update:', circle_update);
 
             
@@ -863,7 +860,7 @@ function Graph(element) {
             .attr("r", function(d) {if (d.node_type == 'pseudo') return 3; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
-            .style('stroke-width', self.displayParameters["nodeStrokeWidth"])
+            .style('stroke-width', self.displayParameters.nodeStrokeWidth)
             .style("fill", node_fill);
             
             var labels = gnodes_enter.append("text")
@@ -872,7 +869,7 @@ function Graph(element) {
             .attr('font-size', 8.0)
             .attr('font-weight', 'bold')
             .attr('y', 2.5)
-            .attr('fill', self.displayParameters["nodeLabelFill"])
+            .attr('fill', self.displayParameters.nodeLabelFill)
             .attr('class', 'node-label')
             .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")
