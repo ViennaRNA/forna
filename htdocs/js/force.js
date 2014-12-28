@@ -159,6 +159,8 @@ function Graph(element) {
         graph.nodes = [];
         graph.links = [];
 
+        self.rnas = {};
+
         update();
     };
 
@@ -623,7 +625,7 @@ function Graph(element) {
         .attr("link_type", function(d) { return d.link_type; } )
         .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
-            all_links.exit().each(function(d) { console.log('exiting', d); }).remove();
+            all_links.exit().each(function(d) { /*console.log('exiting', d);*/ }).remove();
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]")
@@ -731,6 +733,8 @@ function Graph(element) {
                     // there should be two cases
                     // 1. The link is within a single molecule
                     console.log('removing:', d);
+                    console.log('self.rnas:', self.rnas);
+                    console.log('d.source.rna:', d.source.rna);
 
                     if (d.source.rna == d.target.rna) {
                         r = d.source.rna;
@@ -740,6 +744,7 @@ function Graph(element) {
                         r.pairtable[d.target.num] = 0;
 
                         positions = r.get_positions();
+
                         r.recalculate_elements()
                         .elements_to_json()
                         .add_positions(positions)

@@ -323,11 +323,11 @@ function AddViewModel() {
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
 */
-   '>molecule_name\nACCGGGUUU\n(.(...).)'
    /*
+   '>molecule_name\nACCGGGUUU\n(.(...).)'
    '>molecule1\nAAAA\n(..)\n>molecule1\nCCCC\n(..)'
-   '>molecule1\nAAAA\n(..)'
    */
+   '>molecule1\nAAAA\n(..)'
   );
   
   self.newMolecules = ko.observableArray([]);
@@ -418,11 +418,11 @@ function AddViewModel() {
       }
     });
     // also initialize the last object
-    console.log("Add new rna molecule to newMolecules")
+    console.log("Add new rna molecule to newMolecules");
     self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
     // unlock the submitted
     self.submitted(true);
-  }
+  };
 }
 
 // Knockout view model for RNA
@@ -443,7 +443,7 @@ function RNAViewModel() {
       self.graph.addNodes(rna.json());
     });
     self.graph.changeColorScheme(self.colors());
-  }
+  };
   /*jshint multistr: true */
   
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
@@ -454,7 +454,7 @@ function RNAViewModel() {
           console.log("graph is null, won't update the color");
     } else {
         if (newValue == 'custom') {
-            console.log("Custom colors selected")
+            console.log("Custom colors selected");
         }
         //console.log("self.graph:", self.graph.changeColorScheme);
         self.graph.changeColorScheme(newValue);

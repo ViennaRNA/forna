@@ -220,16 +220,16 @@ function RNAGraph(seq, dotbracket) {
                 continue;
 
             //link to the center node
-            self.links.push({'source': nucs[j] - 1,
-                             'target': self.nodes.length-1,
+            self.links.push({'source': self.nodes[nucs[j] - 1],
+                             'target': self.nodes[self.nodes.length-1],
                              'link_type': 'fake',
                              'value': radius,
                              'uid': generateUUID() });
 
             if (nucs.length > 4) {
                 //link across the loop
-                self.links.push({'source': nucs[j] - 1,
-                                 'target': nucs[(j + Math.floor(nucs.length / 2)) % nucs.length] - 1,
+                self.links.push({'source': self.nodes[nucs[j] - 1],
+                                 'target': self.nodes[nucs[(j + Math.floor(nucs.length / 2)) % nucs.length] - 1],
                                  'link_type': 'fake',
                                  'value': radius * 2,
                                  'uid': generateUUID() });
@@ -238,8 +238,8 @@ function RNAGraph(seq, dotbracket) {
             ia = ((nucs.length - 2) * 3.14159) / nucs.length;
             c = 2 * Math.cos(3.14159 / 2 - ia / 2);
             //link to over-neighbor
-            self.links.push({'source': nucs[j] - 1,
-                             'target': nucs[(j + 2) % nucs.length] - 1,
+            self.links.push({'source': self.nodes[nucs[j] - 1],
+                             'target': self.nodes[nucs[(j + 2) % nucs.length] - 1],
                              'link_type': 'fake',
                              'value': c});
 
@@ -301,12 +301,15 @@ function RNAGraph(seq, dotbracket) {
                              'node_type': 'nucleotide',
                              'elem_type': elem_types[i],
                              'uid': generateUUID() });
+        }
+
+        for (i = 1; i <= pt[0]; i++) {
 
             if (pt[i] !== 0) {
                 console.log('adding link', i, pt[i]);
                 // base-pair links
-                self.links.push({'source': i-1,
-                                 'target': pt[i]-1,
+                self.links.push({'source': self.nodes[i-1],
+                                 'target': self.nodes[pt[i]-1],
                                  'link_type': 'basepair',
                                  'value': 1,
                                  'uid': generateUUID() });
@@ -314,8 +317,8 @@ function RNAGraph(seq, dotbracket) {
 
             if (i > 1) {
                 // backbone links
-                self.links.push({'source': i-2,
-                                 'target': i-1,
+                self.links.push({'source': self.nodes[i-2],
+                                 'target': self.nodes[i-1],
                                  'link_type': 'backbone',
                                  'value': 1,
                                  'uid': generateUUID() });
