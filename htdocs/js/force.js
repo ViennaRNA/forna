@@ -77,18 +77,41 @@ function Graph(element) {
     self.animation = true;
     // don't listen to events because a model window is open somewhere
     self.deaf = false;
+    self.rnas = {};
+
+    self.addRNA = function(rnaGraph) {
+        // Add an RNAGraph, which contains nodes and links as part of the
+        // structure
+        // Each RNA will have uid to identify it
+        // when it is modified, it is replaced in the global list of RNAs
+        self.rnas[rnaGraph.uid] = rnaGraph;
+        self.recalculateGraph();
+    };
+
+    self.recalculateGraph = function(rnaGraph) {
+        // Condense all of the individual RNAs into one
+        // collection of nodes and links
+        graph.nodes = [];
+        graph.links = [];
+        console.log('self.rnas', self.rnas);
+        for (var uid in self.rnas) {
+            graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
+            graph.links = self.graph.links.concat(self.rnas[uid].links);
+
+            console.log('graph.nodes:', graph.nodes);
+        }
+
+        console.log('graph:', graph);
+    };
 
     self.addNodes = function addNodes(json) {
         // add a new set of nodes from a json file
-        console.log('json:', json);
 
-        // offset the source and target since we already
-        // have a number of nodes present
-        // self will have to be changed if we start removing 
-        // nodes
+        // Resolve the sources and targets of the links so that they
+        // are not just indeces into an array
         json.links.forEach(function(entry) {
-            entry.source += graph.nodes.length;
-            entry.target += graph.nodes.length;
+            if (typeof entry.source == "number") entry.source = json.nodes[entry.source];
+            if (typeof entry.target == "number") entry.target = json.nodes[entry.target];
         });
 
         // Get the maximum x and y values of the current graph
@@ -103,6 +126,10 @@ function Graph(element) {
         }
 
         json.nodes.forEach(function(entry) {
+            if (!(entry.rna.uid in self.rnas)) {
+                self.rnas[entry.rna.uid] = entry.rna;
+            }
+
             entry.x += max_x;
             //entry.y += max_y;
 
@@ -110,8 +137,14 @@ function Graph(element) {
             //entry.py += max_y;
         });
 
-        graph.nodes = graph.nodes.concat(json.nodes);
-        graph.links = graph.links.concat(json.links);
+        r = new RNAGraph('','');
+        r.nodes = json.nodes;
+        r.links = json.links;
+
+        console.log('r', r);
+
+        //self.addRNA(r);
+        self.recalculateGraph();
 
         update();
         self.center_view();
@@ -158,6 +191,11 @@ function Graph(element) {
         protein_nodes.style('fill', 'grey')
                     .style('fill-opacity', 0.5)
                     .attr('r', function(d) { return Math.sqrt(d.size); });
+
+                    /*
+        var fake_nodes = vis_nodes.seletAll('[node_type=fake]');
+        fake_nodes.style('fill', 'transparent');
+        */
 
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
         data = nodes.data();
@@ -656,7 +694,7 @@ function Graph(element) {
                         .reinforce_stems()
                         .reinforce_loops();
 
-                        graph = r;
+                        self.recalculateGraph();
                     }
                     update();
                 }
@@ -700,7 +738,6 @@ function Graph(element) {
 
                         r.pairtable[d.source.num] = 0;
                         r.pairtable[d.target.num] = 0;
-                        console.log('r.pairtable', r.pairtable);
 
                         positions = r.get_positions();
                         r.recalculate_elements()
@@ -709,7 +746,7 @@ function Graph(element) {
                         .reinforce_stems()
                         .reinforce_loops();
 
-                        graph = r;
+                        self.recalculateGraph();
                     }
                     
                     // 2. The link is between two different molecules

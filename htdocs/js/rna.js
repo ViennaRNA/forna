@@ -131,6 +131,7 @@ function RNAGraph(seq, dotbracket) {
     self.seq = seq;
     self.dotbracket = dotbracket;  //i.e. ..((..))..
     self.pairtable = rnaUtilities.dotbracket_to_pairtable(dotbracket);
+    self.uid = generateUUID();
 
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
@@ -204,6 +205,7 @@ function RNAGraph(seq, dotbracket) {
                          'num': i,
                          //'radius': 18 * radius -6,
                          'radius':2,
+                         'rna': self,
                          'node_type': 'middle',
                          'elem_type': 'f',
                          'uid': generateUUID() };
