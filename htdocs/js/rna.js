@@ -122,6 +122,54 @@ function RNAUtilities() {
 
         return res;
     };
+
+    self.remove_pseudoknots_from_pairtable = function(pt,from,to,matched) {
+        /* Remove the pseudoknots from this structure in such a fashion
+         * that the least amount of base-pairs need to be broken
+         *
+         * The pairtable is manipulated in place and a list of tuples
+         * indicating the broken base pairs is returned.
+         */
+        if (arguments.length < 3) {
+            // if from and to aren't passed in, assume the whole structure
+            from = 0;
+            to = pt[0];
+            matched = 0;
+        }
+
+        var unmatched = [];
+        var removed = [];
+        console.log('rpfp', from, to, matched);
+
+        for (var i = from; i <= to; i++) {
+            if (pt[i] === 0 || pt[i] < i)   // unpaired == unintersting
+                continue;
+
+            if (pt[i] < from || pt[i] > to) {
+                // unmatched pair indicating a pseudoknot 
+                // (or invalid structure)
+                unmatched.push([i,pt[i]]);
+            } else {
+                removed = removed.concat(self.remove_pseudoknots_from_pairtable(pt, i+1, pt[i]-1, matched+1));
+                i = pt[i] + 1;
+            }
+        }
+
+        if (unmatched.length <= matched) {
+            // less unmatched than matched so remove the unmatched
+            for (i = 0; i < unmatched.length; i++) {
+                // remove both the front and rear pairtable entries
+                pt[unmatched[i][0]] = 0;
+                pt[unmatched[i][1]] = 0;
+            }
+
+            removed = removed.concat(unmatched);
+        }
+
+        console.log('matched, unmatched', matched, unmatched);
+        console.log('removed:', removed);
+        return removed;
+    };
 }
 
 rnaUtilities = new RNAUtilities();
@@ -324,7 +372,6 @@ function RNAGraph(seq, dotbracket) {
         for (i = 1; i <= pt[0]; i++) {
 
             if (pt[i] !== 0) {
-                console.log('adding link', i, pt[i]);
                 // base-pair links
                 self.links.push({'source': self.nodes[i-1],
                                  'target': self.nodes[pt[i]-1],
