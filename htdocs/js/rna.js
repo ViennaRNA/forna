@@ -219,7 +219,7 @@ function RNAGraph(seq, dotbracket) {
         var angle = (nucs.length - 2) * 3.14159 / (2 * nucs.length);
         var radius = 0.5 / Math.cos(angle);
         
-        new_node = {'name': 'f',
+        new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
                          'radius':2,

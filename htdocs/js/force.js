@@ -233,7 +233,7 @@ function Graph(element) {
 
         } else if (newColorScheme == "structure") {
             scale = d3.scale.category10()
-            .domain(['s','m','i','f','t','h','x'])
+            .domain(['s','m','i','e','t','h','x'])
             .range(['lightgreen', '#ff9896', '#dbdb8d', 'lightsalmon',
                    'lightcyan', 'lightblue', 'transparent']);
                    nodes.style('fill', function(d) { 
@@ -241,7 +241,7 @@ function Graph(element) {
                    });
 
         } else if (newColorScheme == 'positions') {
-            data_values = data.map(function(d) { return d.id; });
+            data_values = data.map(function(d) { return d.num; });
             data_min = d3.min(data_values);
             data_max = d3.max(data_values);
 
@@ -251,7 +251,7 @@ function Graph(element) {
             .domain([data_min, data_min + (data_max - data_min) / 2, data_max]);
 
             nodes.style('fill', function(d) { 
-                return scale(d.id);
+                return scale(d.num);
             });
         } else if (newColorScheme == 'custom') {
             // scale to be used in case the user passes scalar
@@ -262,13 +262,13 @@ function Graph(element) {
             .domain([0, 1]);
 
             function change_colors(molecule_colors, d) {
-                if (molecule_colors.hasOwnProperty(d.id)) {
-                    val = parseFloat(molecule_colors[d.id]);
+                if (molecule_colors.hasOwnProperty(d.num)) {
+                    val = parseFloat(molecule_colors[d.num]);
 
                     if (isNaN(val)) {
                         // passed in color is not a scalar, so 
                         // treat it as a color
-                        return molecule_colors[d.id];
+                        return molecule_colors[d.num];
                     } else {
                         // the user passed in a float, let's use a colormap
                         // to convert it to a color
@@ -287,7 +287,7 @@ function Graph(element) {
                 } 
                 
                 if (self.customColors.hasOwnProperty(d.struct_name) &&
-                    self.customColors[d.struct_name].hasOwnProperty(d.id)) {
+                    self.customColors[d.struct_name].hasOwnProperty(d.num)) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
                     molecule_colors = self.customColors[d.struct_name];
@@ -827,6 +827,7 @@ function Graph(element) {
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
                 node_fills.pseudo = 'transparent';
+                node_fills.middle = 'transparent';
 
                 return node_fills[d.node_type];
             };
@@ -837,6 +838,7 @@ function Graph(element) {
                 node_strokes.nucleotide = 'gray';
                 node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
+                node_strokes.middle = 'transparent';
 
                 return node_strokes[d.node_type];
             };
@@ -844,9 +846,10 @@ function Graph(element) {
             node_tooltip = function(d) {
                 node_tooltips = {};
 
-                node_tooltips.nucleotide = d.id;
+                node_tooltips.nucleotide = d.num;
                 node_tooltips.label = '';
-                node_tooltips.pseudot = '';
+                node_tooltips.pseudo = '';
+                node_tooltipes.middle = '';
 
                 return node_tooltips[d.node_type];
             };
@@ -876,10 +879,10 @@ function Graph(element) {
             .attr('class', 'node-label')
             .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")
-            .text(function(d) { return d.id; });
+            .text(function(d) { return d.num; });
 
             node.append("svg:title")
-            .text(function(d) { return d.id; });
+            .text(function(d) { return d.num; });
 
             gnodes.exit().remove();
 
