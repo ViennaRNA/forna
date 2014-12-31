@@ -1,11 +1,33 @@
 rnaUtilities = new RNAUtilities();
 
 QUnit.test('pseudoknots', function(assert) {
+    pt = rnaUtilities.dotbracket_to_pairtable('(([[[))(]]])');
+    removed = rnaUtilities.remove_pseudoknots_from_pairtable(pt); 
+    db = rnaUtilities.pairtable_to_dotbracket(pt);
+
+    assert.equal(db, '..(((...))).');
+
+    pt = rnaUtilities.dotbracket_to_pairtable('(([))(])');
+    removed = rnaUtilities.remove_pseudoknots_from_pairtable(pt); 
+    db = rnaUtilities.pairtable_to_dotbracket(pt);
+
+    assert.equal(db, '((.))(.)');
+
     pt = rnaUtilities.dotbracket_to_pairtable('(([))()]');
     removed = rnaUtilities.remove_pseudoknots_from_pairtable(pt); 
     db = rnaUtilities.pairtable_to_dotbracket(pt);
 
     assert.equal(db, '((.))().');
+
+    pt = rnaUtilities.dotbracket_to_pairtable('(([((]))))');
+    console.log('pt:', pt);
+    removed = rnaUtilities.remove_pseudoknots_from_pairtable(pt); 
+    db = rnaUtilities.pairtable_to_dotbracket(pt);
+
+    assert.equal(db, '((.((.))))');
+    //assert.deepEqual(removed, [[3,9],[4,10]]);
+
+    /*
     assert.deepEqual(removed, [[3,8]]);
     //assert.deepEqual(r.elements, [['e',0,[0,1,2,3,4,5]]]);
     //
@@ -15,6 +37,7 @@ QUnit.test('pseudoknots', function(assert) {
 
     assert.equal(db, '((..))()..');
     assert.deepEqual(removed, [[3,9],[4,10]]);
+    */
 });
 
 QUnit.test('elements_to_json', function(assert) {

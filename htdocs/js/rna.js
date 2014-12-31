@@ -105,7 +105,6 @@ function RNAUtilities() {
             if (pt[i] !== 0 && pt[i] in seen) {
                 throw "Invalid pairtable contains duplicate entries";
             }
-
             seen[pt[i]] = true;
 
             if (pt[i] === 0) {
@@ -117,57 +116,80 @@ function RNAUtilities() {
                     res += self.bracket_right[self.delete_from_stack(stack, i)];
                 }
             }
-
         }
 
         return res;
     };
 
-    self.remove_pseudoknots_from_pairtable = function(pt,from,to,matched) {
+    self.find_unmatched = function(pt, from, to) {
+        /*
+         * Find unmatched nucleotides in this molecule.
+         */
+        var to_remove = [];
+        var unmatched = [];
+
+        var orig_from = from;
+        var orig_to = to;
+
+        //console.log('-----------------', from, to);
+
+        for (var i = from; i <= to; i++)
+            if (pt[i] !== 0 && (pt[i] < from || pt[i] > to))
+                unmatched.push([i,pt[i]]);
+        //console.log('unmatched:', unmatched);
+
+        for (i = orig_from; i <= orig_to; i++) {
+            while (pt[i] === 0 && i <= orig_to) i++;
+
+            to = pt[i];
+
+            while (pt[i] === to) {
+                i++;
+                to--;
+            }
+            
+            to_remove = to_remove.concat(self.find_unmatched(pt, i, to));
+        }
+
+        //console.log('orig_from:', orig_from, 'orig_to:', orig_to, to_remove);
+
+        if (unmatched.length > 0)
+            to_remove.push(unmatched);
+
+        return to_remove;
+    };
+
+    self.remove_pseudoknots_from_pairtable = function(pt) {
         /* Remove the pseudoknots from this structure in such a fashion
          * that the least amount of base-pairs need to be broken
          *
          * The pairtable is manipulated in place and a list of tuples
          * indicating the broken base pairs is returned.
          */
-        if (arguments.length < 3) {
-            // if from and to aren't passed in, assume the whole structure
-            from = 0;
-            to = pt[0];
-            matched = 0;
-        }
-
         var unmatched = [];
+        var to_remove = [];
         var removed = [];
-        console.log('rpfp', from, to, matched);
+        //console.log('pt:', pt);
 
-        for (var i = from; i <= to; i++) {
-            if (pt[i] === 0 || pt[i] < i)   // unpaired == unintersting
-                continue;
+        var length_comparator = function(a,b) { return a.length - b.length; };
 
-            if (pt[i] < from || pt[i] > to) {
-                // unmatched pair indicating a pseudoknot 
-                // (or invalid structure)
-                unmatched.push([i,pt[i]]);
-            } else {
-                removed = removed.concat(self.remove_pseudoknots_from_pairtable(pt, i+1, pt[i]-1, matched+1));
-                i = pt[i] + 1;
+        do {
+            to_remove = self.find_unmatched(pt, 1, pt[0]);
+
+            to_remove.sort(length_comparator);
+            //console.log("to_remove:", to_remove);
+            
+            if (to_remove.length > 0) {
+                for (var i = 0; i < to_remove[0].length; i++) {
+                    pt[to_remove[0][i][0]] = 0;
+                    pt[to_remove[0][i][1]] = 0;
+
+                    removed.push(to_remove[0][i]);
+                }
             }
-        }
+        } while (to_remove.length > 0);
+        //} while ((to_remove = self.find_unmatched(pt, 0, pt[0])).length > 0);
 
-        if (unmatched.length <= matched) {
-            // less unmatched than matched so remove the unmatched
-            for (i = 0; i < unmatched.length; i++) {
-                // remove both the front and rear pairtable entries
-                pt[unmatched[i][0]] = 0;
-                pt[unmatched[i][1]] = 0;
-            }
-
-            removed = removed.concat(unmatched);
-        }
-
-        console.log('matched, unmatched', matched, unmatched);
-        console.log('removed:', removed);
         return removed;
     };
 }
@@ -390,6 +412,16 @@ function RNAGraph(seq, dotbracket) {
             }
         }
 
+        console.log('self.pseudoknot_pairs:', self.pseudoknot_pairs);
+        //add the pseudoknot links
+        for (i = 0; i < self.pseudoknot_pairs.length; i++) {
+                self.links.push({'source': self.pseudoknot_pairs[i][0]-1,
+                                 'target': self.pseudoknot_pairs[i][1]-1,
+                                 'link_type': 'pseudoknot',
+                                 'value': 1,
+                                 'uid': generateUUID() });
+        }
+
         return self;
     };
 
@@ -495,7 +527,14 @@ function RNAGraph(seq, dotbracket) {
     };
 
     self.recalculate_elements = function() {
+        self.remove_pseudoknots();
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
+
+        return self;
+    };
+
+    self.remove_pseudoknots = function() {
+        self.pseudoknot_pairs = rnaUtilities.remove_pseudoknots_from_pairtable(self.pairtable);
 
         return self;
     };
