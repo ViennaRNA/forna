@@ -74,7 +74,6 @@ function Graph(element) {
 
     self.colorScheme = 'structure';
     self.customColors = {};
-    self.extraLinks = {};
     self.animation = true;
     // don't listen to events because a model window is open somewhere
     self.deaf = false;
@@ -180,6 +179,7 @@ function Graph(element) {
         graph.links = [];
 
         self.rnas = {};
+        self.extraLinks = [];
 
         update();
     };
@@ -234,7 +234,7 @@ function Graph(element) {
 
         } else if (newColorScheme == "structure") {
             scale = d3.scale.category10()
-            .domain(['s','m','i','f','t','h','x'])
+            .domain(['s','m','i','e','t','h','x'])
             .range(['lightgreen', '#ff9896', '#dbdb8d', 'lightsalmon',
                    'lightcyan', 'lightblue', 'transparent']);
                    nodes.style('fill', function(d) { 
@@ -829,6 +829,7 @@ function Graph(element) {
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
                 node_fills.pseudo = 'transparent';
+                node_fills.middle = 'transparent';
 
                 return node_fills[d.node_type];
             };
@@ -839,6 +840,7 @@ function Graph(element) {
                 node_strokes.nucleotide = 'gray';
                 node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
+                node_strokes.middle = 'transparent';
 
                 return node_strokes[d.node_type];
             };
@@ -848,7 +850,8 @@ function Graph(element) {
 
                 node_tooltips.nucleotide = d.id;
                 node_tooltips.label = '';
-                node_tooltips.pseudot = '';
+                node_tooltips.pseudo = '';
+                node_tooltips.middle = '';
 
                 return node_tooltips[d.node_type];
             };
@@ -862,7 +865,7 @@ function Graph(element) {
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'pseudo') return 3; else return 6;})
+            .attr("r", function(d) {if (d.node_type == 'middle') return 0; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
