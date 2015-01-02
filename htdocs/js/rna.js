@@ -192,6 +192,7 @@ function RNAUtilities() {
 
         return removed;
     };
+
 }
 
 rnaUtilities = new RNAUtilities();
@@ -415,8 +416,8 @@ function RNAGraph(seq, dotbracket) {
         console.log('self.pseudoknot_pairs:', self.pseudoknot_pairs);
         //add the pseudoknot links
         for (i = 0; i < self.pseudoknot_pairs.length; i++) {
-                self.links.push({'source': self.pseudoknot_pairs[i][0]-1,
-                                 'target': self.pseudoknot_pairs[i][1]-1,
+                self.links.push({'source': self.nodes[self.pseudoknot_pairs[i][0]-1],
+                                 'target': self.nodes[self.pseudoknot_pairs[i][1]-1],
                                  'link_type': 'pseudoknot',
                                  'value': 1,
                                  'uid': generateUUID() });
@@ -536,6 +537,22 @@ function RNAGraph(seq, dotbracket) {
     self.remove_pseudoknots = function() {
         self.pseudoknot_pairs = rnaUtilities.remove_pseudoknots_from_pairtable(self.pairtable);
 
+        return self;
+    };
+
+    self.add_pseudoknots = function() {
+        /* Add all of the pseudoknot pairs which are stored outside
+         * of the pairtable back to the pairtable
+         */
+        var pt = self.pairtable;
+        var pseudoknot_pairs = self.pseudoknot_pairs;
+
+        for (i = 0; i < pseudoknot_pairs.length; i++) {
+            pt[pseudoknot_pairs[i][0]] = pseudoknot_pairs[i][1];
+            pt[pseudoknot_pairs[i][1]] = pseudoknot_pairs[i][0];
+        }
+
+        self.pseudoknot_pairs = [];
         return self;
     };
 

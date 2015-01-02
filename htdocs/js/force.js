@@ -95,12 +95,12 @@ function Graph(element) {
         // collection of nodes and links
         graph.nodes = [];
         graph.links = [];
-        console.log('self.rnas', self.rnas);
+        //console.log('self.rnas', self.rnas);
         for (var uid in self.rnas) {
             graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
             graph.links = self.graph.links.concat(self.rnas[uid].links);
 
-            console.log('graph.nodes:', graph.nodes);
+            //console.log('graph.nodes:', graph.nodes);
         }
 
         // Create a lookup table so that we can access each node
@@ -110,6 +110,7 @@ function Graph(element) {
         for (var i = 0; i < graph.nodes.length; i++)
             uids_to_nodes[graph.nodes[i].uid] = graph.nodes[i];
 
+        console.log('self.extraLinks:', self.extraLinks);
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids
@@ -120,7 +121,7 @@ function Graph(element) {
             graph.links.push(self.extraLinks[i]);
         }
 
-        console.log('graph:', graph);
+        //console.log('graph:', graph);
     };
 
     self.addNodes = function addNodes(json) {
@@ -160,7 +161,7 @@ function Graph(element) {
         r.nodes = json.nodes;
         r.links = json.links;
 
-        console.log('r', r);
+        //console.log('r', r);
 
         //self.addRNA(r);
         self.recalculateGraph();
@@ -279,7 +280,7 @@ function Graph(element) {
                 }
             }
 
-            console.log(self.customColors);
+            //console.log(self.customColors);
 
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
@@ -577,11 +578,11 @@ function Graph(element) {
         self.displayParameters.labelLinkOpacity=0;
         self.displayParameters.labelNodeFill = 'transparent';
       }
-      console.log('sd', self.displayParameters.labelNodeFill);
-      console.log(vis_nodes.selectAll('[node_type=label]'));
+      //console.log('sd', self.displayParameters.labelNodeFill);
+      //console.log(vis_nodes.selectAll('[node_type=label]'));
       vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
       vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
-      console.log('opacity:', self.displayParameters.labelLinkOpacity);
+      //console.log('opacity:', self.displayParameters.labelLinkOpacity);
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
     };
     
@@ -677,9 +678,9 @@ function Graph(element) {
                            (graph.links[i].source == mouseup_node) ||
                            (graph.links[i].target == mouseup_node)) {
 
-                                console.log('graph.links[i].link_type', graph.links[i].link_type);
+                                //console.log('graph.links[i].link_type', graph.links[i].link_type);
 
-                                if (graph.links[i].link_type == 'basepair') {
+                                if (graph.links[i].link_type == 'basepair' || graph.links[i].link_type == 'pseudoknot') {
                                     console.log('basepair_exists');
                                     return;
                                 }
@@ -704,6 +705,7 @@ function Graph(element) {
                     // send ajax request to forna
                     if (new_link.source.rna == new_link.target.rna) {
                         r = new_link.source.rna;
+                        console.log('r', r);
 
                         r.pairtable[new_link.source.num] = new_link.target.num;
                         r.pairtable[new_link.target.num] = new_link.source.num;
@@ -713,6 +715,7 @@ function Graph(element) {
 
                         r.recalculate_elements()
                         .elements_to_json()
+                        .add_pseudoknots()
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
@@ -723,6 +726,7 @@ function Graph(element) {
                         console.log('adding link:', new_link);
                         new_link.link_type = 'intermolecule';
                         self.extraLinks.push(new_link);
+                        console.log('self.extraLinks');
                     }
                     self.recalculateGraph();
                     update();
@@ -777,6 +781,7 @@ function Graph(element) {
 
                         r.recalculate_elements()
                         .elements_to_json()
+                        .add_pseudoknots()
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
@@ -852,7 +857,7 @@ function Graph(element) {
             xlink.on('click', link_click);
 
             circle_update = gnodes.select('circle');
-            console.log('circle_update:', circle_update);
+            //console.log('circle_update:', circle_update);
 
             
             var node = gnodes_enter.append("svg:circle")
