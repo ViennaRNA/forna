@@ -14,6 +14,7 @@ function generateUUID(){
     return uuid;
 }
 
+
 function RNAUtilities() {
     var self = this;
 
@@ -196,6 +197,52 @@ function RNAUtilities() {
 }
 
 rnaUtilities = new RNAUtilities();
+
+function isNormalInteger(str) {
+    //http://stackoverflow.com/a/10834843/899470
+    return /^\+?(0|[1-9]\d*)$/.test(str);
+}
+
+function ColorScheme(colors_text) {
+    var self = this;
+    self.colors_text = colors_text;
+
+    self.parseColorText = function(color_text) {
+        /* Parse the text of an RNA color string. Instructions and description
+         * of the format are given below.
+         *
+         * The return is a json double dictionary indexed first by the 
+         * molecule name, then by the nucleotide. This is then applied
+         * by force.js to the RNAs it is displaying. When no molecule
+         * name is specified, the color is applied to all molecules*/
+        var lines = color_text.split('\n');
+
+        console.log('lines', lines);
+        for (var i = 0; i < lines.length; i++) {
+            words = lines[i].split(' ');
+
+            if (isNan(words[j])) {
+                //not a number
+                //check if we're specifying a color scheme
+            } else if (isNormalInteger(words[j])) {
+                //nucleotide number
+            }
+
+            for (var j = 0; j < words.length; j++) {
+                if (isNaN(words[j])) {
+                    console.log('words[j]', words[j], 'string');
+                } else {
+                    if (isNormalInteger(words[j]))
+                        console.log('words[j]', words[j], 'int');
+                    else
+                        console.log('words[j]', words[j], 'float');
+                }
+            }
+        }
+    };
+
+    self.parseColorText(self.colors_text);
+}
 
 function RNAGraph(seq, dotbracket) {
     var self = this;

@@ -1,5 +1,10 @@
 rnaUtilities = new RNAUtilities();
 
+QUnit.test('colors', function(assert) {
+    cs = new ColorScheme("0.34 0.45 56 \n1 red \n2 blue");
+    console.log(cs);
+});
+
 QUnit.test('pseudoknots', function(assert) {
     pt = rnaUtilities.dotbracket_to_pairtable('(([[[))(]]])');
     removed = rnaUtilities.remove_pseudoknots_from_pairtable(pt); 
