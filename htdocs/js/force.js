@@ -289,9 +289,10 @@ function Graph(element) {
                 if (typeof self.customColors == 'undefined') {
                     return 'white';
                 } 
+                console.log('d.struct_name:', d.struct_name);
                 
                 if (self.customColors.hasOwnProperty(d.struct_name) &&
-                    self.customColors[d.struct_name].hasOwnProperty(d.id)) {
+                    self.customColors[d.struct_name].hasOwnProperty(d.num)) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
                     molecule_colors = self.customColors[d.struct_name];

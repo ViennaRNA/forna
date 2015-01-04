@@ -230,12 +230,15 @@ function ColorScheme(colors_text) {
 
         console.log('lines', lines);
         for (var i = 0; i < lines.length; i++) {
+            console.log('lines[i]:', lines[i]);
+
             if (lines[i][0] == '>') {
                 // new molecule
-                curr_molecule = lines[i].trim();
+                curr_molecule = lines[i].trim().slice(1);
                 counter = 1;
 
                 colors_json[curr_molecule] = {};
+                continue;
             }
 
             words = lines[i].trim().split(/[\s,]+/);
@@ -305,7 +308,7 @@ function ColorScheme(colors_text) {
     self.parseColorText(self.colors_text);
 }
 
-function RNAGraph(seq, dotbracket) {
+function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
     self.seq = seq;
     self.dotbracket = dotbracket;  //i.e. ..((..))..
@@ -315,6 +318,7 @@ function RNAGraph(seq, dotbracket) {
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
+    self.struct_name = struct_name;
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
@@ -496,6 +500,7 @@ function RNAGraph(seq, dotbracket) {
                              'radius': 6,
                              'rna': self,
                              'node_type': 'nucleotide',
+                             'struct_name': self.struct_name,
                              'elem_type': elem_types[i],
                              'uid': generateUUID() });
         }
