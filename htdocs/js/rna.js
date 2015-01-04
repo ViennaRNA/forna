@@ -203,6 +203,14 @@ function isNormalInteger(str) {
     return /^\+?(0|[1-9]\d*)$/.test(str);
 }
 
+if(typeof(String.prototype.trim) === "undefined")
+    {
+        String.prototype.trim = function() 
+        {
+            return String(this).replace(/^\s+|\s+$/g, '');
+        };
+    }
+
 function ColorScheme(colors_text) {
     var self = this;
     self.colors_text = colors_text;
@@ -216,29 +224,82 @@ function ColorScheme(colors_text) {
          * by force.js to the RNAs it is displaying. When no molecule
          * name is specified, the color is applied to all molecules*/
         var lines = color_text.split('\n');
+        var curr_molecule = '';
+        var counter = 1;
+        var colors_json = {'':{}};
 
         console.log('lines', lines);
         for (var i = 0; i < lines.length; i++) {
-            words = lines[i].split(' ');
+            if (lines[i][0] == '>') {
+                // new molecule
+                curr_molecule = lines[i].trim();
+                counter = 1;
 
-            if (isNan(words[j])) {
-                //not a number
-                //check if we're specifying a color scheme
-            } else if (isNormalInteger(words[j])) {
-                //nucleotide number
+                colors_json[curr_molecule] = {};
             }
+
+            words = lines[i].trim().split(/[\s,]+/);
+            console.log('words:', words);
 
             for (var j = 0; j < words.length; j++) {
                 if (isNaN(words[j])) {
+                    // it's not a number, should be a combination 
+                    // of a number (nucleotide #) and a color
                     console.log('words[j]', words[j], 'string');
+                    var regex = /([0-9]+)(.*)/;
+                    var match = regex.exec(words[j]);
+                    var num = match[1];
+                    var color = match[2];
+
+                    colors_json[curr_molecule][num] = color;
                 } else {
-                    if (isNormalInteger(words[j]))
-                        console.log('words[j]', words[j], 'int');
-                    else
-                        console.log('words[j]', words[j], 'float');
+                    //it's a number, so we add it to the list of values
+                    //seen for this molecule
+                    colors_json[curr_molecule][counter] = Number(words[j]);
+                    console.log('counter:', counter);
+                    counter += 1;
                 }
             }
         }
+
+        console.log('colors_json:', colors_json[curr_molecule]);
+        self.colors_json = colors_json;
+
+        return self;
+    };
+
+    self.normalizeColors = function() {
+        /* 
+         * Normalize the passed in values so that they range from
+         * 0 to 1
+         */
+        var value;
+
+        for (var molecule_name in self.colors_json) {
+            var min_num = Number.MAX_VALUE;
+            var max_num = Number.MIN_VALUE;
+
+            // iterate once to find the min and max values;
+            for (var resnum in self.colors_json[molecule_name]) {
+                value = self.colors_json[molecule_name][resnum];
+                if (typeof value == 'number') {
+                    if (value < min_num)
+                        min_num = value;
+                    if (value > max_num)
+                        max_num = value;
+                }
+            }
+
+            // iterate again to normalize
+            for (resnum in self.colors_json[molecule_name]) {
+                value = self.colors_json[molecule_name][resnum];
+                if (typeof value == 'number') {
+                    self.colors_json[molecule_name][resnum] = (value - min_num ) / (max_num - min_num);
+                }
+            }
+        }
+
+        return self;
     };
 
     self.parseColorText(self.colors_text);

@@ -1,7 +1,15 @@
 rnaUtilities = new RNAUtilities();
 
 QUnit.test('colors', function(assert) {
-    cs = new ColorScheme("0.34 0.45 56 \n1 red \n2 blue");
+    cs = new ColorScheme("0.7 0.8 0.9 \n7red \n8blue");
+    cs.normalizeColors();
+
+    assert.equal(cs.colors_json[''][1], 0);
+    assert.equal(cs.colors_json[''][2] - 0.5 < 0.001, true);
+    assert.equal(cs.colors_json[''][3], 1);
+
+    assert.equal(cs.colors_json[''][7], 'red');
+
     console.log(cs);
 });
 

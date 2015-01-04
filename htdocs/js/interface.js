@@ -150,7 +150,7 @@ function ColorViewModel() {
     var self = this;
 
   self.input = ko.observable(
-      '3-4,7 red\n10 0.1\n11 0.2\n12 0.3\n13 0.6\n14 0.7\n15 0.8\n36 green some_molecule\n37 purple molecule_name\n');
+      '0.65 0.72 0.84');
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
@@ -175,25 +175,17 @@ function ColorViewModel() {
       console.log('Clicked');
       console.log('self.input()', self.input());
 
-      var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ));
-      console.log('a', a);
+      cs =  new ColorScheme(self.input());
+      cs.normalizeColors();
+      console.log('cs.colors_json:', cs.colors_json);
 
-        a.success( function(data) {
-            console.log('data', data)
-            $('#addColors').modal('hide');
-            rnaView.graph.deaf = false;
-            console.log('updating colors')
+      rnaView.graph.addCustomColors(cs.colors_json);
+      rnaView.colors('custom');
+      rnaView.graph.changeColorScheme(rnaView.colors());
 
-            self.colorSchemeJson(data);
-            rnaView.graph.addCustomColors(self.colorSchemeJson());
-            rnaView.colors('custom');
-            rnaView.graph.changeColorScheme(rnaView.colors());
-        }).error( function(jqXHR) {
-            console.log('error again')
-            self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-            //$('#ColorSubmit').button('reset');
-        });
-  }
+      $('#addColors').modal('hide');
+      rnaView.graph.deaf = false;
+  };
 }
 
 function AddPDBViewModel() {

@@ -207,6 +207,25 @@ function Graph(element) {
         .attr("height", svgH);
     }
 
+    function change_colors(molecule_colors, d, scale) {
+        if (molecule_colors.hasOwnProperty(d.num)) {
+            val = parseFloat(molecule_colors[d.num]);
+            console.log('d.num', d.num, 'val', val);
+
+            if (isNaN(val)) {
+                // passed in color is not a scalar, so 
+                // treat it as a color
+                return molecule_colors[d.num];
+            } else {
+                // the user passed in a float, let's use a colormap
+                // to convert it to a color
+                return scale(val);
+            }
+        } else {
+            return 'white';
+        }
+    }
+
     self.changeColorScheme = function(newColorScheme) {
         var protein_nodes = vis_nodes.selectAll('[node_type=protein]');
 
@@ -220,6 +239,7 @@ function Graph(element) {
         */
 
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
+        var scale;
         data = nodes.data();
         self.colorScheme = newColorScheme;
 
@@ -246,7 +266,7 @@ function Graph(element) {
             data_min = d3.min(data_values);
             data_max = d3.max(data_values);
 
-            var scale = d3.scale.linear()
+            scale = d3.scale.linear()
             .range(["#98df8a", "#dbdb8d", "#ff9896"])
             .interpolate(d3.interpolateLab)
             .domain([data_min, data_min + (data_max - data_min) / 2, data_max]);
@@ -262,23 +282,6 @@ function Graph(element) {
             .interpolate(d3.interpolateLab)
             .domain([0, 1]);
 
-            function change_colors(molecule_colors, d) {
-                if (molecule_colors.hasOwnProperty(d.id)) {
-                    val = parseFloat(molecule_colors[d.id]);
-
-                    if (isNaN(val)) {
-                        // passed in color is not a scalar, so 
-                        // treat it as a color
-                        return molecule_colors[d.id];
-                    } else {
-                        // the user passed in a float, let's use a colormap
-                        // to convert it to a color
-                        return scale(val);
-                    }
-                } else {
-                    return 'white';
-                }
-            }
 
             //console.log(self.customColors);
 
@@ -292,10 +295,11 @@ function Graph(element) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
                     molecule_colors = self.customColors[d.struct_name];
-                    return change_colors(molecule_colors, d);
+                    return change_colors(molecule_colors, d, scale);
                 } else if (self.customColors.hasOwnProperty('')) {
                     molecule_colors = self.customColors[''];
-                    return change_colors(molecule_colors, d);
+                    console.log('molecule_colors:', molecule_colors);
+                    return change_colors(molecule_colors, d, scale);
                 }
 
                 return 'white';
