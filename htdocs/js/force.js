@@ -262,17 +262,13 @@ function Graph(element) {
                    });
 
         } else if (newColorScheme == 'positions') {
-            data_values = data.map(function(d) { return d.id; });
-            data_min = d3.min(data_values);
-            data_max = d3.max(data_values);
-
-            scale = d3.scale.linear()
-            .range(["#98df8a", "#dbdb8d", "#ff9896"])
-            .interpolate(d3.interpolateLab)
-            .domain([data_min, data_min + (data_max - data_min) / 2, data_max]);
-
             nodes.style('fill', function(d) { 
-                return scale(d.id);
+                scale = d3.scale.linear()
+                .range(["#98df8a", "#dbdb8d", "#ff9896"])
+                .interpolate(d3.interpolateLab)
+                .domain([1, 1 + (d.rna.rna_length - 1) / 2, d.rna.rna_length]);
+
+                return scale(d.num);
             });
         } else if (newColorScheme == 'custom') {
             // scale to be used in case the user passes scalar

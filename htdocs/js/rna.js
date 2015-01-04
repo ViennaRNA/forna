@@ -314,6 +314,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.dotbracket = dotbracket;  //i.e. ..((..))..
     self.pairtable = rnaUtilities.dotbracket_to_pairtable(dotbracket);
     self.uid = generateUUID();
+    self.rna_length = dotbracket.length;
 
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
