@@ -22,7 +22,7 @@ setPlottingArea = function() {
   $("#plotting-area").height(chartheight);
   var chartwidth = $("#chart").width();
   $("#plotting-area").width(chartwidth);
-}
+};
 
 // thanks to https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Using_full_screen_mode
 function toggleFullScreen(id) {
@@ -78,7 +78,7 @@ $("[data-toggle=tooltip]").tooltip();
 
 function RNA(sequence, structure, header) {
   var self = this;
-  console.log(["New RNA with: ", sequence, structure, header].join('\n'))
+  console.log(["New RNA with: ", sequence, structure, header].join('\n'));
   console.log("structure:", structure);
 
   self.header = ko.observable(header);
@@ -99,7 +99,8 @@ function RNA(sequence, structure, header) {
   
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
-        r = new RNAGraph(self.sequence(), self.structure())
+          console.log('self.header', self.header());
+        r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
         .add_positions(data)
         .reinforce_stems()
@@ -115,7 +116,7 @@ function RNA(sequence, structure, header) {
     }, self
   );
   
-  if (structure == '') {
+  if (structure === '') {
     self.structure.refresh();
     self.structure();
   } else {
@@ -132,9 +133,9 @@ function RNA(sequence, structure, header) {
 
 function CustomColorScheme(text) {
     var self = this;
-    console.log('Adding new color scheme')
+    console.log('Adding new color scheme');
 
-    self.text = ko.observable(text)
+    self.text = ko.observable(text);
     self.done = ko.observable(false);
 
     self.colorSchemeJson = ko.onDemandObservable( function() {
@@ -142,7 +143,7 @@ function CustomColorScheme(text) {
     );
 
     self.loaded = ko.computed( function() {
-        return (self.colorSchemeJson.loaded() && self.done())
+        return (self.colorSchemeJson.loaded() && self.done());
     });
 }
 
@@ -150,24 +151,24 @@ function ColorViewModel() {
     var self = this;
 
   self.input = ko.observable(
-      '3-4,7 red\n10 0.1\n11 0.2\n12 0.3\n13 0.6\n14 0.7\n15 0.8\n36 green some_molecule\n37 purple molecule_name\n')
+      '0.65 0.72 0.84');
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
   self.colorSchemeJson = ko.observable({});
 
   self.newInputError = function(message) {
-    if (self.inputError() == '') {
+    if (self.inputError() === '') {
       self.inputError(message);
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
-  }
+  };
 
   self.cancelColor = function() {
     $('#addColors').modal('hide');
     rnaView.graph.deaf = false;
-  }
+  };
 
   self.colorSubmit = function() {
       self.submitted(false);
@@ -175,25 +176,17 @@ function ColorViewModel() {
       console.log('Clicked');
       console.log('self.input()', self.input());
 
-      var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ))
-      console.log('a', a);
+      cs =  new ColorScheme(self.input());
+      cs.normalizeColors();
+      console.log('cs.colors_json:', cs.colors_json);
 
-        a.success( function(data) {
-            console.log('data', data)
-            $('#addColors').modal('hide');
-            rnaView.graph.deaf = false;
-            console.log('updating colors')
+      rnaView.graph.addCustomColors(cs.colors_json);
+      rnaView.colors('custom');
+      rnaView.graph.changeColorScheme(rnaView.colors());
 
-            self.colorSchemeJson(data);
-            rnaView.graph.addCustomColors(self.colorSchemeJson());
-            rnaView.colors('custom');
-            rnaView.graph.changeColorScheme(rnaView.colors());
-        }).error( function(jqXHR) {
-            console.log('error again')
-            self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-            //$('#ColorSubmit').button('reset');
-        });
-  }
+      $('#addColors').modal('hide');
+      rnaView.graph.deaf = false;
+  };
 }
 
 function AddPDBViewModel() {
@@ -205,18 +198,18 @@ function AddPDBViewModel() {
   self.inputFile = ko.observable(null);
 
   self.newInputError = function(message) {
-    if (self.inputError() == '') {
+    if (self.inputError() === '') {
       self.inputError(message);
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
     $('#PDBSubmit').button('reset');
-  }
+  };
 
   self.uploadPDB = function (file) {
       self.inputFile(file);
       console.log(file);
-  }
+  };
 
   function progressHandlingFunction(e){
       if(e.lengthComputable){
@@ -227,7 +220,7 @@ function AddPDBViewModel() {
   self.cancelAddPDB = function() {
     $('#addPDB').modal('hide');
     rnaView.graph.deaf = false;
-  }
+  };
 
   self.submit = function() {
       self.submitted(false);
@@ -236,12 +229,12 @@ function AddPDBViewModel() {
       $('#PDBSubmit').button('loading');
       //console.log('self.input()', self.inputFile());
 
-      if (self.inputFile() == null) {
+      if (self.inputFile() === null) {
         self.newInputError("ERROR Please select a PDB file");
         return;
       }
 
-      if (!self.inputFile().type == 'chemical/x-pdb') {
+      if (self.inputFile().type != 'chemical/x-pdb') {
         self.newInputError("ERROR: Invalid file type, please upload a PDB file");
         return;
       }
@@ -256,7 +249,7 @@ function AddPDBViewModel() {
 
 
       formData.append('pdb_file', self.inputFile(), self.inputFile().name);
-      console.log("formData", formData)
+      console.log("formData", formData);
 
       $.ajax({type: "POST",
                    url: serverURL + '/pdb_to_graph',
@@ -273,17 +266,17 @@ function AddPDBViewModel() {
                    success: function (data) {
                         $('#addPDB').modal('hide');
                         rnaView.graph.deaf = false;
-                        console.log('data uploaded')
-                        console.log(data)
-                        data = JSON.parse(data)
+                        console.log('data uploaded');
+                        console.log(data);
+                        data = JSON.parse(data);
 
                         rnaView.animation(true);
                         // each chain has its own json containing d3 graph representations
-                        for (i = 0; i < data['jsons'].length ; i++) {
+                        for (i = 0; i < data.jsons.length ; i++) {
                             rnaView.graph.addNodes(data.jsons[i]);
                         }
                         // the extra links contain supplementary information
-                        rnaView.graph.changeColorScheme(rnaView.colors())
+                        rnaView.graph.changeColorScheme(rnaView.colors());
                         
                    },
                    error: function (jqXHR) {
@@ -319,12 +312,15 @@ function AddViewModel() {
   var self = this;
   
   self.input = ko.observable(
+   /*
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
+*/
+   '>molecule_name\nACCGGGUUU\n(((.(((...))).)))'
    /*
-   '>molecule_name\nACCGGGUUU\n(.(...).)'
    '>molecule1\nAAAA\n(..)\n>molecule1\nCCCC\n(..)'
    '>molecule1\nAAAA\n(..)'
+   '>molecule1\nAAAAAA\n(([))]'
    */
   );
   
@@ -354,7 +350,7 @@ function AddViewModel() {
     }
     
     // here the code to hide modal and push the new molecules if everything is loaded correctly
-    if((returnValue) && (self.inputError().length == 0)) {
+    if((returnValue) && (self.inputError().length === 0)) {
       console.log("everything should be loaded now, updating graph!");
       $('#add').modal('hide');
       rnaView.graph.deaf = false;
@@ -371,7 +367,7 @@ function AddViewModel() {
   self.cancelAddMolecule = function() {
     $('#add').modal('hide');
     rnaView.graph.deaf = false;
-  }
+  };
 
     
   self.submit = function() {
@@ -397,7 +393,7 @@ function AddViewModel() {
         // this is a header
         if (rna !== undefined) {
           // initialize real rna object
-          console.log("Add new rna molecule to newMolecules")
+          console.log("Add new rna molecule to newMolecules");
           self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
         }
         rna = new tmpRNA();
@@ -465,7 +461,7 @@ function RNAViewModel() {
     if (self.graph === null) {
       console.log("graph is null, won't change the animation state");
     } else {
-      if (newValue == true) {
+      if (newValue === true) {
         self.graph.startAnimation();
       } else {
         self.graph.stopAnimation();
@@ -571,7 +567,7 @@ function RNAViewModel() {
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
     self.graph.deaf = true;
-  }
+  };
   
   self.showAbout = function() {
     $('#about').modal('show');
@@ -581,15 +577,15 @@ function RNAViewModel() {
     // delete all nodes
     self.molecules([]);
     self.graph.clearNodes();
-  }
+  };
   
   self.centerMolecules = function() {
     self.graph.center_view();
-  }
+  };
 
   self.savePNG = function() {
     saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);
-  }
+  };
   
   self.saveSVG = function() {
     console.log("saving svg...");

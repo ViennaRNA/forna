@@ -74,7 +74,6 @@ function Graph(element) {
 
     self.colorScheme = 'structure';
     self.customColors = {};
-    self.extraLinks = {};
     self.animation = true;
     // don't listen to events because a model window is open somewhere
     self.deaf = false;
@@ -95,12 +94,12 @@ function Graph(element) {
         // collection of nodes and links
         graph.nodes = [];
         graph.links = [];
-        console.log('self.rnas', self.rnas);
+        //console.log('self.rnas', self.rnas);
         for (var uid in self.rnas) {
             graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
             graph.links = self.graph.links.concat(self.rnas[uid].links);
 
-            console.log('graph.nodes:', graph.nodes);
+            //console.log('graph.nodes:', graph.nodes);
         }
 
         // Create a lookup table so that we can access each node
@@ -110,6 +109,7 @@ function Graph(element) {
         for (var i = 0; i < graph.nodes.length; i++)
             uids_to_nodes[graph.nodes[i].uid] = graph.nodes[i];
 
+        console.log('self.extraLinks:', self.extraLinks);
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids
@@ -120,7 +120,7 @@ function Graph(element) {
             graph.links.push(self.extraLinks[i]);
         }
 
-        console.log('graph:', graph);
+        //console.log('graph:', graph);
     };
 
     self.addNodes = function addNodes(json) {
@@ -160,7 +160,7 @@ function Graph(element) {
         r.nodes = json.nodes;
         r.links = json.links;
 
-        console.log('r', r);
+        //console.log('r', r);
 
         //self.addRNA(r);
         self.recalculateGraph();
@@ -179,6 +179,7 @@ function Graph(element) {
         graph.links = [];
 
         self.rnas = {};
+        self.extraLinks = [];
 
         update();
     };
@@ -206,6 +207,25 @@ function Graph(element) {
         .attr("height", svgH);
     }
 
+    function change_colors(molecule_colors, d, scale) {
+        if (molecule_colors.hasOwnProperty(d.num)) {
+            val = parseFloat(molecule_colors[d.num]);
+            console.log('d.num', d.num, 'val', val);
+
+            if (isNaN(val)) {
+                // passed in color is not a scalar, so 
+                // treat it as a color
+                return molecule_colors[d.num];
+            } else {
+                // the user passed in a float, let's use a colormap
+                // to convert it to a color
+                return scale(val);
+            }
+        } else {
+            return 'white';
+        }
+    }
+
     self.changeColorScheme = function(newColorScheme) {
         var protein_nodes = vis_nodes.selectAll('[node_type=protein]');
 
@@ -219,6 +239,7 @@ function Graph(element) {
         */
 
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
+        var scale;
         data = nodes.data();
         self.colorScheme = newColorScheme;
 
@@ -241,16 +262,12 @@ function Graph(element) {
                    });
 
         } else if (newColorScheme == 'positions') {
-            data_values = data.map(function(d) { return d.num; });
-            data_min = d3.min(data_values);
-            data_max = d3.max(data_values);
-
-            var scale = d3.scale.linear()
-            .range(["#98df8a", "#dbdb8d", "#ff9896"])
-            .interpolate(d3.interpolateLab)
-            .domain([data_min, data_min + (data_max - data_min) / 2, data_max]);
-
             nodes.style('fill', function(d) { 
+                scale = d3.scale.linear()
+                .range(["#98df8a", "#dbdb8d", "#ff9896"])
+                .interpolate(d3.interpolateLab)
+                .domain([1, 1 + (d.rna.rna_length - 1) / 2, d.rna.rna_length]);
+
                 return scale(d.num);
             });
         } else if (newColorScheme == 'custom') {
@@ -261,40 +278,25 @@ function Graph(element) {
             .interpolate(d3.interpolateLab)
             .domain([0, 1]);
 
-            function change_colors(molecule_colors, d) {
-                if (molecule_colors.hasOwnProperty(d.num)) {
-                    val = parseFloat(molecule_colors[d.num]);
 
-                    if (isNaN(val)) {
-                        // passed in color is not a scalar, so 
-                        // treat it as a color
-                        return molecule_colors[d.num];
-                    } else {
-                        // the user passed in a float, let's use a colormap
-                        // to convert it to a color
-                        return scale(val);
-                    }
-                } else {
-                    return 'white';
-                }
-            }
-
-            console.log(self.customColors);
+            //console.log(self.customColors);
 
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
                     return 'white';
                 } 
+                console.log('d.struct_name:', d.struct_name);
                 
                 if (self.customColors.hasOwnProperty(d.struct_name) &&
                     self.customColors[d.struct_name].hasOwnProperty(d.num)) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
                     molecule_colors = self.customColors[d.struct_name];
-                    return change_colors(molecule_colors, d);
+                    return change_colors(molecule_colors, d, scale);
                 } else if (self.customColors.hasOwnProperty('')) {
                     molecule_colors = self.customColors[''];
-                    return change_colors(molecule_colors, d);
+                    console.log('molecule_colors:', molecule_colors);
+                    return change_colors(molecule_colors, d, scale);
                 }
 
                 return 'white';
@@ -559,63 +561,63 @@ function Graph(element) {
     
     self.displayBackground = function(value) {
       if (value === true) {
-        self.displayParameters["backgroundColor"]=self.displayParameters["backgroundColorDefault"]
+        self.displayParameters.backgroundColor=self.displayParameters.backgroundColorDefault;
       } else {
-        self.displayParameters["backgroundColor"]='transparent';
+        self.displayParameters.backgroundColor='transparent';
       }
-      rect.attr('fill', self.displayParameters["backgroundColor"]);
+      rect.attr('fill', self.displayParameters.backgroundColor);
       //vis_nodes.selectAll('[label_type=label]').attr('fill', self.displayParameters["backgroundColor"]);
-    }
+    };
     
     self.displayNumbering = function(value) {
-      if (value == true) {
-        self.displayParameters["labelTextFill"]=self.displayParameters["labelTextFillDefault"]
-        self.displayParameters["labelLinkOpacity"]=self.displayParameters["labelLinkOpacityDefault"]
-        self.displayParameters["labelNodeFill"] = self.displayParameters["labelNodeFillDefault"]
+      if (value === true) {
+        self.displayParameters.labelTextFill=self.displayParameters.labelTextFillDefault;
+        self.displayParameters.labelLinkOpacity=self.displayParameters.labelLinkOpacityDefault;
+        self.displayParameters.labelNodeFill = self.displayParameters.labelNodeFillDefault;
       } else {
-        self.displayParameters["labelTextFill"]='transparent';
-        self.displayParameters["labelLinkOpacity"]=0;
-        self.displayParameters["labelNodeFill"] = 'transparent'
+        self.displayParameters.labelTextFill='transparent';
+        self.displayParameters.labelLinkOpacity=0;
+        self.displayParameters.labelNodeFill = 'transparent';
       }
-      console.log('sd', self.displayParameters['labelNodeFill'])
-      console.log(vis_nodes.selectAll('[node_type=label]'))
-      vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters['labelNodeFill'])
-      vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters["labelTextFill"]);
-      console.log('opacity:', self.displayParameters['labelLinkOpacity'])
-      vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters["labelLinkOpacity"]);
-    }
+      //console.log('sd', self.displayParameters.labelNodeFill);
+      //console.log(vis_nodes.selectAll('[node_type=label]'));
+      vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
+      vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
+      //console.log('opacity:', self.displayParameters.labelLinkOpacity);
+      vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
+    };
     
     self.displayNodeOutline = function(value) {
-      if (value == true) {
-        self.displayParameters["nodeStrokeWidth"]=self.displayParameters["nodeStrokeWidthDefault"]
+      if (value === true) {
+        self.displayParameters.nodeStrokeWidth=self.displayParameters.nodeStrokeWidthDefault;
       } else {
-        self.displayParameters["nodeStrokeWidth"]=0;
+        self.displayParameters.nodeStrokeWidth=0;
       }
-      svg.selectAll('circle').style('stroke-width', self.displayParameters["nodeStrokeWidth"]);
-    }
+      svg.selectAll('circle').style('stroke-width', self.displayParameters.nodeStrokeWidth);
+    };
     
     self.displayNodeLabel = function(value) {
-      if (value == true) {
-        self.displayParameters["nodeLabelFill"]=self.displayParameters["nodeLabelFillDefault"]
+      if (value === true) {
+        self.displayParameters.nodeLabelFill=self.displayParameters.nodeLabelFillDefault;
       } else {
-        self.displayParameters["nodeLabelFill"]='transparent';
+        self.displayParameters.nodeLabelFill='transparent';
       }
-      vis_nodes.selectAll('[label_type=nucleotide]').attr('fill', self.displayParameters["nodeLabelFill"]);
-    }
+      vis_nodes.selectAll('[label_type=nucleotide]').attr('fill', self.displayParameters.nodeLabelFill);
+    };
     
     self.displayLinks = function(value) {
-      if (value == true) {
-        self.displayParameters["linkOpacity"]=self.displayParameters["linkOpacityDefault"];
+      if (value === true) {
+        self.displayParameters.linkOpacity=self.displayParameters.linkOpacityDefault;
       } else {
-        self.displayParameters["linkOpacity"]=0;
+        self.displayParameters.linkOpacity=0;
       }
 
-      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters["linkOpacity"]);
-    }
+      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
+    };
     
     var update = function () {
         force.nodes(graph.nodes)
-        .links(graph.links)
+        .links(graph.links);
         
         if (self.animation) {
           force.start();
@@ -631,12 +633,10 @@ function Graph(element) {
 
         link_lines.attr("class", "link")
         .style("stroke", "#999")
-        .style("stroke-opacity", self.displayParameters["linkOpacity"])
+        .style("stroke-opacity", self.displayParameters.linkOpacity)
         .style("stroke-width", function(d) { 
             return 2;
-            //return Math.sqrt(d.value); 
-            if (d.value != 1) return 0;
-            else return Math.sqrt(d.value); })
+        })
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
@@ -647,18 +647,18 @@ function Graph(element) {
             all_links.exit().each(function(d) { /*console.log('exiting', d);*/ }).remove();
 
             /* We don't need to update the positions of the stabilizing links */
-            fake_links = vis_links.selectAll("[link_type=fake]")
+            fake_links = vis_links.selectAll("[link_type=fake]");
             fake_links.style('stroke-width', 0);
             //fake_links.style('stroke', 'blue')
 
-            basepair_links = vis_links.selectAll("[link_type=basepair]")
-            basepair_links.style('stroke', 'red')
+            basepair_links = vis_links.selectAll("[link_type=basepair]");
+            basepair_links.style('stroke', 'red');
 
-            intermolecule_links = vis_links.selectAll("[link_type=intermolecule]")
-            intermolecule_links.style('stroke', 'blue')
+            intermolecule_links = vis_links.selectAll("[link_type=intermolecule]");
+            intermolecule_links.style('stroke', 'blue');
 
-            plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]")
-            plink.style("stroke-dasharray", ("3,3"))
+            plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
+            plink.style("stroke-dasharray", ("3,3"));
 
             xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
             //xlink = all_links;
@@ -674,24 +674,23 @@ function Graph(element) {
                     var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1, uid:generateUUID()};
 
                     for (i = 0; i < graph.links.length; i++) {
-                        if ((graph.links[i].source == mousedown_node)  
-                            || (graph.links[i].target == mousedown_node) ||
+                        if ((graph.links[i].source == mousedown_node)  || 
+                            (graph.links[i].target == mousedown_node) ||
                            (graph.links[i].source == mouseup_node) ||
                            (graph.links[i].target == mouseup_node)) {
 
-                                console.log('graph.links[i].link_type', graph.links[i].link_type);
+                                //console.log('graph.links[i].link_type', graph.links[i].link_type);
 
-                                if (graph.links[i].link_type == 'basepair') {
+                                if (graph.links[i].link_type == 'basepair' || graph.links[i].link_type == 'pseudoknot') {
                                     console.log('basepair_exists');
                                     return;
                                 }
                             }
 
-                            if (((graph.links[i].source == mouseup_node)  
-                                 && (graph.links[i].target == mousedown_node)) ||
-                                 ((graph.links[i].source == mousedown_node)  
-                                  && (graph.links[i].target == mouseup_node))) {
-
+                            if (((graph.links[i].source == mouseup_node)  && 
+                                 (graph.links[i].target == mousedown_node)) ||
+                                 ((graph.links[i].source == mousedown_node)  && 
+                                  (graph.links[i].target == mouseup_node))) {
                                       if (graph.links[i].link_type == 'backbone') {
                                           console.log('backbone exists');
                                           return;
@@ -707,6 +706,7 @@ function Graph(element) {
                     // send ajax request to forna
                     if (new_link.source.rna == new_link.target.rna) {
                         r = new_link.source.rna;
+                        console.log('r', r);
 
                         r.pairtable[new_link.source.num] = new_link.target.num;
                         r.pairtable[new_link.target.num] = new_link.source.num;
@@ -716,6 +716,7 @@ function Graph(element) {
 
                         r.recalculate_elements()
                         .elements_to_json()
+                        .add_pseudoknots()
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
@@ -726,6 +727,7 @@ function Graph(element) {
                         console.log('adding link:', new_link);
                         new_link.link_type = 'intermolecule';
                         self.extraLinks.push(new_link);
+                        console.log('self.extraLinks');
                     }
                     self.recalculateGraph();
                     update();
@@ -780,6 +782,7 @@ function Graph(element) {
 
                         r.recalculate_elements()
                         .elements_to_json()
+                        .add_pseudoknots()
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
@@ -798,16 +801,16 @@ function Graph(element) {
 
                 update();
 
-            }
+            };
 
             var gnodes = vis_nodes.selectAll('g.gnode')
-            .data(graph.nodes, node_key)
+            .data(graph.nodes, node_key);
             //.attr('pointer-events', 'all');
 
             gnodes_enter = gnodes.enter()
             .append('g')
             .classed('noselect', true)
-            .classed('gnode', true)
+            .classed('gnode', true);
             //.each(function(d) { console.log('entering', d); })
 
             gnodes_enter
@@ -849,7 +852,7 @@ function Graph(element) {
                 node_tooltips.nucleotide = d.num;
                 node_tooltips.label = '';
                 node_tooltips.pseudo = '';
-                node_tooltipes.middle = '';
+                node_tooltips.middle = '';
 
                 return node_tooltips[d.node_type];
             };
@@ -857,16 +860,16 @@ function Graph(element) {
 
             xlink.on('click', link_click);
 
-            circle_update = gnodes.select('circle')
-            console.log('circle_update:', circle_update);
+            circle_update = gnodes.select('circle');
+            //console.log('circle_update:', circle_update);
 
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'pseudo') return 3; else return 6;})
+            .attr("r", function(d) {if (d.node_type == 'middle') return 0; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
-            .style('stroke-width', self.displayParameters["nodeStrokeWidth"])
+            .style('stroke-width', self.displayParameters.nodeStrokeWidth)
             .style("fill", node_fill);
             
             var labels = gnodes_enter.append("text")
@@ -875,7 +878,7 @@ function Graph(element) {
             .attr('font-size', 8.0)
             .attr('font-weight', 'bold')
             .attr('y', 2.5)
-            .attr('fill', self.displayParameters["nodeLabelFill"])
+            .attr('fill', self.displayParameters.nodeLabelFill)
             .attr('class', 'node-label')
             .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")

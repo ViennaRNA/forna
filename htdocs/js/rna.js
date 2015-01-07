@@ -14,6 +14,7 @@ function generateUUID(){
     return uuid;
 }
 
+
 function RNAUtilities() {
     var self = this;
 
@@ -105,7 +106,6 @@ function RNAUtilities() {
             if (pt[i] !== 0 && pt[i] in seen) {
                 throw "Invalid pairtable contains duplicate entries";
             }
-
             seen[pt[i]] = true;
 
             if (pt[i] === 0) {
@@ -117,25 +117,209 @@ function RNAUtilities() {
                     res += self.bracket_right[self.delete_from_stack(stack, i)];
                 }
             }
-
         }
 
         return res;
     };
+
+    self.find_unmatched = function(pt, from, to) {
+        /*
+         * Find unmatched nucleotides in this molecule.
+         */
+        var to_remove = [];
+        var unmatched = [];
+
+        var orig_from = from;
+        var orig_to = to;
+
+        //console.log('-----------------', from, to);
+
+        for (var i = from; i <= to; i++)
+            if (pt[i] !== 0 && (pt[i] < from || pt[i] > to))
+                unmatched.push([i,pt[i]]);
+        //console.log('unmatched:', unmatched);
+
+        for (i = orig_from; i <= orig_to; i++) {
+            while (pt[i] === 0 && i <= orig_to) i++;
+
+            to = pt[i];
+
+            while (pt[i] === to) {
+                i++;
+                to--;
+            }
+            
+            to_remove = to_remove.concat(self.find_unmatched(pt, i, to));
+        }
+
+        //console.log('orig_from:', orig_from, 'orig_to:', orig_to, to_remove);
+
+        if (unmatched.length > 0)
+            to_remove.push(unmatched);
+
+        return to_remove;
+    };
+
+    self.remove_pseudoknots_from_pairtable = function(pt) {
+        /* Remove the pseudoknots from this structure in such a fashion
+         * that the least amount of base-pairs need to be broken
+         *
+         * The pairtable is manipulated in place and a list of tuples
+         * indicating the broken base pairs is returned.
+         */
+        var unmatched = [];
+        var to_remove = [];
+        var removed = [];
+        //console.log('pt:', pt);
+
+        var length_comparator = function(a,b) { return a.length - b.length; };
+
+        do {
+            to_remove = self.find_unmatched(pt, 1, pt[0]);
+
+            to_remove.sort(length_comparator);
+            //console.log("to_remove:", to_remove);
+            
+            if (to_remove.length > 0) {
+                for (var i = 0; i < to_remove[0].length; i++) {
+                    pt[to_remove[0][i][0]] = 0;
+                    pt[to_remove[0][i][1]] = 0;
+
+                    removed.push(to_remove[0][i]);
+                }
+            }
+        } while (to_remove.length > 0);
+        //} while ((to_remove = self.find_unmatched(pt, 0, pt[0])).length > 0);
+
+        return removed;
+    };
+
 }
 
 rnaUtilities = new RNAUtilities();
 
-function RNAGraph(seq, dotbracket) {
+function isNormalInteger(str) {
+    //http://stackoverflow.com/a/10834843/899470
+    return /^\+?(0|[1-9]\d*)$/.test(str);
+}
+
+if(typeof(String.prototype.trim) === "undefined")
+    {
+        String.prototype.trim = function() 
+        {
+            return String(this).replace(/^\s+|\s+$/g, '');
+        };
+    }
+
+function ColorScheme(colors_text) {
+    var self = this;
+    self.colors_text = colors_text;
+
+    self.parseColorText = function(color_text) {
+        /* Parse the text of an RNA color string. Instructions and description
+         * of the format are given below.
+         *
+         * The return is a json double dictionary indexed first by the 
+         * molecule name, then by the nucleotide. This is then applied
+         * by force.js to the RNAs it is displaying. When no molecule
+         * name is specified, the color is applied to all molecules*/
+        var lines = color_text.split('\n');
+        var curr_molecule = '';
+        var counter = 1;
+        var colors_json = {'':{}};
+
+        console.log('lines', lines);
+        for (var i = 0; i < lines.length; i++) {
+            console.log('lines[i]:', lines[i]);
+
+            if (lines[i][0] == '>') {
+                // new molecule
+                curr_molecule = lines[i].trim().slice(1);
+                counter = 1;
+
+                colors_json[curr_molecule] = {};
+                continue;
+            }
+
+            words = lines[i].trim().split(/[\s,]+/);
+            console.log('words:', words);
+
+            for (var j = 0; j < words.length; j++) {
+                if (isNaN(words[j])) {
+                    // it's not a number, should be a combination 
+                    // of a number (nucleotide #) and a color
+                    console.log('words[j]', words[j], 'string');
+                    var regex = /([0-9]+)(.*)/;
+                    var match = regex.exec(words[j]);
+                    var num = match[1];
+                    var color = match[2];
+
+                    colors_json[curr_molecule][num] = color;
+                } else {
+                    //it's a number, so we add it to the list of values
+                    //seen for this molecule
+                    colors_json[curr_molecule][counter] = Number(words[j]);
+                    console.log('counter:', counter);
+                    counter += 1;
+                }
+            }
+        }
+
+        console.log('colors_json:', colors_json[curr_molecule]);
+        self.colors_json = colors_json;
+
+        return self;
+    };
+
+    self.normalizeColors = function() {
+        /* 
+         * Normalize the passed in values so that they range from
+         * 0 to 1
+         */
+        var value;
+
+        for (var molecule_name in self.colors_json) {
+            var min_num = Number.MAX_VALUE;
+            var max_num = Number.MIN_VALUE;
+
+            // iterate once to find the min and max values;
+            for (var resnum in self.colors_json[molecule_name]) {
+                value = self.colors_json[molecule_name][resnum];
+                if (typeof value == 'number') {
+                    if (value < min_num)
+                        min_num = value;
+                    if (value > max_num)
+                        max_num = value;
+                }
+            }
+
+            // iterate again to normalize
+            for (resnum in self.colors_json[molecule_name]) {
+                value = self.colors_json[molecule_name][resnum];
+                if (typeof value == 'number') {
+                    self.colors_json[molecule_name][resnum] = (value - min_num ) / (max_num - min_num);
+                }
+            }
+        }
+
+        return self;
+    };
+
+    self.parseColorText(self.colors_text);
+}
+
+function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
     self.seq = seq;
     self.dotbracket = dotbracket;  //i.e. ..((..))..
     self.pairtable = rnaUtilities.dotbracket_to_pairtable(dotbracket);
     self.uid = generateUUID();
+    self.rna_length = dotbracket.length;
 
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
+    self.struct_name = struct_name;
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
@@ -317,6 +501,7 @@ function RNAGraph(seq, dotbracket) {
                              'radius': 6,
                              'rna': self,
                              'node_type': 'nucleotide',
+                             'struct_name': self.struct_name,
                              'elem_type': elem_types[i],
                              'uid': generateUUID() });
         }
@@ -324,7 +509,6 @@ function RNAGraph(seq, dotbracket) {
         for (i = 1; i <= pt[0]; i++) {
 
             if (pt[i] !== 0) {
-                console.log('adding link', i, pt[i]);
                 // base-pair links
                 self.links.push({'source': self.nodes[i-1],
                                  'target': self.nodes[pt[i]-1],
@@ -341,6 +525,16 @@ function RNAGraph(seq, dotbracket) {
                                  'value': 1,
                                  'uid': generateUUID() });
             }
+        }
+
+        console.log('self.pseudoknot_pairs:', self.pseudoknot_pairs);
+        //add the pseudoknot links
+        for (i = 0; i < self.pseudoknot_pairs.length; i++) {
+                self.links.push({'source': self.nodes[self.pseudoknot_pairs[i][0]-1],
+                                 'target': self.nodes[self.pseudoknot_pairs[i][1]-1],
+                                 'link_type': 'pseudoknot',
+                                 'value': 1,
+                                 'uid': generateUUID() });
         }
 
         return self;
@@ -448,8 +642,31 @@ function RNAGraph(seq, dotbracket) {
     };
 
     self.recalculate_elements = function() {
+        self.remove_pseudoknots();
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
 
+        return self;
+    };
+
+    self.remove_pseudoknots = function() {
+        self.pseudoknot_pairs = rnaUtilities.remove_pseudoknots_from_pairtable(self.pairtable);
+
+        return self;
+    };
+
+    self.add_pseudoknots = function() {
+        /* Add all of the pseudoknot pairs which are stored outside
+         * of the pairtable back to the pairtable
+         */
+        var pt = self.pairtable;
+        var pseudoknot_pairs = self.pseudoknot_pairs;
+
+        for (i = 0; i < pseudoknot_pairs.length; i++) {
+            pt[pseudoknot_pairs[i][0]] = pseudoknot_pairs[i][1];
+            pt[pseudoknot_pairs[i][1]] = pseudoknot_pairs[i][0];
+        }
+
+        self.pseudoknot_pairs = [];
         return self;
     };
 
