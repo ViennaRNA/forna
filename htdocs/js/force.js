@@ -87,6 +87,10 @@ function Graph(element) {
         // when it is modified, it is replaced in the global list of RNAs
         self.rnas[rnaGraph.uid] = rnaGraph;
         self.recalculateGraph();
+
+
+        update();
+        self.center_view();
     };
 
     self.recalculateGraph = function(rnaGraph) {
@@ -450,7 +454,6 @@ function Graph(element) {
         mousedown_link = null;
     }
 
-
     var shift_keydown = false;
 
     function dragstarted(d) {
@@ -803,6 +806,7 @@ function Graph(element) {
 
             };
 
+            console.log('graph:', graph);
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(graph.nodes, node_key);
             //.attr('pointer-events', 'all');

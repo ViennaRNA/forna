@@ -368,12 +368,12 @@ def parse_ranges(range_text):
 
             try:
                 (f,t) = map(int, single_range.split('-'))
-            except ValueError as ve:
+            except ValueError:
                 raise Exception('Range components need to be integers')
         else:
             try:
                 (f,t) = (int(single_range), int(single_range))
-            except ValueError as ve:
+            except ValueError:
                 raise Exception('Range components need to be integers')
 
         for i in range(f,t+1):
@@ -585,11 +585,6 @@ def json_to_fasta(rna_json_str):
             print >>sys.stderr, "adding label"
             label_list[frozenset(nodes_to_trees[node])] += [(node['x'], node['y'])]
 
-    out_str = ""
-
-    xs = []
-    ys = []
-
     all_fastas = []
     all_xs = []
     all_ys = []
@@ -701,7 +696,7 @@ def pdb_to_json(text, name):
             struct = bpdb.PDBParser().get_structure('temp', fname)
             chains = struct.get_chains()
 
-        jsons = []
+        molecules = []
 
         proteins = set()
         rnas = set()
@@ -713,30 +708,37 @@ def pdb_to_json(text, name):
             if ftup.is_protein(chain):
                 proteins.add(chain.id)
                 # process protein
-                jsons += [{"nodes":[{"group":2, 
-                                     "struct_name": "{}_{}".format(name, chain.id),
-                                     "id": 1,
-                                     "size": len(chain.get_list()),
-                                     "name": chain.id,
-                                     'elem_type':'p',
-                                     "node_type":"protein"}],
-                           "links":[]}]
+                molecules += [{"type": "protein",
+                               "header": "{}_{}".format(name, chain.id),
+                               "seq": "",
+                               "ss": "",
+                               "size": len(chain.get_list()),
+                               "uids": [uuid.uuid4().hex]}]
+
                 pass
             else:
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
                 cg = ftmc.from_pdb(fname, chain_id=chain.id)
-                cgs[chain.id] = cg
-                jsons += [bg_to_json(cg)]
+                positions = fasta_to_positions(cg.to_fasta_string())
 
-        # create a lookup table to find out the index of each node in the 
-        # what will eventually become the large list of nodes
-        counter = 0
+                fud.pv('positions')
+
+                cgs[chain.id] = cg
+                molecules += [{"type": "rna",
+                              "header": "{}_{}".format(name, chain.id),
+                              "seq": cg.seq,
+                              "ss": cg.to_dotbracket_string(),
+                              "size": cg.seq_length,
+                               "uids": [uuid.uuid4().hex for i in range(cg.seq_length)],
+                              "positions": positions }]
+
+        # create a lookup table linking the id and residue number to the uid of 
+        # that nucleotide and residue number
         node_ids = dict()
-        for j in jsons:
-            for n in j['nodes']:
-                node_ids["{}_{}".format(n['struct_name'], n['id'])] = counter
-                counter += 1
+        for m in molecules:
+            for i,uid in enumerate(m['uids']):
+                node_ids["{}_{}".format(m['header'],i+1)] = uid
 
         links = []
         for (a1, a2) in ftup.interchain_contacts(struct):
@@ -757,8 +759,8 @@ def pdb_to_json(text, name):
                 # get the index of this nucleotide in the secondary structure
                 sid = cgs[chain2].seq_ids.index(a2.parent.id)
 
-                links += [{"source": node_ids["{}_{}_{}".format(name, chain2, sid+1)] - counter,
-                           "target": node_ids["{}_{}_{}".format(name, chain1, 1)] - counter,
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain2, sid+1)],
+                           "target": node_ids["{}_{}_{}".format(name, chain1, 1)],
                            "link_type": "protein_chain",
                            "value": 3}]
             elif (chain2 in proteins and chain1 in rnas):
@@ -766,8 +768,8 @@ def pdb_to_json(text, name):
 
                 sid = cgs[chain1].seq_ids.index(a1.parent.id)
 
-                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid+1)] - counter,
-                           "target": node_ids["{}_{}_{}".format(name, chain2, 1)] - counter,
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid+1)],
+                           "target": node_ids["{}_{}_{}".format(name, chain2, 1)],
                            "link_type": "protein_chain",
                            "value": 3}]
             elif (chain2 in rnas and chain1 in rnas):
@@ -776,14 +778,12 @@ def pdb_to_json(text, name):
                 sid1 = cgs[chain1].seq_ids.index(a1.parent.id)
                 sid2 = cgs[chain2].seq_ids.index(a2.parent.id)
 
-                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid1+1)] - counter,
-                           "target": node_ids["{}_{}_{}".format(name, chain2, sid2+1)] - counter,
+                links += [{"source": node_ids["{}_{}_{}".format(name, chain1, sid1+1)],
+                           "target": node_ids["{}_{}_{}".format(name, chain2, sid2+1)],
                            "link_type": "chain_chain",
                            "value": 3}]
 
-        #jsons += [{'nodes': [], "links": links}]
-        jsons += [{"nodes": [], "links": links}]
-        return {"jsons": jsons, "extra_links": links}
+        return {"molecules": molecules, "extra_links": links }
 
 if __name__ == '__main__':
     main()

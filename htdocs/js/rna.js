@@ -308,6 +308,39 @@ function ColorScheme(colors_text) {
     self.parseColorText(self.colors_text);
 }
 
+function ProteinGraph(struct_name, size, uid) {
+    var self = this;
+
+    self.nodes = [{'name': 'P',
+                   'num': 1,
+                   'radius': Math.sqrt(size),
+                   'rna': self,
+                   'node_type': 'protein',
+                   'struct_name': struct_name,
+                   'elem_type': 'p',
+                   'uid': generateUUID()}];
+    self.links = [];
+
+    self.add_uids = function(uids) {
+        for (var i = 0; i < uids.length; i++)
+            self.nodes[i].uid = uids[i];
+
+        return self;
+    };
+
+    self.get_uids = function() {
+        /* Get the positions of each node so that they
+         * can be passed to elements_to_json later
+         */
+        uids = [];
+        for (var i = 0; i < self.dotbracket.length; i++)
+            uids.push(self.nodes[i].uid);
+
+        return uids;
+    };
+
+}
+
 function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
     self.seq = seq;
@@ -671,4 +704,55 @@ function RNAGraph(seq, dotbracket, struct_name) {
     };
 
     self.recalculate_elements();
+}
+
+molecules_to_json = function(molecules_json) {
+    /* Convert a list of RNA and protein molecules to a list of RNAGraph
+     * ProteinGraph and extraLinks structure */
+
+    var nodes = {}; //index the nodes by uid
+    var graphs = [];
+    var extraLinks = [];
+
+
+    // Create the graphs for each molecule
+    for (var i = 0; i < molecules_json.molecules.length; i++) {
+        var molecule = molecules_json.molecules[i];
+
+        if (molecule.type == 'rna') {
+            rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
+            rg.recalculate_elements()
+            .elements_to_json()
+            .add_positions(molecule.positions)
+            .reinforce_stems()
+            .reinforce_loops();
+
+            console.log('molecule.positions', molecule.positions)
+            
+        } else if (molecule.type == 'protein') {
+            rg = new ProteinGraph(molecule.header, molecule.size);
+        }
+
+        console.log('molecule.uids', molecule.uids);
+        console.log('rg', rg);
+        rg.add_uids(molecule.uids);
+
+        for (var j = 0; j < rg.nodes.length; j++) {
+            nodes[rg.nodes[j].uid] = rg.nodes[j];
+        }
+
+        graphs.push(rg);
+    }
+
+    //Add the extra links
+    for (i = 0; i < molecules_json.extra_links.length; i++) {
+        link = molecules_json.extra_links[i];
+        
+        link.source = nodes[link.source];
+        link.target = nodes[link.target];
+
+        extraLinks.push(link);
+    }
+
+    return {"graphs": graphs, "extraLinks": extraLinks};
 }

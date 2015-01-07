@@ -98,8 +98,14 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
         self.assertEqual(nucs, [6,7,8,9])
 
 
-    """
     def test_from_pdb(self):
+        with open('test/data/1MZP.pdb', 'r') as f:
+            text = f.read()
+
+            res = forna.pdb_to_json(text, '2ZM5')
+            s = json.dumps(res)
+            fud.pv('s')
+
         '''
         with open('test/data/3UZT.pdb', 'r') as f:
             text = f.read()
@@ -107,6 +113,7 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
             forna.pdb_to_json(text, '4G0A')
         '''
 
+    """
         with open('test/data/4GV9.pdb') as f:
             text = f.read()
 

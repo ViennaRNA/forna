@@ -100,6 +100,7 @@ function RNA(sequence, structure, header) {
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
           console.log('self.header', self.header());
+          console.log('data:', data);
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
         .add_positions(data)
@@ -234,10 +235,13 @@ function AddPDBViewModel() {
         return;
       }
 
+      /*
       if (self.inputFile().type != 'chemical/x-pdb') {
+        console.log('file_type:', self.inputFile().type);
         self.newInputError("ERROR: Invalid file type, please upload a PDB file");
         return;
       }
+      */
 
       if (self.inputFile().size > 20000000) {
         self.newInputError("ERROR: Selected file is too large");
@@ -270,11 +274,17 @@ function AddPDBViewModel() {
                         console.log(data);
                         data = JSON.parse(data);
 
+                        mols_json = molecules_to_json(data);
+                        console.log('mols_json', mols_json);
+
+                        for (var i = 0; i < mols_json.graphs.length; i++)
+                            rnaView.graph.addRNA(mols_json.graphs[i]);
+
+                        for (i = 0; i < mols_json.extraLinks.length; i++)
+                            rnaView.graph.extraLinks.push(mols_json.extraLinks[i]);
+
+
                         rnaView.animation(true);
-                        // each chain has its own json containing d3 graph representations
-                        for (i = 0; i < data.jsons.length ; i++) {
-                            rnaView.graph.addNodes(data.jsons[i]);
-                        }
                         // the extra links contain supplementary information
                         rnaView.graph.changeColorScheme(rnaView.colors());
                         
