@@ -834,7 +834,8 @@ function Graph(element) {
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
                 node_fills.pseudo = 'transparent';
-                node_fills.middle = 'transparent';
+                //node_fills.middle = 'transparent';
+                node_fills.middle = 'black';
 
                 return node_fills[d.node_type];
             };

@@ -228,9 +228,7 @@ function ColorScheme(colors_text) {
         var counter = 1;
         var colors_json = {'':{}};
 
-        console.log('lines', lines);
         for (var i = 0; i < lines.length; i++) {
-            console.log('lines[i]:', lines[i]);
 
             if (lines[i][0] == '>') {
                 // new molecule
@@ -242,13 +240,11 @@ function ColorScheme(colors_text) {
             }
 
             words = lines[i].trim().split(/[\s,]+/);
-            console.log('words:', words);
 
             for (var j = 0; j < words.length; j++) {
                 if (isNaN(words[j])) {
                     // it's not a number, should be a combination 
                     // of a number (nucleotide #) and a color
-                    console.log('words[j]', words[j], 'string');
                     var regex = /([0-9]+)(.*)/;
                     var match = regex.exec(words[j]);
                     var num = match[1];
@@ -259,13 +255,11 @@ function ColorScheme(colors_text) {
                     //it's a number, so we add it to the list of values
                     //seen for this molecule
                     colors_json[curr_molecule][counter] = Number(words[j]);
-                    console.log('counter:', counter);
                     counter += 1;
                 }
             }
         }
 
-        console.log('colors_json:', colors_json[curr_molecule]);
         self.colors_json = colors_json;
 
         return self;
@@ -435,14 +429,23 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.add_fake_node = function(nucs) {
         var angle = (nucs.length - 2) * 3.14159 / (2 * nucs.length);
         var radius = 0.5 / Math.cos(angle);
+
+        /*
+        var linkLength = 2; //make sure this is consistent with the value in force.js
+        var angle = (3.1415 * 2) / (2 * nucs.length);
+        var radius =  linkLength / (2 * Math.tan(angle));
+        */
+
+        console.log('radius:', nucs.length, radius);
         
         new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
-                         'radius':2,
+                         'radius': 2,
                          'rna': self,
                          'node_type': 'middle',
                          'elem_type': 'f',
+                         'nucs': nucs,
                          'uid': generateUUID() };
         self.nodes.push(new_node);
 
@@ -499,6 +502,54 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         return self;
+    };
+
+    self.connect_fake_nodes = function() {
+        // We want to be able to connect all of the fake nodes
+        // and create a structure consisting of just them
+        var filter_out_non_fake_nodes = function(d) {
+            return d.node_type == 'middle';
+        }
+
+        var nucs_to_nodes = {};
+        var fake_nodes = self.nodes.filter(filter_out_non_fake_nodes);
+        var linked = new Set();
+
+        // initialize the nucleotides to nodes
+        for (var i = 1; i <= r.rna_length; i++) 
+            nucs_to_nodes[i] = [];
+
+        for (i = 0; i < fake_nodes.length; i++) {
+            var this_node = fake_nodes[i];
+
+            // each fake node represents a certain set of nucleotdies (this_node.nucs)
+            for (var j = 0; j < this_node.nucs.length; j++) {
+                var this_nuc = this_node.nucs[j];
+
+                console.log('nucs_to_nodes[this_nuc]:', this_nuc, nucs_to_nodes[this_nuc].map(function(d) { return d.uid; }));
+
+                // check to see if this nucleotide has been seen in another fake node
+                // if it has, then we add a link between the two nodes
+                for (var k = 0; k < nucs_to_nodes[this_nuc].length; k++) {
+                    if (linked.has(JSON.stringify([nucs_to_nodes[this_nuc][k].uid, this_node.uid].sort())))
+                        continue; //already linked
+
+                    self.links.push({"source": nucs_to_nodes[this_nuc][k],
+                                      "target": this_node,
+                                      "value": nucs_to_nodes[this_nuc][k].radius + this_node.radius,
+                                      "link_type": "fake_fake"});
+
+                    // note that we've already seen this link
+                    linked.add(JSON.stringify([nucs_to_nodes[this_nuc][k].uid, this_node.uid].sort()));
+                    console.log('linked:', linked);
+                }
+
+                nucs_to_nodes[this_nuc].push(this_node);
+            }
+        }
+
+        return self;
+
     };
 
     self.elements_to_json = function() {
@@ -560,7 +611,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
             }
         }
 
-        console.log('self.pseudoknot_pairs:', self.pseudoknot_pairs);
         //add the pseudoknot links
         for (i = 0; i < self.pseudoknot_pairs.length; i++) {
                 self.links.push({'source': self.nodes[self.pseudoknot_pairs[i][0]-1],
@@ -727,14 +777,11 @@ molecules_to_json = function(molecules_json) {
             .reinforce_stems()
             .reinforce_loops();
 
-            console.log('molecule.positions', molecule.positions)
             
         } else if (molecule.type == 'protein') {
             rg = new ProteinGraph(molecule.header, molecule.size);
         }
 
-        console.log('molecule.uids', molecule.uids);
-        console.log('rg', rg);
         rg.add_uids(molecule.uids);
 
         for (var j = 0; j < rg.nodes.length; j++) {
