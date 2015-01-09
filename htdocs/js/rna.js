@@ -427,21 +427,17 @@ function RNAGraph(seq, dotbracket, struct_name) {
     };
 
     self.add_fake_node = function(nucs) {
-        var angle = (nucs.length - 2) * 3.14159 / (2 * nucs.length);
-        var radius = 0.5 / Math.cos(angle);
-
-        /*
-        var linkLength = 2; //make sure this is consistent with the value in force.js
+        var linkLength = 18; //make sure this is consistent with the value in force.js
+        var nodeWidth = 6;
         var angle = (3.1415 * 2) / (2 * nucs.length);
         var radius =  linkLength / (2 * Math.tan(angle));
-        */
 
         console.log('radius:', nucs.length, radius);
         
         new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
-                         'radius': 2,
+                         'radius': radius - nodeWidth / 2,
                          'rna': self,
                          'node_type': 'middle',
                          'elem_type': 'f',
@@ -452,6 +448,9 @@ function RNAGraph(seq, dotbracket, struct_name) {
         new_x = 0;
         new_y = 0;
         coords_counted = 0;
+
+        angle = (nucs.length - 2) * 3.14159 / (2 * nucs.length);
+        radius = 0.5 / Math.cos(angle);
 
         for (j = 0; j < nucs.length; j++) {
             if (nucs[j] === 0 || nucs[j] > self.dotbracket.length)

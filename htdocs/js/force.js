@@ -424,9 +424,9 @@ function Graph(element) {
 
     var force = d3.layout.force()
     .charge(function(d) { if (d.node_type == 'pseudo') 
-            return 0; 
+            return -0; 
         else 
-            return 0;})
+            return -0;})
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
@@ -470,6 +470,32 @@ function Graph(element) {
     function dragended(d) {
         //d3.select(self).classed("dragging", false);
     }
+
+    function collide(node) {
+        var r = node.radius + 16,
+        nx1 = node.x - r,
+        nx2 = node.x + r,
+        ny1 = node.y - r,
+        ny2 = node.y + r;
+        return function(quad, x1, y1, x2, y2) {
+            if (quad.point && (quad.point !== node)) {
+                var x = node.x - quad.point.x,
+                y = node.y - quad.point.y,
+                l = Math.sqrt(x * x + y * y),
+                r = node.radius + quad.point.radius;
+                //console.log('l:', l, 'r:', r);
+                if (l < r) {
+                    l = (l - r) / l * .1;
+                    node.x -= x *= l;
+                    node.y -= y *= l;
+                    quad.point.x += x;
+                    quad.point.y += y;
+                }
+            }
+            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+        };
+    }
+
 
     var drag = force.drag()
     .origin(function(d) { return d; })
@@ -871,7 +897,7 @@ function Graph(element) {
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'middle') return 0; else return 6;})
+            .attr("r", function(d) {if (d.node_type == 'middle') return d.radius; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
@@ -894,7 +920,25 @@ function Graph(element) {
 
             gnodes.exit().remove();
 
+            //fake_nodes = graph.nodes.filter(function(d) { return d.node_type == 'middle'; });
+            fake_nodes = graph.nodes.filter(function(d) { return true; });
+            //real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide';});
+
             force.on("tick", function() {
+                /*
+                var q = d3.geom.quadtree(fake_nodes),
+                i = 0,
+                n = fake_nodes.length;
+
+                while (++i < n) q.visit(collide(fake_nodes[i]));
+
+                var q = d3.geom.quadtree(real_nodes),
+                i = 0,
+                n = real_nodes.length;
+
+                while (++i < n) q.visit(collide(real_nodes[i]));
+                */
+
                 xlink.attr("x1", function(d) { return d.source.x; })
                 .attr("y1", function(d) {  return d.source.y; })
                 .attr("x2", function(d) { return d.target.x; })
