@@ -53,7 +53,7 @@ function Graph(element) {
         "protein_chain": 0.00,
         "chain_chain": 0.00,
         "intermolecule": 8.00,
-        "other": 8.00
+        "other": 10.00
     };
     
     self.displayParameters = {
@@ -423,10 +423,11 @@ function Graph(element) {
     };
 
     var force = d3.layout.force()
-    .charge(function(d) { if (d.node_type == 'pseudo') 
-            return -0; 
+    .charge(function(d) { if (d.node_type == 'middle') 
+            return -200; 
         else 
-            return -0;})
+            return -80;})
+    .chargeDistance(300)
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
@@ -749,7 +750,8 @@ function Graph(element) {
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
-                        .reinforce_loops();
+                        .reinforce_loops()
+                        .connect_fake_nodes();
 
                     } else {
                         //Add an extra link
@@ -815,7 +817,8 @@ function Graph(element) {
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
-                        .reinforce_loops();
+                        .reinforce_loops()
+                        .connect_fake_nodes();
 
                     } else {
                         // 2. The link is between two different molecules
@@ -897,7 +900,7 @@ function Graph(element) {
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'middle') return d.radius; else return 6;})
+            .attr("r", function(d) {if (d.node_type == 'middle') return 0; else return 6;})
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)

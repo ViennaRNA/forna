@@ -437,7 +437,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
-                         'radius': radius - nodeWidth / 2,
+                         'radius': radius,
                          'rna': self,
                          'node_type': 'middle',
                          'elem_type': 'f',
@@ -504,6 +504,8 @@ function RNAGraph(seq, dotbracket, struct_name) {
     };
 
     self.connect_fake_nodes = function() {
+        var linkLength = 18;
+
         // We want to be able to connect all of the fake nodes
         // and create a structure consisting of just them
         var filter_out_non_fake_nodes = function(d) {
@@ -515,7 +517,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         var linked = new Set();
 
         // initialize the nucleotides to nodes
-        for (var i = 1; i <= r.rna_length; i++) 
+        for (var i = 1; i <= self.rna_length; i++) 
             nucs_to_nodes[i] = [];
 
         for (i = 0; i < fake_nodes.length; i++) {
@@ -533,9 +535,13 @@ function RNAGraph(seq, dotbracket, struct_name) {
                     if (linked.has(JSON.stringify([nucs_to_nodes[this_nuc][k].uid, this_node.uid].sort())))
                         continue; //already linked
 
+                    var distance = nucs_to_nodes[this_nuc][k].radius + this_node.radius;
+
+                    console.log('distance:', distance);
+
                     self.links.push({"source": nucs_to_nodes[this_nuc][k],
                                       "target": this_node,
-                                      "value": nucs_to_nodes[this_nuc][k].radius + this_node.radius,
+                                      "value": distance / linkLength,
                                       "link_type": "fake_fake"});
 
                     // note that we've already seen this link

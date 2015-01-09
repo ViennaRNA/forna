@@ -105,7 +105,8 @@ function RNA(sequence, structure, header) {
         .elements_to_json()
         .add_positions(data)
         .reinforce_stems()
-        .reinforce_loops();
+        .reinforce_loops()
+        .connect_fake_nodes();
 
         console.log('r', r);
 
@@ -592,6 +593,33 @@ function RNAViewModel() {
   self.centerMolecules = function() {
     self.graph.center_view();
   };
+
+  self.saveJSON = function() {
+      console.log('self.graph', self.graph);
+       var data = {"nodes": []};
+       console.log('data', data);
+
+       for (var i = 0; i < self.graph.graph.nodes.length; i++) {
+           node = self.graph.graph.nodes[i];
+
+           if (node.node_type != 'middle') {
+               console.log('node_type:', node.node_type);
+               data.nodes.push({"name": node.name,
+                               "x": node.x,
+                               "y": node.y,
+                               "px": node.px,
+                               "py": node.py})
+
+           }
+       }
+
+       console.log('data:', data);
+
+       var url = 'data:text/json;charset=utf8,' + encodeURIComponent(JSON.stringify(data)); 
+
+       window.open(url, '_blank');
+       window.focus();
+  }
 
   self.savePNG = function() {
     saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);
