@@ -605,6 +605,7 @@ function RNAViewModel() {
            if (node.node_type != 'middle') {
                console.log('node_type:', node.node_type);
                data.nodes.push({"name": node.name,
+                               "num": node.num,
                                "x": node.x,
                                "y": node.y,
                                "px": node.px,

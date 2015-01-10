@@ -98,12 +98,10 @@ function Graph(element) {
         // collection of nodes and links
         graph.nodes = [];
         graph.links = [];
-        //console.log('self.rnas', self.rnas);
         for (var uid in self.rnas) {
             graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
             graph.links = self.graph.links.concat(self.rnas[uid].links);
 
-            //console.log('graph.nodes:', graph.nodes);
         }
 
         // Create a lookup table so that we can access each node
@@ -113,18 +111,15 @@ function Graph(element) {
         for (var i = 0; i < graph.nodes.length; i++)
             uids_to_nodes[graph.nodes[i].uid] = graph.nodes[i];
 
-        console.log('self.extraLinks:', self.extraLinks);
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
 
-            console.log('pushing:', self.extraLinks[i]);
             graph.links.push(self.extraLinks[i]);
         }
 
-        //console.log('graph:', graph);
     };
 
     self.addNodes = function addNodes(json) {
@@ -163,8 +158,6 @@ function Graph(element) {
         r = new RNAGraph('','');
         r.nodes = json.nodes;
         r.links = json.links;
-
-        //console.log('r', r);
 
         //self.addRNA(r);
         self.recalculateGraph();
@@ -214,7 +207,6 @@ function Graph(element) {
     function change_colors(molecule_colors, d, scale) {
         if (molecule_colors.hasOwnProperty(d.num)) {
             val = parseFloat(molecule_colors[d.num]);
-            console.log('d.num', d.num, 'val', val);
 
             if (isNaN(val)) {
                 // passed in color is not a scalar, so 
@@ -283,13 +275,10 @@ function Graph(element) {
             .domain([0, 1]);
 
 
-            //console.log(self.customColors);
-
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
                     return 'white';
                 } 
-                console.log('d.struct_name:', d.struct_name);
                 
                 if (self.customColors.hasOwnProperty(d.struct_name) &&
                     self.customColors[d.struct_name].hasOwnProperty(d.num)) {
@@ -299,7 +288,6 @@ function Graph(element) {
                     return change_colors(molecule_colors, d, scale);
                 } else if (self.customColors.hasOwnProperty('')) {
                     molecule_colors = self.customColors[''];
-                    console.log('molecule_colors:', molecule_colors);
                     return change_colors(molecule_colors, d, scale);
                 }
 
@@ -484,7 +472,6 @@ function Graph(element) {
                 y = node.y - quad.point.y,
                 l = Math.sqrt(x * x + y * y),
                 r = node.radius + quad.point.radius;
-                //console.log('l:', l, 'r:', r);
                 if (l < r) {
                     l = (l - r) / l * .1;
                     node.x -= x *= l;
@@ -511,7 +498,6 @@ function Graph(element) {
 
         if (shift_keydown) return;
         key_is_down = true;
-        //console.log(d3.event.keyCode);
         switch (d3.event.keyCode) {
             case 16:
                 shift_keydown = true;
@@ -609,11 +595,8 @@ function Graph(element) {
         self.displayParameters.labelLinkOpacity=0;
         self.displayParameters.labelNodeFill = 'transparent';
       }
-      //console.log('sd', self.displayParameters.labelNodeFill);
-      //console.log(vis_nodes.selectAll('[node_type=label]'));
       vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
       vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
-      //console.log('opacity:', self.displayParameters.labelLinkOpacity);
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
     };
     
@@ -709,8 +692,6 @@ function Graph(element) {
                            (graph.links[i].source == mouseup_node) ||
                            (graph.links[i].target == mouseup_node)) {
 
-                                //console.log('graph.links[i].link_type', graph.links[i].link_type);
-
                                 if (graph.links[i].link_type == 'basepair' || graph.links[i].link_type == 'pseudoknot') {
                                     console.log('basepair_exists');
                                     return;
@@ -728,6 +709,9 @@ function Graph(element) {
                         }
                     }
 
+                    if (mouseup_node.node_type == 'middle' || mousedown_node.node_type == 'middle')
+                        return;
+
 
                     // this means we have a new json, which means we have
                     // to recalculate the structure and change the colors
@@ -736,7 +720,6 @@ function Graph(element) {
                     // send ajax request to forna
                     if (new_link.source.rna == new_link.target.rna) {
                         r = new_link.source.rna;
-                        console.log('r', r);
 
                         r.pairtable[new_link.source.num] = new_link.target.num;
                         r.pairtable[new_link.target.num] = new_link.source.num;
@@ -755,10 +738,8 @@ function Graph(element) {
 
                     } else {
                         //Add an extra link
-                        console.log('adding link:', new_link);
                         new_link.link_type = 'intermolecule';
                         self.extraLinks.push(new_link);
-                        console.log('self.extraLinks');
                     }
                     self.recalculateGraph();
                     update();
@@ -795,21 +776,15 @@ function Graph(element) {
 
                     // there should be two cases
                     // 1. The link is within a single molecule
-                    console.log('removing:', d);
-                    console.log('self.rnas:', self.rnas);
-                    console.log('d.source.rna:', d.source.rna);
 
                     if (d.source.rna == d.target.rna) {
                         r = d.source.rna;
-                        console.log('r.pairtable', r.pairtable);
 
                         r.pairtable[d.source.num] = 0;
                         r.pairtable[d.target.num] = 0;
 
                         positions = r.get_positions();
                         uids = r.get_uids();
-
-                        console.log('uids', uids);
 
                         r.recalculate_elements()
                         .elements_to_json()
@@ -824,7 +799,6 @@ function Graph(element) {
                         // 2. The link is between two different molecules
                         extraLinkIndex = self.extraLinks.indexOf(d);
 
-                        console.log('extraLinkIndex:', extraLinkIndex);
                         self.extraLinks.splice(extraLinkIndex, 1);
                     }
 
@@ -835,7 +809,6 @@ function Graph(element) {
 
             };
 
-            console.log('graph:', graph);
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(graph.nodes, node_key);
             //.attr('pointer-events', 'all');
@@ -860,11 +833,12 @@ function Graph(element) {
                 node_fills = {};
 
                 node_fills.nucleotide = 'white';
+                node_fills.protein = 'grey';
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
                 node_fills.pseudo = 'transparent';
                 //node_fills.middle = 'transparent';
-                node_fills.middle = 'black';
+                node_fills.middle = 'transparent';
 
                 return node_fills[d.node_type];
             };
@@ -895,12 +869,11 @@ function Graph(element) {
             xlink.on('click', link_click);
 
             circle_update = gnodes.select('circle');
-            //console.log('circle_update:', circle_update);
 
             
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'middle') return 0; else return 6;})
+            .attr("r", function(d) { return d.radius })
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
@@ -928,12 +901,12 @@ function Graph(element) {
             //real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide';});
 
             force.on("tick", function() {
-                /*
                 var q = d3.geom.quadtree(fake_nodes),
                 i = 0,
                 n = fake_nodes.length;
 
                 while (++i < n) q.visit(collide(fake_nodes[i]));
+                /*
 
                 var q = d3.geom.quadtree(real_nodes),
                 i = 0,

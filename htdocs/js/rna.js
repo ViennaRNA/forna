@@ -132,12 +132,9 @@ function RNAUtilities() {
         var orig_from = from;
         var orig_to = to;
 
-        //console.log('-----------------', from, to);
-
         for (var i = from; i <= to; i++)
             if (pt[i] !== 0 && (pt[i] < from || pt[i] > to))
                 unmatched.push([i,pt[i]]);
-        //console.log('unmatched:', unmatched);
 
         for (i = orig_from; i <= orig_to; i++) {
             while (pt[i] === 0 && i <= orig_to) i++;
@@ -151,8 +148,6 @@ function RNAUtilities() {
             
             to_remove = to_remove.concat(self.find_unmatched(pt, i, to));
         }
-
-        //console.log('orig_from:', orig_from, 'orig_to:', orig_to, to_remove);
 
         if (unmatched.length > 0)
             to_remove.push(unmatched);
@@ -170,7 +165,6 @@ function RNAUtilities() {
         var unmatched = [];
         var to_remove = [];
         var removed = [];
-        //console.log('pt:', pt);
 
         var length_comparator = function(a,b) { return a.length - b.length; };
 
@@ -178,7 +172,6 @@ function RNAUtilities() {
             to_remove = self.find_unmatched(pt, 1, pt[0]);
 
             to_remove.sort(length_comparator);
-            //console.log("to_remove:", to_remove);
             
             if (to_remove.length > 0) {
                 for (var i = 0; i < to_remove[0].length; i++) {
@@ -432,8 +425,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
         var angle = (3.1415 * 2) / (2 * nucs.length);
         var radius =  linkLength / (2 * Math.tan(angle));
 
-        console.log('radius:', nucs.length, radius);
-        
         new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
@@ -527,8 +518,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
             for (var j = 0; j < this_node.nucs.length; j++) {
                 var this_nuc = this_node.nucs[j];
 
-                console.log('nucs_to_nodes[this_nuc]:', this_nuc, nucs_to_nodes[this_nuc].map(function(d) { return d.uid; }));
-
                 // check to see if this nucleotide has been seen in another fake node
                 // if it has, then we add a link between the two nodes
                 for (var k = 0; k < nucs_to_nodes[this_nuc].length; k++) {
@@ -537,8 +526,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
                     var distance = nucs_to_nodes[this_nuc][k].radius + this_node.radius;
 
-                    console.log('distance:', distance);
-
                     self.links.push({"source": nucs_to_nodes[this_nuc][k],
                                       "target": this_node,
                                       "value": distance / linkLength,
@@ -546,7 +533,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
                     // note that we've already seen this link
                     linked.add(JSON.stringify([nucs_to_nodes[this_nuc][k].uid, this_node.uid].sort()));
-                    console.log('linked:', linked);
                 }
 
                 nucs_to_nodes[this_nuc].push(this_node);
@@ -785,6 +771,8 @@ molecules_to_json = function(molecules_json) {
             
         } else if (molecule.type == 'protein') {
             rg = new ProteinGraph(molecule.header, molecule.size);
+
+            console.log('rg:', rg);
         }
 
         rg.add_uids(molecule.uids);
