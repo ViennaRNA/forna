@@ -415,8 +415,9 @@ function Graph(element) {
     };
 
     var force = d3.layout.force()
-    .charge(function(d) { if (d.node_type == 'middle') 
+    .charge(function(d) { if (d.node_type == 'middle')  {
             return -200; 
+    }
         else 
             return -200;})
     .chargeDistance(300)
@@ -568,6 +569,7 @@ function Graph(element) {
     
     self.setFriction = function(value) {
       force.friction(value);
+      force.start();
     };
 
     self.setCharge = function(value) {
@@ -577,6 +579,7 @@ function Graph(element) {
     
     self.setGravity = function(value) {
       force.gravity(value);
+      force.start();
     };
     
     self.setPseudoknotStrength = function(value) {
