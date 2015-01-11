@@ -32,6 +32,7 @@ function Graph(element) {
 
     self.svgW = 800;
     self.svgH = 600;
+    self.displayAllLinks = false;
 
     // mouse event vars
     var mousedown_link = null,
@@ -52,8 +53,8 @@ function Graph(element) {
         "pseudoknot": 0.00,
         "protein_chain": 0.00,
         "chain_chain": 0.00,
-        "intermolecule": 8.00,
-        "other": 8.00
+        "intermolecule": 10.00,
+        "other": 10.00
     };
     
     self.displayParameters = {
@@ -89,7 +90,7 @@ function Graph(element) {
         self.recalculateGraph();
 
 
-        update();
+        self.update();
         self.center_view();
     };
 
@@ -98,12 +99,12 @@ function Graph(element) {
         // collection of nodes and links
         graph.nodes = [];
         graph.links = [];
-        //console.log('self.rnas', self.rnas);
         for (var uid in self.rnas) {
-            graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
+            // the nodes are reversed because the fake nodes tend to be at the end
+            // and we want them to be at the bottom of the z-order
+            graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes.reverse());
             graph.links = self.graph.links.concat(self.rnas[uid].links);
 
-            //console.log('graph.nodes:', graph.nodes);
         }
 
         // Create a lookup table so that we can access each node
@@ -113,18 +114,16 @@ function Graph(element) {
         for (var i = 0; i < graph.nodes.length; i++)
             uids_to_nodes[graph.nodes[i].uid] = graph.nodes[i];
 
-        console.log('self.extraLinks:', self.extraLinks);
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
 
-            console.log('pushing:', self.extraLinks[i]);
+            console.log('extraLinks[i]', self.extraLinks[i]);
+
             graph.links.push(self.extraLinks[i]);
         }
-
-        //console.log('graph:', graph);
     };
 
     self.addNodes = function addNodes(json) {
@@ -164,12 +163,10 @@ function Graph(element) {
         r.nodes = json.nodes;
         r.links = json.links;
 
-        //console.log('r', r);
-
         //self.addRNA(r);
         self.recalculateGraph();
 
-        update();
+        self.update();
         self.center_view();
     };
 
@@ -185,7 +182,7 @@ function Graph(element) {
         self.rnas = {};
         self.extraLinks = [];
 
-        update();
+        self.update();
     };
 
     function setSize() {
@@ -214,7 +211,6 @@ function Graph(element) {
     function change_colors(molecule_colors, d, scale) {
         if (molecule_colors.hasOwnProperty(d.num)) {
             val = parseFloat(molecule_colors[d.num]);
-            console.log('d.num', d.num, 'val', val);
 
             if (isNaN(val)) {
                 // passed in color is not a scalar, so 
@@ -283,13 +279,10 @@ function Graph(element) {
             .domain([0, 1]);
 
 
-            //console.log(self.customColors);
-
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
                     return 'white';
                 } 
-                console.log('d.struct_name:', d.struct_name);
                 
                 if (self.customColors.hasOwnProperty(d.struct_name) &&
                     self.customColors[d.struct_name].hasOwnProperty(d.num)) {
@@ -299,7 +292,6 @@ function Graph(element) {
                     return change_colors(molecule_colors, d, scale);
                 } else if (self.customColors.hasOwnProperty('')) {
                     molecule_colors = self.customColors[''];
-                    console.log('molecule_colors:', molecule_colors);
                     return change_colors(molecule_colors, d, scale);
                 }
 
@@ -423,10 +415,11 @@ function Graph(element) {
     };
 
     var force = d3.layout.force()
-    .charge(function(d) { if (d.node_type == 'pseudo') 
-            return 0; 
+    .charge(function(d) { if (d.node_type == 'middle') 
+            return -200; 
         else 
-            return 0;})
+            return -200;})
+    .chargeDistance(300)
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
@@ -471,6 +464,31 @@ function Graph(element) {
         //d3.select(self).classed("dragging", false);
     }
 
+    function collide(node) {
+        var r = node.radius + 16,
+        nx1 = node.x - r,
+        nx2 = node.x + r,
+        ny1 = node.y - r,
+        ny2 = node.y + r;
+        return function(quad, x1, y1, x2, y2) {
+            if (quad.point && (quad.point !== node)) {
+                var x = node.x - quad.point.x,
+                y = node.y - quad.point.y,
+                l = Math.sqrt(x * x + y * y),
+                r = node.radius + quad.point.radius;
+                if (l < r) {
+                    l = (l - r) / l * .1;
+                    node.x -= x *= l;
+                    node.y -= y *= l;
+                    quad.point.x += x;
+                    quad.point.y += y;
+                }
+            }
+            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+        };
+    }
+
+
     var drag = force.drag()
     .origin(function(d) { return d; })
     .on("dragstart", dragstarted)
@@ -484,7 +502,6 @@ function Graph(element) {
 
         if (shift_keydown) return;
         key_is_down = true;
-        //console.log(d3.event.keyCode);
         switch (d3.event.keyCode) {
             case 16:
                 shift_keydown = true;
@@ -552,6 +569,11 @@ function Graph(element) {
     self.setFriction = function(value) {
       force.friction(value);
     };
+
+    self.setCharge = function(value) {
+      force.charge(value);
+      force.start();
+    };
     
     self.setGravity = function(value) {
       force.gravity(value);
@@ -559,7 +581,7 @@ function Graph(element) {
     
     self.setPseudoknotStrength = function(value) {
       self.linkStrength.pseudoknot = value;
-      update();
+      self.update();
     };
     
     self.displayBackground = function(value) {
@@ -582,11 +604,8 @@ function Graph(element) {
         self.displayParameters.labelLinkOpacity=0;
         self.displayParameters.labelNodeFill = 'transparent';
       }
-      //console.log('sd', self.displayParameters.labelNodeFill);
-      //console.log(vis_nodes.selectAll('[node_type=label]'));
       vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
       vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
-      //console.log('opacity:', self.displayParameters.labelLinkOpacity);
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
     };
     
@@ -618,7 +637,7 @@ function Graph(element) {
       svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
     };
     
-    var update = function () {
+    self.update = function () {
         force.nodes(graph.nodes)
         .links(graph.links);
         
@@ -651,7 +670,11 @@ function Graph(element) {
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]");
-            fake_links.style('stroke-width', 0);
+            if (self.displayAllLinks) {
+                fake_links.style('stroke-width', 1);
+            } else {
+                fake_links.style('stroke-width', 0);
+            }
             //fake_links.style('stroke', 'blue')
 
             basepair_links = vis_links.selectAll("[link_type=basepair]");
@@ -663,8 +686,13 @@ function Graph(element) {
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
             plink.style("stroke-dasharray", ("3,3"));
 
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
-            //xlink = all_links;
+            console.log('graph.links:', graph.links);
+            console.log('graph.nodes:', graph.nodes);
+
+            if (self.displayFakeLinks)
+                xlink = all_links;
+            else
+                xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
@@ -681,8 +709,6 @@ function Graph(element) {
                             (graph.links[i].target == mousedown_node) ||
                            (graph.links[i].source == mouseup_node) ||
                            (graph.links[i].target == mouseup_node)) {
-
-                                //console.log('graph.links[i].link_type', graph.links[i].link_type);
 
                                 if (graph.links[i].link_type == 'basepair' || graph.links[i].link_type == 'pseudoknot') {
                                     console.log('basepair_exists');
@@ -701,6 +727,9 @@ function Graph(element) {
                         }
                     }
 
+                    if (mouseup_node.node_type == 'middle' || mousedown_node.node_type == 'middle')
+                        return;
+
 
                     // this means we have a new json, which means we have
                     // to recalculate the structure and change the colors
@@ -709,7 +738,6 @@ function Graph(element) {
                     // send ajax request to forna
                     if (new_link.source.rna == new_link.target.rna) {
                         r = new_link.source.rna;
-                        console.log('r', r);
 
                         r.pairtable[new_link.source.num] = new_link.target.num;
                         r.pairtable[new_link.target.num] = new_link.source.num;
@@ -723,17 +751,16 @@ function Graph(element) {
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
-                        .reinforce_loops();
+                        .reinforce_loops()
+                        .connect_fake_nodes();
 
                     } else {
                         //Add an extra link
-                        console.log('adding link:', new_link);
                         new_link.link_type = 'intermolecule';
                         self.extraLinks.push(new_link);
-                        console.log('self.extraLinks');
                     }
                     self.recalculateGraph();
-                    update();
+                    self.update();
                 }
             };
 
@@ -767,13 +794,9 @@ function Graph(element) {
 
                     // there should be two cases
                     // 1. The link is within a single molecule
-                    console.log('removing:', d);
-                    console.log('self.rnas:', self.rnas);
-                    console.log('d.source.rna:', d.source.rna);
 
                     if (d.source.rna == d.target.rna) {
                         r = d.source.rna;
-                        console.log('r.pairtable', r.pairtable);
 
                         r.pairtable[d.source.num] = 0;
                         r.pairtable[d.target.num] = 0;
@@ -781,32 +804,29 @@ function Graph(element) {
                         positions = r.get_positions();
                         uids = r.get_uids();
 
-                        console.log('uids', uids);
-
                         r.recalculate_elements()
                         .elements_to_json()
                         .add_pseudoknots()
                         .add_positions(positions)
                         .add_uids(uids)
                         .reinforce_stems()
-                        .reinforce_loops();
+                        .reinforce_loops()
+                        .connect_fake_nodes();
 
                     } else {
                         // 2. The link is between two different molecules
                         extraLinkIndex = self.extraLinks.indexOf(d);
 
-                        console.log('extraLinkIndex:', extraLinkIndex);
                         self.extraLinks.splice(extraLinkIndex, 1);
                     }
 
                     self.recalculateGraph();
                 }
 
-                update();
+                self.update();
 
             };
 
-            console.log('graph:', graph);
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(graph.nodes, node_key);
             //.attr('pointer-events', 'all');
@@ -834,7 +854,9 @@ function Graph(element) {
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
                 node_fills.pseudo = 'transparent';
+                //node_fills.middle = 'transparent';
                 node_fills.middle = 'transparent';
+                node_fills.protein = 'grey';
 
                 return node_fills[d.node_type];
             };
@@ -846,6 +868,7 @@ function Graph(element) {
                 node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
                 node_strokes.middle = 'transparent';
+                node_strokes.protein = 'gray';
 
                 return node_strokes[d.node_type];
             };
@@ -857,6 +880,7 @@ function Graph(element) {
                 node_tooltips.label = '';
                 node_tooltips.pseudo = '';
                 node_tooltips.middle = '';
+                node_tooltips.protein = d.struct_name;
 
                 return node_tooltips[d.node_type];
             };
@@ -864,17 +888,13 @@ function Graph(element) {
 
             xlink.on('click', link_click);
 
-            circle_update = gnodes.select('circle');
-            //console.log('circle_update:', circle_update);
-
-            
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) {if (d.node_type == 'middle') return 0; else return 6;})
+            .attr("r", function(d) { return d.radius })
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
-            .style("fill", node_fill);
+            .style("fill", node_fill)
             
             var labels = gnodes_enter.append("text")
             .text(function(d) { return d.name; })
@@ -893,7 +913,25 @@ function Graph(element) {
 
             gnodes.exit().remove();
 
+            //fake_nodes = graph.nodes.filter(function(d) { return d.node_type == 'middle'; });
+            //fake_nodes = graph.nodes.filter(function(d) { return true; });
+            real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide' || d.node_type == 'label';});
+
             force.on("tick", function() {
+                /*
+                var q = d3.geom.quadtree(fake_nodes),
+                i = 0,
+                n = fake_nodes.length;
+
+                while (++i < n) q.visit(collide(fake_nodes[i]));
+                */
+
+                var q = d3.geom.quadtree(real_nodes),
+                i = 0,
+                n = real_nodes.length;
+
+                while (++i < n) q.visit(collide(real_nodes[i]));
+
                 xlink.attr("x1", function(d) { return d.source.x; })
                 .attr("y1", function(d) {  return d.source.y; })
                 .attr("x2", function(d) { return d.target.x; })

@@ -99,13 +99,14 @@ function RNA(sequence, structure, header) {
   
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
-          console.log('self.header', self.header());
-          console.log('data:', data);
+          //console.log('self.header', self.header());
+          //console.log('data:', data);
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
         .add_positions(data)
         .reinforce_stems()
-        .reinforce_loops();
+        .reinforce_loops()
+        .connect_fake_nodes();
 
         console.log('r', r);
 
@@ -270,8 +271,6 @@ function AddPDBViewModel() {
                    success: function (data) {
                         $('#addPDB').modal('hide');
                         rnaView.graph.deaf = false;
-                        console.log('data uploaded');
-                        console.log(data);
                         data = JSON.parse(data);
 
                         mols_json = molecules_to_json(data);
@@ -280,8 +279,14 @@ function AddPDBViewModel() {
                         for (var i = 0; i < mols_json.graphs.length; i++)
                             rnaView.graph.addRNA(mols_json.graphs[i]);
 
+                        console.log('extraLinks.length:', mols_json.extraLinks.length);
                         for (i = 0; i < mols_json.extraLinks.length; i++)
                             rnaView.graph.extraLinks.push(mols_json.extraLinks[i]);
+
+                        rnaView.graph.recalculateGraph();
+                        rnaView.graph.update();
+
+                        console.log('rnaView.graph:', rnaView.graph);
 
 
                         rnaView.animation(true);
@@ -480,6 +485,7 @@ function RNAViewModel() {
   });
   
   self.friction = ko.observable(35);
+  self.charge = ko.observable(-200);
   
   self.friction.subscribe( function(newValue) {
     if (self.graph === null) {
@@ -490,6 +496,15 @@ function RNAViewModel() {
     }
   });
   
+  self.charge.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the charge");
+    } else {
+      
+      self.graph.setCharge(newValue);
+    }
+  });
+
   self.gravity = ko.observable(0);
   
   self.gravity.subscribe( function(newValue) {
@@ -592,6 +607,34 @@ function RNAViewModel() {
   self.centerMolecules = function() {
     self.graph.center_view();
   };
+
+  self.saveJSON = function() {
+      console.log('self.graph', self.graph);
+       var data = {"nodes": []};
+       console.log('data', data);
+
+       for (var i = 0; i < self.graph.graph.nodes.length; i++) {
+           node = self.graph.graph.nodes[i];
+
+           if (node.node_type != 'middle') {
+               console.log('node_type:', node.node_type);
+               data.nodes.push({"name": node.name,
+                               "num": node.num,
+                               "x": node.x,
+                               "y": node.y,
+                               "px": node.px,
+                               "py": node.py})
+
+           }
+       }
+
+       console.log('data:', data);
+
+       var url = 'data:text/json;charset=utf8,' + encodeURIComponent(JSON.stringify(data)); 
+
+       window.open(url, '_blank');
+       window.focus();
+  }
 
   self.savePNG = function() {
     saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);
