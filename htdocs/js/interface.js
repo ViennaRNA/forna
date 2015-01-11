@@ -485,6 +485,7 @@ function RNAViewModel() {
   });
   
   self.friction = ko.observable(35);
+  self.charge = ko.observable(-200);
   
   self.friction.subscribe( function(newValue) {
     if (self.graph === null) {
@@ -495,6 +496,15 @@ function RNAViewModel() {
     }
   });
   
+  self.charge.subscribe( function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the charge");
+    } else {
+      
+      self.graph.setCharge(newValue);
+    }
+  });
+
   self.gravity = ko.observable(0);
   
   self.gravity.subscribe( function(newValue) {

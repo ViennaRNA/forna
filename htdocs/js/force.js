@@ -569,6 +569,11 @@ function Graph(element) {
     self.setFriction = function(value) {
       force.friction(value);
     };
+
+    self.setCharge = function(value) {
+      force.charge(value);
+      force.start();
+    };
     
     self.setGravity = function(value) {
       force.gravity(value);
