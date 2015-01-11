@@ -328,12 +328,10 @@ function AddViewModel() {
   var self = this;
   
   self.input = ko.observable(
-      /*
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
-*/
-   '>molecule_name\nACCGGGUUU\n(((.(((...))).)))'
    /*
+   '>molecule_name\nACCGGGUUU\n(((.(((...))).)))'
    '>molecule1\nAAAA\n(..)\n>molecule1\nCCCC\n(..)'
    '>molecule1\nAAAA\n(..)'
    '>molecule1\nAAAAAA\n(([))]'

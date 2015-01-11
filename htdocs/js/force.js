@@ -100,11 +100,8 @@ function Graph(element) {
         self.graph.nodes = [];
         self.graph.links = [];
         for (var uid in self.rnas) {
-            // the nodes are reversed because the fake nodes tend to be at the end
-            // and we want them to be at the bottom of the z-order
             self.graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
             self.graph.links = self.graph.links.concat(self.rnas[uid].links);
-
         }
 
         // Create a lookup table so that we can access each node
@@ -119,8 +116,6 @@ function Graph(element) {
             // the extra links based on the uids
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
-
-            console.log('extraLinks[i]', self.extraLinks[i]);
 
             graph.links.push(self.extraLinks[i]);
         }
@@ -258,7 +253,6 @@ function Graph(element) {
             .range(['lightgreen', '#ff9896', '#dbdb8d', 'lightsalmon',
                    'lightcyan', 'lightblue', 'transparent']);
                    nodes.style('fill', function(d) { 
-                console.log('d:', d);
                        return scale(d.elem_type);
                    });
 
@@ -831,7 +825,6 @@ function Graph(element) {
 
             };
 
-            console.log('self.graph1.nodes', self.graph.nodes);
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(self.graph.nodes, node_key);
             //.attr('pointer-events', 'all');
@@ -893,6 +886,8 @@ function Graph(element) {
 
             xlink.on('click', link_click);
 
+            var circle_update = gnodes.select('circle');
+
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
             .attr("r", function(d) { if (d.node_type == 'middle') return d.radius / 2; else return d.radius; })
@@ -948,8 +943,6 @@ function Graph(element) {
                 });
             });
             
-        console.log('self.graph.links:', self.graph.links);
-        console.log('self.graph.nodes:', self.graph.nodes);
         self.changeColorScheme(self.colorScheme);
 
         if (self.animation) {
