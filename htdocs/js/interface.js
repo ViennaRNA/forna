@@ -103,8 +103,8 @@ function RNA(sequence, structure, header) {
           //console.log('data:', data);
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
-        .add_labels()
         .add_positions(data)
+        .add_labels()
         .reinforce_stems()
         .reinforce_loops()
         .connect_fake_nodes();
