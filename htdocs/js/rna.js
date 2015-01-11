@@ -431,7 +431,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
-                         'radius': 0,
+                         'radius': radius,
                          'rna': self,
                          'node_type': 'middle',
                          'elem_type': 'f',

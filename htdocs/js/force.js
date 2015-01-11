@@ -32,6 +32,7 @@ function Graph(element) {
 
     self.svgW = 800;
     self.svgH = 600;
+    self.displayAllLinks = false;
 
     // mouse event vars
     var mousedown_link = null,
@@ -665,7 +666,11 @@ function Graph(element) {
 
             /* We don't need to update the positions of the stabilizing links */
             fake_links = vis_links.selectAll("[link_type=fake]");
-            fake_links.style('stroke-width', 0);
+            if (self.displayAllLinks) {
+                fake_links.style('stroke-width', 1);
+            } else {
+                fake_links.style('stroke-width', 0);
+            }
             //fake_links.style('stroke', 'blue')
 
             basepair_links = vis_links.selectAll("[link_type=basepair]");
@@ -678,8 +683,11 @@ function Graph(element) {
             plink.style("stroke-dasharray", ("3,3"));
 
             console.log('graph.links:', graph.links);
-            xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
-            //xlink = all_links;
+
+            if (self.displayFakeLinks)
+                xlink = all_links;
+            else
+                xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
