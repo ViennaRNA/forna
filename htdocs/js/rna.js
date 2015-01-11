@@ -585,6 +585,29 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         for (i = 1; i <= pt[0]; i++) {
+            // add labels
+            if (i % 10 == 0) {
+                //create a node for each nucleotide
+                new_node = {'name': i,
+                                 'num': i,
+                                 'radius': 6,
+                                 'rna': self,
+                                 'node_type': 'label',
+                                 'struct_name': self.struct_name,
+                                 'elem_type': 'l',
+                                 'uid': generateUUID() };
+                new_link = {'source': self.nodes[i-1],
+                            'target': new_node,
+                            'value': 1,
+                            'link_type': 'label_link',
+                            'uid': generateUUID() };
+
+                self.nodes.push(new_node);
+                self.links.push(new_link);
+            }
+        }
+
+        for (i = 1; i <= pt[0]; i++) {
 
             if (pt[i] !== 0) {
                 // base-pair links

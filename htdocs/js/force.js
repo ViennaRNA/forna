@@ -53,7 +53,7 @@ function Graph(element) {
         "pseudoknot": 0.00,
         "protein_chain": 0.00,
         "chain_chain": 0.00,
-        "intermolecule": 8.00,
+        "intermolecule": 10.00,
         "other": 10.00
     };
     
@@ -100,7 +100,9 @@ function Graph(element) {
         graph.nodes = [];
         graph.links = [];
         for (var uid in self.rnas) {
-            graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes);
+            // the nodes are reversed because the fake nodes tend to be at the end
+            // and we want them to be at the bottom of the z-order
+            graph.nodes = self.graph.nodes.concat(self.rnas[uid].nodes.reverse());
             graph.links = self.graph.links.concat(self.rnas[uid].links);
 
         }
@@ -416,7 +418,7 @@ function Graph(element) {
     .charge(function(d) { if (d.node_type == 'middle') 
             return -200; 
         else 
-            return -80;})
+            return -200;})
     .chargeDistance(300)
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
@@ -680,6 +682,7 @@ function Graph(element) {
             plink.style("stroke-dasharray", ("3,3"));
 
             console.log('graph.links:', graph.links);
+            console.log('graph.nodes:', graph.nodes);
 
             if (self.displayFakeLinks)
                 xlink = all_links;
@@ -907,7 +910,7 @@ function Graph(element) {
 
             //fake_nodes = graph.nodes.filter(function(d) { return d.node_type == 'middle'; });
             //fake_nodes = graph.nodes.filter(function(d) { return true; });
-            real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide';});
+            real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide' || d.node_type == 'label';});
 
             force.on("tick", function() {
                 /*
