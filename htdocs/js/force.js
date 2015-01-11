@@ -413,13 +413,10 @@ function Graph(element) {
     };
 
     var force = d3.layout.force()
-    /*
     .charge(function(d) { if (d.node_type == 'middle') 
             return -200; 
         else 
             return -80;})
-            */
-    .charge(0)
     .chargeDistance(300)
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
@@ -909,8 +906,8 @@ function Graph(element) {
             gnodes.exit().remove();
 
             //fake_nodes = graph.nodes.filter(function(d) { return d.node_type == 'middle'; });
-            fake_nodes = graph.nodes.filter(function(d) { return true; });
-            //real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide';});
+            //fake_nodes = graph.nodes.filter(function(d) { return true; });
+            real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide';});
 
             force.on("tick", function() {
                 /*
@@ -919,13 +916,13 @@ function Graph(element) {
                 n = fake_nodes.length;
 
                 while (++i < n) q.visit(collide(fake_nodes[i]));
+                */
 
                 var q = d3.geom.quadtree(real_nodes),
                 i = 0,
                 n = real_nodes.length;
 
                 while (++i < n) q.visit(collide(real_nodes[i]));
-                */
 
                 xlink.attr("x1", function(d) { return d.source.x; })
                 .attr("y1", function(d) {  return d.source.y; })
