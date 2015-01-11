@@ -99,8 +99,8 @@ function RNA(sequence, structure, header) {
   
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
-          console.log('self.header', self.header());
-          console.log('data:', data);
+          //console.log('self.header', self.header());
+          //console.log('data:', data);
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
         .add_positions(data)
@@ -271,8 +271,6 @@ function AddPDBViewModel() {
                    success: function (data) {
                         $('#addPDB').modal('hide');
                         rnaView.graph.deaf = false;
-                        console.log('data uploaded');
-                        console.log(data);
                         data = JSON.parse(data);
 
                         mols_json = molecules_to_json(data);
@@ -281,8 +279,14 @@ function AddPDBViewModel() {
                         for (var i = 0; i < mols_json.graphs.length; i++)
                             rnaView.graph.addRNA(mols_json.graphs[i]);
 
+                        console.log('extraLinks.length:', mols_json.extraLinks.length);
                         for (i = 0; i < mols_json.extraLinks.length; i++)
                             rnaView.graph.extraLinks.push(mols_json.extraLinks[i]);
+
+                        rnaView.graph.recalculateGraph();
+                        rnaView.graph.update();
+
+                        console.log('rnaView.graph:', rnaView.graph);
 
 
                         rnaView.animation(true);

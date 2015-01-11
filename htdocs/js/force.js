@@ -89,7 +89,7 @@ function Graph(element) {
         self.recalculateGraph();
 
 
-        update();
+        self.update();
         self.center_view();
     };
 
@@ -117,9 +117,10 @@ function Graph(element) {
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
 
+            console.log('extraLinks[i]', self.extraLinks[i]);
+
             graph.links.push(self.extraLinks[i]);
         }
-
     };
 
     self.addNodes = function addNodes(json) {
@@ -162,7 +163,7 @@ function Graph(element) {
         //self.addRNA(r);
         self.recalculateGraph();
 
-        update();
+        self.update();
         self.center_view();
     };
 
@@ -178,7 +179,7 @@ function Graph(element) {
         self.rnas = {};
         self.extraLinks = [];
 
-        update();
+        self.update();
     };
 
     function setSize() {
@@ -411,10 +412,13 @@ function Graph(element) {
     };
 
     var force = d3.layout.force()
+    /*
     .charge(function(d) { if (d.node_type == 'middle') 
             return -200; 
         else 
             return -80;})
+            */
+    .charge(0)
     .chargeDistance(300)
     .friction(0.35)
     .linkDistance(function(d) { return 18 * d.value; })
@@ -572,7 +576,7 @@ function Graph(element) {
     
     self.setPseudoknotStrength = function(value) {
       self.linkStrength.pseudoknot = value;
-      update();
+      self.update();
     };
     
     self.displayBackground = function(value) {
@@ -628,7 +632,7 @@ function Graph(element) {
       svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
     };
     
-    var update = function () {
+    self.update = function () {
         force.nodes(graph.nodes)
         .links(graph.links);
         
@@ -673,6 +677,7 @@ function Graph(element) {
             plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
             plink.style("stroke-dasharray", ("3,3"));
 
+            console.log('graph.links:', graph.links);
             xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
             //xlink = all_links;
 
@@ -742,7 +747,7 @@ function Graph(element) {
                         self.extraLinks.push(new_link);
                     }
                     self.recalculateGraph();
-                    update();
+                    self.update();
                 }
             };
 
@@ -805,7 +810,7 @@ function Graph(element) {
                     self.recalculateGraph();
                 }
 
-                update();
+                self.update();
 
             };
 
@@ -833,12 +838,12 @@ function Graph(element) {
                 node_fills = {};
 
                 node_fills.nucleotide = 'white';
-                node_fills.protein = 'grey';
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
                 node_fills.pseudo = 'transparent';
                 //node_fills.middle = 'transparent';
                 node_fills.middle = 'transparent';
+                node_fills.protein = 'grey';
 
                 return node_fills[d.node_type];
             };
@@ -850,6 +855,7 @@ function Graph(element) {
                 node_strokes.label = 'transparent';
                 node_strokes.pseudo = 'transparent';
                 node_strokes.middle = 'transparent';
+                node_strokes.protein = 'gray';
 
                 return node_strokes[d.node_type];
             };
@@ -861,6 +867,7 @@ function Graph(element) {
                 node_tooltips.label = '';
                 node_tooltips.pseudo = '';
                 node_tooltips.middle = '';
+                node_tooltips.protein = d.struct_name;
 
                 return node_tooltips[d.node_type];
             };
@@ -868,16 +875,13 @@ function Graph(element) {
 
             xlink.on('click', link_click);
 
-            circle_update = gnodes.select('circle');
-
-            
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
             .attr("r", function(d) { return d.radius })
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
-            .style("fill", node_fill);
+            .style("fill", node_fill)
             
             var labels = gnodes_enter.append("text")
             .text(function(d) { return d.name; })
@@ -901,12 +905,12 @@ function Graph(element) {
             //real_nodes = graph.nodes.filter(function(d) { return d.node_type == 'nucleotide';});
 
             force.on("tick", function() {
+                /*
                 var q = d3.geom.quadtree(fake_nodes),
                 i = 0,
                 n = fake_nodes.length;
 
                 while (++i < n) q.visit(collide(fake_nodes[i]));
-                /*
 
                 var q = d3.geom.quadtree(real_nodes),
                 i = 0,

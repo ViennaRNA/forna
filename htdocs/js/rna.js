@@ -298,6 +298,7 @@ function ColorScheme(colors_text) {
 function ProteinGraph(struct_name, size, uid) {
     var self = this;
 
+    self.size = size;
     self.nodes = [{'name': 'P',
                    'num': 1,
                    'radius': Math.sqrt(size),
@@ -305,8 +306,10 @@ function ProteinGraph(struct_name, size, uid) {
                    'node_type': 'protein',
                    'struct_name': struct_name,
                    'elem_type': 'p',
+                   'size': size,
                    'uid': generateUUID()}];
     self.links = [];
+    self.uid = generateUUID();
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
@@ -428,7 +431,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         new_node = {'name': '',
                          'num': i,
                          //'radius': 18 * radius -6,
-                         'radius': radius,
+                         'radius': 0,
                          'rna': self,
                          'node_type': 'middle',
                          'elem_type': 'f',
@@ -784,15 +787,20 @@ molecules_to_json = function(molecules_json) {
         graphs.push(rg);
     }
 
+    console.log('molecules_json.extra_links', molecules_json.extra_links)
+
     //Add the extra links
     for (i = 0; i < molecules_json.extra_links.length; i++) {
         link = molecules_json.extra_links[i];
         
         link.source = nodes[link.source];
         link.target = nodes[link.target];
+        link.uid = generateUUID();
 
         extraLinks.push(link);
     }
+
+    console.log('extraLinks:', extraLinks);
 
     return {"graphs": graphs, "extraLinks": extraLinks};
 }
