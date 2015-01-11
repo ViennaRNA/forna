@@ -103,6 +103,7 @@ function RNA(sequence, structure, header) {
           //console.log('data:', data);
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
+        .add_labels()
         .add_positions(data)
         .reinforce_stems()
         .reinforce_loops()
@@ -327,7 +328,7 @@ function AddViewModel() {
   var self = this;
   
   self.input = ko.observable(
-   /*
+      /*
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
 */

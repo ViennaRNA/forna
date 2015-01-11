@@ -457,7 +457,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         var radius =  linkLength / (2 * Math.tan(angle));
 
         new_node = {'name': '',
-                         'num': i,
+                         'num': -1,
                          //'radius': 18 * radius -6,
                          'radius': radius,
                          'rna': self,
@@ -612,28 +612,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
                              'uid': generateUUID() });
         }
 
-        for (i = 1; i <= pt[0]; i++) {
-            // add labels
-            if (i % 10 == 0) {
-                //create a node for each nucleotide
-                new_node = {'name': i,
-                                 'num': i,
-                                 'radius': 6,
-                                 'rna': self,
-                                 'node_type': 'label',
-                                 'struct_name': self.struct_name,
-                                 'elem_type': 'l',
-                                 'uid': generateUUID() };
-                new_link = {'source': self.nodes[i-1],
-                            'target': new_node,
-                            'value': 1,
-                            'link_type': 'label_link',
-                            'uid': generateUUID() };
-
-                self.nodes.push(new_node);
-                self.links.push(new_link);
-            }
-        }
 
         for (i = 1; i <= pt[0]; i++) {
 
@@ -768,6 +746,37 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
         return elements.concat(self.pt_to_elements(pt, level, i, j));
     };
+
+    self.add_labels = function() {
+        for (i = 1; i <= pt[0]; i++) {
+            // add labels
+            if (i % 10 == 0) {
+                //create a node for each nucleotide
+                new_node = {'name': i,
+                                 'num': -1,
+                                 'radius': 6,
+                                 'rna': self,
+                                 'node_type': 'label',
+                                 'struct_name': self.struct_name,
+                                 'elem_type': 'l',
+                                 'x': self.nodes[i-1].x,
+                                 'y': self.nodes[i-1].y,
+                                 'px': self.nodes[i-1].px,
+                                 'py': self.nodes[i-1].py,
+                                 'uid': generateUUID() };
+                new_link = {'source': self.nodes[i-1],
+                            'target': new_node,
+                            'value': 1,
+                            'link_type': 'label_link',
+                            'uid': generateUUID() };
+
+                self.nodes.push(new_node);
+                self.links.push(new_link);
+            }
+        }
+
+        return self;
+    }
 
     self.recalculate_elements = function() {
         self.remove_pseudoknots();

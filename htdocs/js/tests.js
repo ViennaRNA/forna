@@ -73,6 +73,22 @@ QUnit.test('pseudoknots', function(assert) {
     */
 });
 
+QUnit.test('add_labels', function(assert) {
+    r = new RNAGraph('AAAA', '....');
+    json = r.elements_to_json();
+    assert.equal(json.nodes.length, 4);
+
+    r.add_labels();
+    assert.equal(json.nodes.length, 4);
+
+    r = new RNAGraph('aaaaaaaaaaaaa', '.(..).(.(.)).');
+    json = r.elements_to_json();
+    //thirteen regular nodes and one number label
+    assert.equal(json.nodes.length, 13);
+    r.add_labels();
+    assert.equal(json.nodes.length, 14);
+});
+
 QUnit.test('elements_to_json', function(assert) {
     r = new RNAGraph('AAAA', '....');
     json = r.elements_to_json();
@@ -83,7 +99,7 @@ QUnit.test('elements_to_json', function(assert) {
     console.log('elements_to_json:', json.nodes);
 
     //thirteen regular nodes and one number label
-    assert.equal(json.nodes.length, 14);
+    assert.equal(json.nodes.length, 13);
 });
 
 QUnit.test('pt_to_elements', function(assert) {
