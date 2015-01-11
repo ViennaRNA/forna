@@ -208,6 +208,32 @@ function ColorScheme(colors_text) {
     var self = this;
     self.colors_text = colors_text;
 
+    self.parseRange = function(range_text) {
+        //parse a number range such as 1-10 or 3,7,9 or just 7
+        var parts = range_text.split(',')
+        var nums = [];
+
+        for (var i = 0; i < parts.length; i++) {
+            //could be 1 or 10-11  or something like that
+            var parts1 = parts[i].split('-');
+
+            if (parts1.length == 1)
+                nums.push(parseInt(parts1[0]));
+            else if (parts1.length == 2) {
+                var from = parseInt(parts1[0]);
+                var to = parseInt(parts1[1]);
+
+                // add each number in this range
+                for (var j = from; j <= to; j++) 
+                    nums.push(j)
+            } else {
+                console.log('Malformed range (too many dashes):', range_text);
+            }
+        }
+
+        return nums;
+    }
+
     self.parseColorText = function(color_text) {
         /* Parse the text of an RNA color string. Instructions and description
          * of the format are given below.
@@ -232,18 +258,20 @@ function ColorScheme(colors_text) {
                 continue;
             }
 
-            words = lines[i].trim().split(/[\s,]+/);
+            words = lines[i].trim().split(/[\s]+/);
 
             for (var j = 0; j < words.length; j++) {
                 if (isNaN(words[j])) {
                     // it's not a number, should be a combination 
                     // of a number (nucleotide #) and a color
-                    var regex = /([0-9]+)(.*)/;
-                    var match = regex.exec(words[j]);
-                    var num = match[1];
-                    var color = match[2];
+                    parts = words[j].split(':');
+                    nums = self.parseRange(parts[0]);
+                    color = parts[1]
+                    console.log('nums:', nums);
 
-                    colors_json[curr_molecule][num] = color;
+                    for (var k = 0; k < nums.length; k++) {
+                        colors_json[curr_molecule][nums[k]] = color;
+                    }
                 } else {
                     //it's a number, so we add it to the list of values
                     //seen for this molecule

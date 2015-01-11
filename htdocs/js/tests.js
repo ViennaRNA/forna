@@ -10,7 +10,20 @@ QUnit.test('molecules_to_json', function(assert) {
 });
 
 QUnit.test('colors', function(assert) {
-    cs = new ColorScheme("0.7 0.8 0.9 \n7red \n8blue");
+    cs = new ColorScheme("");
+    assert.deepEqual(cs.parseRange('1-3'), [1,2,3])
+    assert.deepEqual(cs.parseRange('1-3,7'), [1,2,3,7])
+    assert.deepEqual(cs.parseRange('7'), [7])
+
+    cs = new ColorScheme("1:red 2-5:green 7,8,19:blue");
+    assert.equal(cs.colors_json[''][1],'red');
+    assert.equal(cs.colors_json[''][2],'green');
+    assert.equal(cs.colors_json[''][5],'green');
+    assert.equal(cs.colors_json[''][7],'blue');
+    assert.equal(cs.colors_json[''][8],'blue');
+    assert.equal(cs.colors_json[''][19],'blue');
+
+    cs = new ColorScheme("0.7 0.8 0.9 \n7:red \n8:blue");
     cs.normalizeColors();
 
     assert.equal(cs.colors_json[''][1], 0);
@@ -67,7 +80,10 @@ QUnit.test('elements_to_json', function(assert) {
 
     r = new RNAGraph('aaaaaaaaaaaaa', '.(..).(.(.)).');
     json = r.elements_to_json();
-    assert.equal(json.nodes.length, 13);
+    console.log('elements_to_json:', json.nodes);
+
+    //thirteen regular nodes and one number label
+    assert.equal(json.nodes.length, 14);
 });
 
 QUnit.test('pt_to_elements', function(assert) {
