@@ -1,13 +1,19 @@
-import unittest
 import forna
 import forgi.graph.bulge_graph as fgb
 import forgi.utilities.debug as fud
-
+import json
+import unittest
+from nose.tools import raises
 
 class FornaTest(unittest.TestCase):
     def setUp(self):
         self.fasta = '>hi\nAACCGG\n((..))'
+
         pass
+
+    def test_fasta_to_json1(self):
+        fasta = '>hi\nACCGGGUUU\n(.(...).)'
+        struct = forna.fasta_to_json(fasta)
 
     def test_fasta_to_json(self):
         fasta = self.fasta
@@ -55,10 +61,9 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
         bg.from_fasta(pk_fasta)
 
         colors_text = """
-color hi 4 orange
-color hi 5 orange
-color bye 6-9 blue
-highlight hi 7-8 brown
+4 orange hi
+5 orange hi
+6-9 blue bye
 """
 
         colors = forna.parse_colors_text(colors_text)
@@ -94,20 +99,31 @@ highlight hi 7-8 brown
 
 
     def test_from_pdb(self):
+        with open('test/data/1MZP.pdb', 'r') as f:
+            text = f.read()
+
+            res = forna.pdb_to_json(text, '2ZM5')
+            s = json.dumps(res)
+            fud.pv('s')
+
+        '''
         with open('test/data/3UZT.pdb', 'r') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '4G0A')
-
         '''
+
+    """
         with open('test/data/4GV9.pdb') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '4GV9')
 
+        '''
         with open('test/data/1MFQ.pdb') as f:
             text = f.read()
 
             forna.pdb_to_json(text, '1MFQ')
         '''
+    """
 
