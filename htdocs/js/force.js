@@ -86,9 +86,25 @@ function Graph(element) {
         // structure
         // Each RNA will have uid to identify it
         // when it is modified, it is replaced in the global list of RNAs
+        //
+        var max_x;
+
+        if (self.graph.nodes.length > 0)
+            max_x = d3.max(self.graph.nodes.map(function(d) { return d.x; }));
+        else
+            max_x = 0;
+
+
+        console.log('adding:', rnaGraph);
+        console.log('max_x:', max_x);
+
+        rnaGraph.nodes.forEach(function(node) {
+            node.x += max_x;
+            node.px += max_x;
+        });
+
         self.rnas[rnaGraph.uid] = rnaGraph;
         self.recalculateGraph();
-
 
         self.update();
         self.center_view();
@@ -858,9 +874,10 @@ function Graph(element) {
                 node_fills.nucleotide = 'white';
                 node_fills.label = 'white';
                 //node_fills.pseudo = 'transparent';
-                node_fills.pseudo = 'transparent';
+                //node_fills.pseudo = 'transparent';
                 //node_fills.middle = 'transparent';
-                node_fills.middle = 'transparent';
+                //node_fills.middle = 'transparent';
+                node_fills.middle = 'white';
                 node_fills.protein = 'grey';
 
                 return node_fills[d.node_type];
@@ -897,7 +914,7 @@ function Graph(element) {
 
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) { if (d.node_type == 'middle') return d.radius / 2; else return d.radius; })
+            .attr("r", function(d) { if (d.node_type == 'middle') return 0; else return d.radius; })
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
