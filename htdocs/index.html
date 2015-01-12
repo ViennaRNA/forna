@@ -174,32 +174,27 @@
           <strong><font color='#aec7e8'>Red</font></strong>: Guanine</p>
           <h4 id="custom">Custom</h4>
           <p> Create a custom coloring scheme. The colors for each nucleotide or sets of nucleotide are specified in the 
-          text box that appears when the tab is clicked. The format is simple. The first column contains the numbers of the nucleotides to be colored. The second column contains the color:
-
-<pre>
-3-5,7 red
+          text box that appears when the 'set' button is clicked. The format is simple. Numbers entered interpolated to 
+          colors and mapped to the respective nucleotides (the first number colors the first nucleotide, the second the second, etc...).
+          <pre>
+          0.5 0.6 10 13.4
 </pre>
+         This will color the first four nucleotides such that the first two are lightly colored and the last two are more darkly colored.
+         The scale is interpolated between the lowest and highest value. We currently only use the white-blue color scale, but this will
+         be expanded shortly.
 
-          The line above will color the nucleotides between 3 and 4 (inclusive) and the nucleotide 7 in red. One can also limit the coloring to a molecule with a particular label:
-
+        Coloring specific nucleotides is possible using the following format:
 <pre>
-8-9 red 1GID
+8:red 10:blue 11:green
 </pre>
+        These directives will color the 8th nucleotide red, the 10th blue and the 11th green. Ranges of colors
+        can also be entered:
 
-          This will color nucleotides 8 and 9 red in the molecule labelled
-          1GID. The molecule label is specified in when it is entered: 
+        <pre>
+        1-10:green 15-30:red  13,46,101:blue
+        </pre>
 
-<pre>
->1GID
-AACCGG
-((..))
-</pre>
-
-          'purple', etc...), a hexadecimal color (')xFF0000') or simple a value
-          between 0 and 1 which will indicate its value within a gradient
-          between (white and steelblue).This is useful for displaying things
-          like probing or conservation data that varies continuously on a
-          per-nucleotide level.  
+        This will color nucleotides 1-10 green and nucleotides 15-30 red and 13,46, and 101 blue.
 
           <h3>Editing the Structure</h3>
 
@@ -351,10 +346,13 @@ AACCGG
                 <label for="friction" role="menuitem">Force friction<br>
                   <input type="text" id="friction" class="slider form-control"  data-bind="sliderValue: {value: friction, min:0, max: 100, step: 1}"/>
                 </label>
+                <label for="charge" role="menuitem">Node Charge<br>
+                  <input type="text" id="charge" class="slider form-control"  data-bind="sliderValue: {value: charge, min:-200, max: 0, step: 1}"/>
+                </label>
               </li>
               <li class="form-group">
                 <label for="friction" role="menuitem">Gravity<br>
-                  <input type="text" id="gravity" class="slider form-control"  data-bind="sliderValue: {value: gravity, min:0, max: 10, step: 0.1}"/>
+                  <input type="text" id="gravity" class="slider form-control"  data-bind="sliderValue: {value: gravity, min:0, max: 1, step: 0.1}"/>
                 </label>
               </li>
           </ul>            
@@ -383,13 +381,16 @@ AACCGG
                 <li role="presentation" class="dropdown-header">Save as ...</li>
                 <li role="presentation"><a role="menuitem" data-bind="click: saveSVG" download="rna.svg">SVG</a></li>
                 <li role="presentation"><a role="menuitem" data-bind="click: savePNG" download="rna.png">PNG</a></li>
+                <li role="presentation"><a role="menuitem" data-bind="click: saveJSON" download="rna.json">JSON</a></li>
             </ul>
         </div>
         
       </div>
     </div>
     
-    <!-- foce field javascript -->
+    <!-- rna javascript -->
+    <script type="text/javascript" src="js/rna.js"></script>
+    <!-- force field javascript -->
     <script type="text/javascript" src="js/force.js"></script>
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
