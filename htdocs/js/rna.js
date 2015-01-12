@@ -267,7 +267,6 @@ function ColorScheme(colors_text) {
                     parts = words[j].split(':');
                     nums = self.parseRange(parts[0]);
                     color = parts[1]
-                    console.log('nums:', nums);
 
                     for (var k = 0; k < nums.length; k++) {
                         colors_json[curr_molecule][nums[k]] = color;
@@ -828,7 +827,7 @@ molecules_to_json = function(molecules_json) {
             rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
             rg.recalculate_elements()
             .elements_to_json()
-            .add_positions(molecule.positions)
+            .add_positions('nucleotide', molecule.positions)
             .reinforce_stems()
             .reinforce_loops();
 
@@ -836,7 +835,6 @@ molecules_to_json = function(molecules_json) {
         } else if (molecule.type == 'protein') {
             rg = new ProteinGraph(molecule.header, molecule.size);
 
-            console.log('rg:', rg);
         }
 
         rg.add_uids(molecule.uids);
@@ -848,8 +846,6 @@ molecules_to_json = function(molecules_json) {
         graphs.push(rg);
     }
 
-    console.log('molecules_json.extra_links', molecules_json.extra_links)
-
     //Add the extra links
     for (i = 0; i < molecules_json.extra_links.length; i++) {
         link = molecules_json.extra_links[i];
@@ -860,8 +856,6 @@ molecules_to_json = function(molecules_json) {
 
         extraLinks.push(link);
     }
-
-    console.log('extraLinks:', extraLinks);
 
     return {"graphs": graphs, "extraLinks": extraLinks};
 }

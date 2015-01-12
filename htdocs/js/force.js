@@ -583,7 +583,6 @@ function Graph(element) {
                 r.pairtable[d.source.num] = 0;
                 r.pairtable[d.target.num] = 0;
 
-                console.log('r:', r);
                 update_rna_graph(r);
 
             } else {

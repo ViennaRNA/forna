@@ -100,7 +100,6 @@ function RNA(sequence, structure, header) {
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
           //console.log('self.header', self.header());
-          //console.log('data:', data);
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
         .add_labels()
