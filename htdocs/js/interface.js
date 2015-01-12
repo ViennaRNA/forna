@@ -104,7 +104,7 @@ function RNA(sequence, structure, header) {
         r = new RNAGraph(self.sequence(), self.structure(), self.header())
         .elements_to_json()
         .add_labels()
-        .add_positions(data)
+        .add_positions('nucleotide', data)
         .reinforce_stems()
         .reinforce_loops()
         .connect_fake_nodes();
