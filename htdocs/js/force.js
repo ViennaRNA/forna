@@ -547,7 +547,148 @@ function Graph(element) {
         key = d.uid;
         return key;
     };
-    
+
+    remove_link = function(d) {
+        // remove a link between two nodes
+        index = self.graph.links.indexOf(d);
+
+        if (index > -1) {
+            //remove a link
+            //graph.links.splice(index, 1);
+
+            // there should be two cases
+            // 1. The link is within a single molecule
+
+            if (d.source.rna == d.target.rna) {
+                r = d.source.rna;
+
+                r.pairtable[d.source.num] = 0;
+                r.pairtable[d.target.num] = 0;
+
+                positions = r.get_positions();
+                uids = r.get_uids();
+
+                r.recalculate_elements()
+                .elements_to_json()
+                .add_pseudoknots()
+                .add_positions(positions)
+                .add_uids(uids)
+                .add_labels()
+                .reinforce_stems()
+                .reinforce_loops()
+                .connect_fake_nodes();
+
+            } else {
+                // 2. The link is between two different molecules
+                extraLinkIndex = self.extraLinks.indexOf(d);
+
+                self.extraLinks.splice(extraLinkIndex, 1);
+            }
+
+            self.recalculateGraph();
+        }
+
+        self.update();
+    };
+
+    link_click = function(d) {
+        if (!shift_keydown) {
+            return;
+        }
+
+        remove_link(d);
+    };
+
+
+    add_link =  function(new_link) {
+        // this means we have a new json, which means we have
+        // to recalculate the structure and change the colors
+        // appropriately
+        //
+        // send ajax request to forna
+        if (new_link.source.rna == new_link.target.rna) {
+            r = new_link.source.rna;
+
+            r.pairtable[new_link.source.num] = new_link.target.num;
+            r.pairtable[new_link.target.num] = new_link.source.num;
+
+            positions = r.get_positions();
+            uids = r.get_uids();
+
+            r.recalculate_elements()
+            .elements_to_json()
+            .add_pseudoknots()
+            .add_positions(positions)
+            .add_uids(uids)
+            .add_labels()
+            .reinforce_stems()
+            .reinforce_loops()
+            .connect_fake_nodes();
+
+        } else {
+            //Add an extra link
+            new_link.link_type = 'intermolecule';
+            self.extraLinks.push(new_link);
+        }
+        self.recalculateGraph();
+        self.update();
+    };
+
+    node_mouseup = function(d) {
+        if (mousedown_node) {
+            mouseup_node = d;
+
+            if (mouseup_node == mousedown_node) { resetMouseVars(); return; }
+            var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1, uid:generateUUID()};
+
+            for (i = 0; i < self.graph.links.length; i++) {
+                if ((self.graph.links[i].source == mousedown_node)  || 
+                    (self.graph.links[i].target == mousedown_node) ||
+                        (self.graph.links[i].source == mouseup_node) ||
+                            (self.graph.links[i].target == mouseup_node)) {
+
+                    if (self.graph.links[i].link_type == 'basepair' || self.graph.links[i].link_type == 'pseudoknot') {
+                        console.log('basepair_exists');
+                        return;
+                    }
+                }
+
+                if (((self.graph.links[i].source == mouseup_node)  && 
+                     (self.graph.links[i].target == mousedown_node)) ||
+                         ((self.graph.links[i].source == mousedown_node)  && 
+                          (self.graph.links[i].target == mouseup_node))) {
+                    if (self.graph.links[i].link_type == 'backbone') {
+                        console.log('backbone exists');
+                        return;
+                    }
+                }
+            }
+
+            if (mouseup_node.node_type == 'middle' || mousedown_node.node_type == 'middle' || mouseup_node.node_type == 'label' || mousedown_node.node_type == 'label')
+                return;
+
+            add_link(new_link);
+
+        }
+    };
+
+    node_mousedown = function(d) {
+        if (!shift_keydown) {
+            return;
+        }
+        mousedown_node = d;
+
+        drag_line
+        .attr("class", "drag_line")
+        .attr("x1", mousedown_node.x)
+        .attr("y1", mousedown_node.y)
+        .attr("x2", mousedown_node.x)
+        .attr("y2", mousedown_node.y);
+
+        //gnodes.attr('pointer-events',  'none');
+
+    };
+
     self.startAnimation = function() {
       self.animation = true;
       vis.selectAll('g.gnode')
@@ -693,137 +834,7 @@ function Graph(element) {
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
 
-            node_mouseup = function(d) {
-                if (mousedown_node) {
-                    mouseup_node = d;
 
-                    if (mouseup_node == mousedown_node) { resetMouseVars(); return; }
-                    var new_link = {source: mousedown_node, target: mouseup_node, link_type: 'basepair', value: 1, uid:generateUUID()};
-
-                    for (i = 0; i < self.graph.links.length; i++) {
-                        if ((self.graph.links[i].source == mousedown_node)  || 
-                            (self.graph.links[i].target == mousedown_node) ||
-                           (self.graph.links[i].source == mouseup_node) ||
-                           (self.graph.links[i].target == mouseup_node)) {
-
-                                if (self.graph.links[i].link_type == 'basepair' || self.graph.links[i].link_type == 'pseudoknot') {
-                                    console.log('basepair_exists');
-                                    return;
-                                }
-                            }
-
-                            if (((self.graph.links[i].source == mouseup_node)  && 
-                                 (self.graph.links[i].target == mousedown_node)) ||
-                                 ((self.graph.links[i].source == mousedown_node)  && 
-                                  (self.graph.links[i].target == mouseup_node))) {
-                                      if (self.graph.links[i].link_type == 'backbone') {
-                                          console.log('backbone exists');
-                                          return;
-                                      }
-                        }
-                    }
-
-                    if (mouseup_node.node_type == 'middle' || mousedown_node.node_type == 'middle' || mouseup_node.node_type == 'label' || mousedown_node.node_type == 'label')
-                        return;
-
-
-                    // this means we have a new json, which means we have
-                    // to recalculate the structure and change the colors
-                    // appropriately
-                    //
-                    // send ajax request to forna
-                    if (new_link.source.rna == new_link.target.rna) {
-                        r = new_link.source.rna;
-
-                        r.pairtable[new_link.source.num] = new_link.target.num;
-                        r.pairtable[new_link.target.num] = new_link.source.num;
-
-                        positions = r.get_positions();
-                        uids = r.get_uids();
-
-                        r.recalculate_elements()
-                        .elements_to_json()
-                        .add_pseudoknots()
-                        .add_positions(positions)
-                        .add_uids(uids)
-                        .add_labels()
-                        .reinforce_stems()
-                        .reinforce_loops()
-                        .connect_fake_nodes();
-
-                    } else {
-                        //Add an extra link
-                        new_link.link_type = 'intermolecule';
-                        self.extraLinks.push(new_link);
-                    }
-                    self.recalculateGraph();
-                    self.update();
-                }
-            };
-
-            node_mousedown = function(d) {
-                if (!shift_keydown) {
-                    return;
-                }
-                mousedown_node = d;
-
-                drag_line
-                .attr("class", "drag_line")
-                .attr("x1", mousedown_node.x)
-                .attr("y1", mousedown_node.y)
-                .attr("x2", mousedown_node.x)
-                .attr("y2", mousedown_node.y);
-
-                //gnodes.attr('pointer-events',  'none');
-
-            };
-
-            link_click = function(d) {
-                if (!shift_keydown) {
-                    return;
-                }
-
-                index = self.graph.links.indexOf(d);
-
-                if (index > -1) {
-                    //remove a link
-                    //graph.links.splice(index, 1);
-
-                    // there should be two cases
-                    // 1. The link is within a single molecule
-
-                    if (d.source.rna == d.target.rna) {
-                        r = d.source.rna;
-
-                        r.pairtable[d.source.num] = 0;
-                        r.pairtable[d.target.num] = 0;
-
-                        positions = r.get_positions();
-                        uids = r.get_uids();
-
-                        r.recalculate_elements()
-                        .elements_to_json()
-                        .add_pseudoknots()
-                        .add_positions(positions)
-                        .add_uids(uids)
-                        .add_labels()
-                        .reinforce_stems()
-                        .reinforce_loops()
-                        .connect_fake_nodes();
-
-                    } else {
-                        // 2. The link is between two different molecules
-                        extraLinkIndex = self.extraLinks.indexOf(d);
-
-                        self.extraLinks.splice(extraLinkIndex, 1);
-                    }
-
-                    self.recalculateGraph();
-                }
-
-                self.update();
-
-            };
 
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(self.graph.nodes, node_key);
