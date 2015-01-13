@@ -267,7 +267,6 @@ function ColorScheme(colors_text) {
                     parts = words[j].split(':');
                     nums = self.parseRange(parts[0]);
                     color = parts[1]
-                    console.log('nums:', nums);
 
                     for (var k = 0; k < nums.length; k++) {
                         colors_json[curr_molecule][nums[k]] = color;
@@ -379,16 +378,28 @@ function RNAGraph(seq, dotbracket, struct_name) {
         return self;
     };
 
-    self.add_positions = function(positions) {
-        for (var i = 0; i < positions.length; i++) {
-            self.nodes[i].x = positions[i][0];
-            self.nodes[i].px = positions[i][0];
-            self.nodes[i].y = positions[i][1];
-            self.nodes[i].py = positions[i][1];
+    self.add_positions = function(node_type, positions) {
+        label_nodes = self.nodes.filter(function(d) { return d.node_type == node_type; });
+
+        for  (var i = 0; i < label_nodes.length; i++) {
+            label_nodes[i].x = positions[i][0];
+            label_nodes[i].px = positions[i][0];
+            label_nodes[i].y = positions[i][1];
+            label_nodes[i].py = positions[i][1];
         }
 
         return self;
-    };
+    }
+
+    self.get_positions = function(node_type) {
+        positions = [];
+        nucleotide_nodes = self.nodes.filter(function(d) { return d.node_type == node_type; })
+
+        for (var i = 0; i < nucleotide_nodes.length; i++)
+            positions.push([nucleotide_nodes[i].x, nucleotide_nodes[i].y]);
+
+        return positions;
+    }
 
     self.get_uids = function() {
         /* Get the positions of each node so that they
@@ -399,17 +410,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
             uids.push(self.nodes[i].uid);
 
         return uids;
-    };
-
-    self.get_positions = function() {
-        /* Get the positions of each node so that they
-         * can be passed to elements_to_json later
-         */
-        positions = [];
-        for (var i = 0; i < self.dotbracket.length; i++)
-            positions.push([self.nodes[i].x, self.nodes[i].y]);
-
-        return positions;
     };
 
     self.reinforce_stems = function() {
@@ -827,7 +827,7 @@ molecules_to_json = function(molecules_json) {
             rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
             rg.recalculate_elements()
             .elements_to_json()
-            .add_positions(molecule.positions)
+            .add_positions('nucleotide', molecule.positions)
             .reinforce_stems()
             .reinforce_loops();
 
@@ -835,7 +835,6 @@ molecules_to_json = function(molecules_json) {
         } else if (molecule.type == 'protein') {
             rg = new ProteinGraph(molecule.header, molecule.size);
 
-            console.log('rg:', rg);
         }
 
         rg.add_uids(molecule.uids);
@@ -847,8 +846,6 @@ molecules_to_json = function(molecules_json) {
         graphs.push(rg);
     }
 
-    console.log('molecules_json.extra_links', molecules_json.extra_links)
-
     //Add the extra links
     for (i = 0; i < molecules_json.extra_links.length; i++) {
         link = molecules_json.extra_links[i];
@@ -859,8 +856,6 @@ molecules_to_json = function(molecules_json) {
 
         extraLinks.push(link);
     }
-
-    console.log('extraLinks:', extraLinks);
 
     return {"graphs": graphs, "extraLinks": extraLinks};
 }
