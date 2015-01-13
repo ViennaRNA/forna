@@ -780,6 +780,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
     self.recalculate_elements = function() {
         self.remove_pseudoknots();
+        console.log('self.pseudoknot_pairs', self.pseudoknot_pairs)
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
 
         return self;
@@ -824,10 +825,11 @@ molecules_to_json = function(molecules_json) {
         var molecule = molecules_json.molecules[i];
 
         if (molecule.type == 'rna') {
+            console.log('molecule.ss:', molecule.ss);
             rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
-            rg.recalculate_elements()
-            .elements_to_json()
+            rg.elements_to_json()
             .add_positions('nucleotide', molecule.positions)
+            .add_labels()
             .reinforce_stems()
             .reinforce_loops();
 

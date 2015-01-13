@@ -719,10 +719,11 @@ def pdb_to_json(text, name):
             else:
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
-                cg = ftmc.from_pdb(fname, chain_id=chain.id)
+                cg = ftmc.from_pdb(fname, chain_id=chain.id, remove_pseudoknots=True)
                 positions = fasta_to_positions(cg.to_fasta_string())
+                cg = ftmc.from_pdb(fname, chain_id=chain.id, remove_pseudoknots=False)
 
-                fud.pv('positions')
+                fud.pv('cg.to_dotbracket_string()')
 
                 cgs[chain.id] = cg
                 molecules += [{"type": "rna",
