@@ -362,14 +362,24 @@ function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
     self.seq = seq;
     self.dotbracket = dotbracket;  //i.e. ..((..))..
-    self.pairtable = rnaUtilities.dotbracket_to_pairtable(dotbracket);
+    self.circular = false;
+
+    if (dotbracket[dotbracket.length-1] == '*') {
+        //circular RNA
+        self.dotbracket = dotbracket.slice(0, dotbracket.length-1);
+        console.log('self.dotbracket:', self.dotbracket);
+        self.circular = true;
+    }
+
+    self.pairtable = rnaUtilities.dotbracket_to_pairtable(self.dotbracket);
     self.uid = generateUUID();
-    self.rna_length = dotbracket.length;
+    self.rna_length = self.dotbracket.length;
 
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
     self.struct_name = struct_name;
+
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
@@ -641,6 +651,15 @@ function RNAGraph(seq, dotbracket, struct_name) {
                                  'link_type': 'pseudoknot',
                                  'value': 1,
                                  'uid': generateUUID() });
+        }
+
+        if (self.circular) {
+            self.links.push({'source': self.nodes[0],
+                            'target': self.nodes[self.rna_length-1],
+                            'link_type': 'backbone',
+                            'value': 1,
+                            'uid': generateUUID() });
+
         }
 
         return self;
