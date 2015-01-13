@@ -654,6 +654,9 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         if (self.circular) {
+            console.log('self.nodes[0]', self.nodes[0],
+                        'self.nodes[..', self.rna_length-1, self.nodes[self.rna_length-1]);
+
             self.links.push({'source': self.nodes[0],
                             'target': self.nodes[self.rna_length-1],
                             'link_type': 'backbone',
@@ -801,6 +804,34 @@ function RNAGraph(seq, dotbracket, struct_name) {
         self.remove_pseudoknots();
         console.log('self.pseudoknot_pairs', self.pseudoknot_pairs)
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
+
+        if (self.circular) {
+            //check to see if the external loop is a hairpin or a multiloop
+            external_loop = self.elements.filter(function(d) { if (d[0] == 'e') return true; });
+
+            if (external_loop.length > 0) {
+                eloop = external_loop[0];
+                nucs = eloop[2].sort(number_sort);
+
+                prev = nucs[0];
+                hloop = true;
+                num_greater = 0;
+                for (var i = 1; i < nucs.length; i++) {
+                    if (nucs[i] - prev > 1) {
+                        num_greater += 1;
+                    }
+                    prev = nucs[i];
+                }
+
+                if (num_greater == 1) {
+                    eloop[0] = 'm';
+                } else if (num_greater == 2) {
+                    eloop[0] = 'i';
+                } else {
+                    eloop[0] = 'h';
+                }
+            }
+        }
 
         return self;
     };
