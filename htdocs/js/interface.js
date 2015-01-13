@@ -400,7 +400,7 @@ function AddViewModel() {
     var rna;
     
     lines.forEach( function(line) {
-      line = line.replace(/[\s]/g,""); // remove any whitespaces
+      line = line.replace(/[\s]/g,"").toUpperCase(); // remove any whitespaces
       // check if it is a fasta header
       if (line.substring(0, 1) == '>') {
         // this is a header

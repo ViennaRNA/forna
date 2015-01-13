@@ -362,14 +362,24 @@ function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
     self.seq = seq;
     self.dotbracket = dotbracket;  //i.e. ..((..))..
-    self.pairtable = rnaUtilities.dotbracket_to_pairtable(dotbracket);
+    self.circular = false;
+
+    if (dotbracket[dotbracket.length-1] == '*') {
+        //circular RNA
+        self.dotbracket = dotbracket.slice(0, dotbracket.length-1);
+        console.log('self.dotbracket:', self.dotbracket);
+        self.circular = true;
+    }
+
+    self.pairtable = rnaUtilities.dotbracket_to_pairtable(self.dotbracket);
     self.uid = generateUUID();
-    self.rna_length = dotbracket.length;
+    self.rna_length = self.dotbracket.length;
 
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
     self.struct_name = struct_name;
+
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
@@ -643,6 +653,15 @@ function RNAGraph(seq, dotbracket, struct_name) {
                                  'uid': generateUUID() });
         }
 
+        if (self.circular) {
+            self.links.push({'source': self.nodes[0],
+                            'target': self.nodes[self.rna_length-1],
+                            'link_type': 'backbone',
+                            'value': 1,
+                            'uid': generateUUID() });
+
+        }
+
         return self;
     };
 
@@ -780,6 +799,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
     self.recalculate_elements = function() {
         self.remove_pseudoknots();
+        console.log('self.pseudoknot_pairs', self.pseudoknot_pairs)
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
 
         return self;
@@ -824,10 +844,11 @@ molecules_to_json = function(molecules_json) {
         var molecule = molecules_json.molecules[i];
 
         if (molecule.type == 'rna') {
+            console.log('molecule.ss:', molecule.ss);
             rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
-            rg.recalculate_elements()
-            .elements_to_json()
+            rg.elements_to_json()
             .add_positions('nucleotide', molecule.positions)
+            .add_labels()
             .reinforce_stems()
             .reinforce_loops();
 
