@@ -28,16 +28,6 @@ def create_app(static):
 
     '''
     app = Flask(__name__, static_folder='htdocs')
-    import logging
-    from logging import Formatter
-
-    file_handler = logging.FileHandler('server.log')
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(Formatter(
-            '%(asctime)s %(levelname)s: %(message)s '
-            '[in %(pathname)s:%(lineno)d]'
-    ))
-    app.logger.addHandler(file_handler)
 
     @app.errorhandler(400)
     # pylint: disable=W0612
@@ -80,8 +70,12 @@ def create_app(static):
         if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
-        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
-                                               request.json['struct'])
+        if request.json['struct'][-1] == '*':
+            structure = request.json['struct'].strip('*')
+        else:
+            structure = request.json['struct']
+
+        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'], structure)
 
         try:
             result = forna.fasta_to_positions(fasta_text)
@@ -188,12 +182,18 @@ def main():
     parser.add_option('-d', '--debug', dest='debug', default=False, help="Run in debug mode", action='store_true')
     parser.add_option('-o', '--host', dest='host', default='127.0.0.1', help='The host address', type='str')
     parser.add_option('-s', '--static', dest='static', default=False, action='store_true', help='Also serve static files.')
+    parser.add_option('-l', '--log-file', dest='log_file', default='server.log', help='The file to store the logs to')
 
     (options, args) = parser.parse_args()
 
     if len(args) < num_args:
         parser.print_help()
         sys.exit(1)
+
+    import logging
+    logging.basicConfig(filename=options.log_file,level=logging.INFO, 
+                        format='%(asctime)s %(levelname)s: %(message)s '
+                        '[in %(pathname)s:%(funcName)s:%(lineno)d]')
 
     app = create_app(options.static)
     app.run(host=options.host, debug=options.debug, port=options.port)

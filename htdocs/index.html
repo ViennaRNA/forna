@@ -130,7 +130,7 @@
         </div>
         <div class="modal-body">
           <div style="float: right;">
-            <img src="/img/favicon-192x192.png" alt="forna logo" title="forna logo" width="150" align="right" />
+            <img src="img/favicon-192x192.png" alt="forna logo" title="forna logo" width="150" align="right" />
           </div>
           <h1 id="rna-secondary-structure-visualization-using-a-force-directed-graph-layout">RNA Secondary Structure Visualization Using a Force Directed Graph Layout</h1>
           <h4 id="overview">Overview</h4>
@@ -196,13 +196,25 @@
 
         This will color nucleotides 1-10 green and nucleotides 15-30 red and 13,46, and 101 blue.
 
+          <h3>Psuedoknots</h3>
+          Feel free to enter structures with pseudoknots. Here's the format:
+
+<pre>
+>1GID
+AACCGG
+((.[[.)).]]
+</pre>
+
+          Use your imagination!
+
+
           <h3>Editing the Structure</h3>
 
-          Links can artificially be added by holding down the <shift> key and
+          Links can artificially be added by holding down the shift key and
           dragging from one nucleotide to another. This will form a
           spring-loaded bond between two nucleotides. This is useful for
           drawing interacting pairs of structures. Bonds can be deleted by
-          holding down the <shift> key and clicking on a bond.
+          holding down the shift key and clicking on a bond.
 
           <h3>Centering the view</h3>
 
@@ -212,8 +224,15 @@
 
           <h3>Force</h3>
 
-          The force can be turned off by either hitting the <space> key or by
+          The force can be turned off by either hitting the space key or by
           flipping the switch in the lower left hand corner of the screen.
+
+          <h3>Friction / Wobbliness</h3>
+
+          How 'wobbly' a molecule appears can be adjusted by the friction
+          slider in the settings menu just to the right of the colors menu.
+          Lowering the friction (paradoxically) makes the molecule less wobbly
+          and increasing it makes it more so.
 
           <h3> PDB Files </h3>
 

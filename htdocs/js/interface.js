@@ -100,18 +100,22 @@ function RNA(sequence, structure, header) {
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
           //console.log('self.header', self.header());
-        r = new RNAGraph(self.sequence(), self.structure(), self.header())
-        .elements_to_json()
-        .add_positions('nucleotide', data)
-        .add_labels()
-        .reinforce_stems()
-        .reinforce_loops()
-        .connect_fake_nodes();
+        try {
+            r = new RNAGraph(self.sequence(), self.structure(), self.header())
+            .elements_to_json()
+            .add_positions('nucleotide', data)
+            .add_labels()
+            .reinforce_stems()
+            .reinforce_loops()
+            .connect_fake_nodes();
 
-        console.log('r', r);
+            console.log('r', r);
 
-        self.json(r);
-        self.done(true);
+            self.json(r);
+            self.done(true);
+        } catch (err) {
+            addView.newInputError(self.header() + ": ERROR: " + err );
+        }
       }).error( function(jqXHR) {
         addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
       });
@@ -331,6 +335,7 @@ function AddViewModel() {
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
    
    /*
+   '>\nAAAA\n.(.)*'
    '>m\nCUGCUCCACGCAAGGAGGUGGACUUAAGCGGCUCAUCCGGGUCUGCGAUAUCCACUGCGCGGUAUGCGCUCGCGAGUUCGAAUCUCGUCGCCAGUACACUGACUUCACUGGCGUGUCCGAGUGGUUAGGCAA\n..(((((((....(((((((((.....(((((((....))).))))....))))))((((.....))))..(((((.......)))))(((((((...........)))))))..)))..))))...)))..*'
    '>m\nA\n..(.)..(.)..*'
    '>molecule_name\nACCGGGUUU\n(((.(((...))).)))'
