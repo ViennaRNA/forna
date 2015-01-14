@@ -173,6 +173,10 @@ QUnit.test('dotbracket_to_pairtable', function(assert) {
 
     pt = rnaUtilities.dotbracket_to_pairtable('([)]');
     assert.deepEqual(pt, [4,3,4,1,2]);
+
+    assert.throws(function() {
+        rnaUtilities.dotbracket_to_pairtable('.(.');
+    }, /Unmatched/ , "Unmatched base at position 2");
 });
 
 

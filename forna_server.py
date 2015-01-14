@@ -70,8 +70,12 @@ def create_app(static):
         if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
-        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'],
-                                               request.json['struct'])
+        if request.json['struct'][-1] == '*':
+            structure = request.json['struct'].strip('*')
+        else:
+            structure = request.json['struct']
+
+        fasta_text = ">{}\n{}\n{}".format(request.json['header'], request.json['seq'], structure)
 
         try:
             result = forna.fasta_to_positions(fasta_text)
