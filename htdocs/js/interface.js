@@ -103,8 +103,8 @@ function RNA(sequence, structure, header) {
         try {
             r = new RNAGraph(self.sequence(), self.structure(), self.header())
             .elements_to_json()
-            .add_labels()
             .add_positions('nucleotide', data)
+            .add_labels()
             .reinforce_stems()
             .reinforce_loops()
             .connect_fake_nodes();
@@ -491,7 +491,7 @@ function RNAViewModel() {
   });
   
   self.friction = ko.observable(35);
-  self.charge = ko.observable(-200);
+  self.charge = ko.observable(-30);
   
   self.friction.subscribe( function(newValue) {
     if (self.graph === null) {
@@ -615,32 +615,23 @@ function RNAViewModel() {
   };
 
   self.saveJSON = function() {
-      console.log('self.graph', self.graph);
-       var data = {"nodes": []};
-       console.log('data', data);
+      var data = self.graph.rnas;
+      console.log('data:', data);
+      var data_string = JSON.stringify(data, function(key, value) {
+          //remove circular references
+          if (key == 'rna') {
+              return;
+          } else {
+              return value;
+          }
 
-       for (var i = 0; i < self.graph.graph.nodes.length; i++) {
-           node = self.graph.graph.nodes[i];
+      });
 
-           if (node.node_type != 'middle') {
-               console.log('node_type:', node.node_type);
-               data.nodes.push({"name": node.name,
-                               "num": node.num,
-                               "x": node.x,
-                               "y": node.y,
-                               "px": node.px,
-                               "py": node.py})
+      var url = 'data:text/json;charset=utf8,' + encodeURIComponent(data_string); 
 
-           }
-       }
-
-       console.log('data:', data);
-
-       var url = 'data:text/json;charset=utf8,' + encodeURIComponent(JSON.stringify(data)); 
-
-       window.open(url, '_blank');
-       window.focus();
-  }
+      window.open(url, '_blank');
+      window.focus();
+  };
 
   self.savePNG = function() {
     saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);

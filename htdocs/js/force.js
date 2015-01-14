@@ -443,13 +443,13 @@ function Graph(element) {
 
     var force = d3.layout.force()
     .charge(function(d) { if (d.node_type == 'middle')  {
-            return -200; 
+            return -30; 
     }
         else 
-            return -200;})
+            return -30;})
     .chargeDistance(300)
     .friction(0.35)
-    .linkDistance(function(d) { return 18 * d.value; })
+    .linkDistance(function(d) { return 15 * d.value; })
     .linkStrength(function(d) { if (d.link_type in self.linkStrengths) {
                                   return self.linkStrengths[d.link_type];
                                 } else {
@@ -733,17 +733,17 @@ function Graph(element) {
     
     self.setFriction = function(value) {
       force.friction(value);
-      force.start();
+      force.resume();
     };
 
     self.setCharge = function(value) {
       force.charge(value);
-      force.start();
+      force.resume();
     };
     
     self.setGravity = function(value) {
       force.gravity(value);
-      force.start();
+      force.resume();
     };
     
     self.setPseudoknotStrength = function(value) {
