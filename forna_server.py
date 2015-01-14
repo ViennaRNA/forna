@@ -88,6 +88,7 @@ def create_app(static):
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "Secondary structure parsing error: {}".format(str(ex)))
+   
 
         return json.dumps(result), 201
     

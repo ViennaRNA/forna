@@ -824,11 +824,11 @@ function RNAGraph(seq, dotbracket, struct_name) {
                 }
 
                 if (num_greater == 1) {
-                    eloop[0] = 'm';
+                    eloop[0] = 'h';
                 } else if (num_greater == 2) {
                     eloop[0] = 'i';
                 } else {
-                    eloop[0] = 'h';
+                    eloop[0] = 'm';
                 }
             }
         }

@@ -61,7 +61,9 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 def fasta_to_positions(fasta_text):
-    bp_string = fasta_text.split('\n')[2]
+    bg = fgb.BulgeGraph()
+    bg.from_fasta(fasta_text)
+    bp_string = bg.to_dotbracket_string()
 
     print >>sys.stderr, 'bp_string', bp_string;
     coords = RNA.get_xy_coordinates(bp_string)
@@ -722,8 +724,6 @@ def pdb_to_json(text, name):
                 cg = ftmc.from_pdb(fname, chain_id=chain.id, remove_pseudoknots=True)
                 positions = fasta_to_positions(cg.to_fasta_string())
                 cg = ftmc.from_pdb(fname, chain_id=chain.id, remove_pseudoknots=False)
-
-                fud.pv('cg.to_dotbracket_string()')
 
                 cgs[chain.id] = cg
                 molecules += [{"type": "rna",
