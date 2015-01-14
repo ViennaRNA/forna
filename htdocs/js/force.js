@@ -133,20 +133,21 @@ function Graph(element) {
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
             
-            //remove links to middle nodes
-            fake_links = self.graph.links.filter(function(d) { 
-                return ((d.source == self.extraLinks[i].source || d.source == self.extraLinks[i].target ||
-                        d.target == self.extraLinks[i].source || d.target == self.extraLinks[i].source) &&
-                        d.link_type == 'fake');
-            });
+            if (self.extraLinks[i].link_type == 'intermolecule') {
+                //remove links to middle nodes
+                fake_links = self.graph.links.filter(function(d) { 
+                    return ((d.source == self.extraLinks[i].source || d.source == self.extraLinks[i].target ||
+                            d.target == self.extraLinks[i].source || d.target == self.extraLinks[i].source) &&
+                            d.link_type == 'fake');
+                });
 
-            console.log('fake_links:', fake_links);
+                console.log('fake_links:', fake_links);
 
-            for (var j = 0; j < fake_links.length; j++) {
-                var linkIndex = self.graph.links.indexOf(fake_links[j]); 
-                self.graph.links.splice(linkIndex, 1);
+                for (var j = 0; j < fake_links.length; j++) {
+                    var linkIndex = self.graph.links.indexOf(fake_links[j]); 
+                    self.graph.links.splice(linkIndex, 1);
+                }
             }
-
 
             graph.links.push(self.extraLinks[i]);
         }
