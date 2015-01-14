@@ -71,6 +71,13 @@ function RNAUtilities() {
             }
         }
 
+        for (key in stack) {
+            if (stack[key].length > 0) {
+                console.log('stack', stack[key]);
+                throw "Unmatched base at position " + stack[key][0];
+            }
+        }
+
         return pt;
     };
 
