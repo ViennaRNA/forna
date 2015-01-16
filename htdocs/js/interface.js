@@ -327,6 +327,41 @@ function AddPDBViewModel() {
   };
 }
 
+function AddJSONViewModel() {
+  var self = this;
+  
+  self.input = ko.observable(
+      ''
+  );
+  
+  self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
+
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+  };
+
+  self.cancelAddJSON = function() {
+    $('#addJSON').modal('hide');
+    rnaView.graph.deaf = false;
+  };
+
+    
+  self.submit = function() {
+    self.submitted(false);
+    $('#JSONSubmit').button('loading');
+
+    console.log('text', self.input());
+
+
+    self.submitted(true);
+  };
+}
+
 function AddViewModel() {
   var self = this;
   
@@ -594,6 +629,12 @@ function RNAViewModel() {
     self.graph.deaf = true;
   };
 
+  self.showAddJSON = function() {
+    $('#JSONSubmit').button('reset');
+    $('#addJSON').modal('show');
+    self.graph.deaf = true;
+  };
+
   self.showCustomColors = function() {
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
@@ -666,9 +707,11 @@ function RNAViewModel() {
 var rnaView = new RNAViewModel();
 var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
+var addJSONView = new AddJSONViewModel();
 var colorView = new ColorViewModel();
 
 ko.applyBindings(rnaView, document.getElementById('chart'));
 ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));
+ko.applyBindings(addJSONView, document.getElementById('addJSON'));
