@@ -507,7 +507,7 @@ function RNAViewModel() {
       console.log("graph is null, won't change the charge");
     } else {
       
-      self.graph.setCharge(newValue);
+        self.graph.setCharge(newValue);
     }
   });
 
