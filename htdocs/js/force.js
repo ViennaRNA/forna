@@ -635,6 +635,14 @@ function Graph(element) {
             return;
         }
 
+        var invalid_links = {'backbone': true,
+                             'fake': true,
+                             'fake_fake': true,
+                             'label_link': true}
+
+        if (d.link_type in invalid_links ) 
+            return;
+
         remove_link(d);
     };
 
