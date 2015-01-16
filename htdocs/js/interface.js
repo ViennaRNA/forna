@@ -597,9 +597,9 @@ function RNAViewModel() {
     }
   });
   
-  self.pseudoknotLinks = ko.observable(true);
+  self.displayPseudoknotLinks = ko.observable(true);
   
-  self.pseudoknotLinks.subscribe (function(newValue) {
+  self.displayPseudoknotLinks.subscribe (function(newValue) {
     if (self.graph === null) {
       console.log("graph is null, won't change the pseudoknot link option");
     } else {
