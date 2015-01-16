@@ -335,13 +335,15 @@ function ProteinGraph(struct_name, size, uid) {
     self.size = size;
     self.nodes = [{'name': 'P',
                    'num': 1,
-                   'radius': Math.sqrt(size),
+                   'radius': 3 *  Math.sqrt(size),
                    'rna': self,
                    'node_type': 'protein',
                    'struct_name': struct_name,
                    'elem_type': 'p',
                    'size': size,
                    'uid': generateUUID()}];
+
+    console.log('protein_graph nodes:', self.nodes);
     self.links = [];
     self.uid = generateUUID();
 

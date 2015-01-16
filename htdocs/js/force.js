@@ -64,6 +64,8 @@ function Graph(element) {
         "nodeLabelFill":  d3.rgb(50,50,50),
         "linkOpacityDefault": 0.8,
         "linkOpacity": 0.8,
+        "pseudoknotLinkOpacityDefault": 0.8,
+        "pseudoknotLinkOpacity": 0.8,
         "labelLinkOpacityDefault": 0.8,
         "labelTextFillDefault": d3.rgb(50,50,50),
         "labelTextFill": d3.rgb(50,50,50),
@@ -258,7 +260,7 @@ function Graph(element) {
 
         protein_nodes.style('fill', 'grey')
                     .style('fill-opacity', 0.5)
-                    .attr('r', function(d) { return Math.sqrt(d.size); });
+                    .attr('r', function(d) { return d.radius; });
 
                     /*
         var fake_nodes = vis_nodes.seletAll('[node_type=fake]');
@@ -635,6 +637,14 @@ function Graph(element) {
             return;
         }
 
+        var invalid_links = {'backbone': true,
+                             'fake': true,
+                             'fake_fake': true,
+                             'label_link': true}
+
+        if (d.link_type in invalid_links ) 
+            return;
+
         remove_link(d);
     };
 
@@ -803,6 +813,16 @@ function Graph(element) {
 
       svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
     };
+
+    self.displayPseudoknotLinks = function(value) {
+      if (value === true) {
+        self.displayParameters.pseudoknotLinkOpacity=self.displayParameters.pseudoknotLinkOpacityDefault;
+      } else {
+        self.displayParameters.pseudoknotLinkOpacity=0;
+      }
+
+      svg.selectAll("[link_type=pseudoknot]").style('stroke-opacity', self.displayParameters.pseudoknotLinkOpacity);
+    };
     
     self.update = function () {
         force.nodes(self.graph.nodes)
@@ -930,9 +950,20 @@ function Graph(element) {
 
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
-            .attr("r", function(d) { if (d.node_type == 'middle') return 0; else return d.radius; })
+            .attr("r", function(d) { 
+                if (d.node_type == 'middle') return 0; 
+                else {
+                    console.log('d.radius:', d.radius); 
+                    return d.radius; 
+                }
+                })
             .attr("node_type", function(d) { return d.node_type; })
             .style("stroke", node_stroke)
+            .style('stroke-width', function(d) {
+                console.log('d.node_type:', d.node_type);
+                if (d.node_type == 'protein') {
+                    return 10;
+                }})
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
             .style("fill", node_fill)
             
