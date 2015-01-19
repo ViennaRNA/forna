@@ -369,13 +369,22 @@ function ProteinGraph(struct_name, size, uid) {
 
 function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
-    self.seq = seq;
-    self.dotbracket = dotbracket;  //i.e. ..((..))..
+
+    if (arguments.length == 0) {
+        self.seq = '';
+        self.dotbracket = '';
+        self.struct_name = '';
+    } else {
+        self.seq = seq;
+        self.dotbracket = dotbracket;  //i.e. ..((..))..
+        self.struct_name = struct_name;
+    }
+
     self.circular = false;
 
-    if (dotbracket[dotbracket.length-1] == '*') {
+    if (self.dotbracket.length > 0 && self.dotbracket[self.dotbracket.length-1] == '*') {
         //circular RNA
-        self.dotbracket = dotbracket.slice(0, dotbracket.length-1);
+        self.dotbracket = self.dotbracket.slice(0, self.dotbracket.length-1);
         console.log('self.dotbracket:', self.dotbracket);
         self.circular = true;
     }
@@ -387,7 +396,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
-    self.struct_name = struct_name;
 
 
     self.add_uids = function(uids) {
@@ -621,7 +629,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
         for (i = 1; i <= pt[0]; i++) {
             //create a node for each nucleotide
-            self.nodes.push({'name': seq[i-1],
+            self.nodes.push({'name': self.seq[i-1],
                              'num': i,
                              'radius': 6,
                              'rna': self,

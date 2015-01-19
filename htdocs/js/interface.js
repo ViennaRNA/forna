@@ -383,13 +383,29 @@ function AddJSONViewModel() {
     }
 
     for (uid in rnas) {
-        rnas[uid].rna = rnas[uid];
-        rnaView.graph.addRNA(rnas[uid], false);
+        r = new RNAGraph()
+
+        r.seq = rnas[uid].seq;
+        r.dotbracket = rnas[uid].dotbracket;
+        r.circular = rnas[uid].circular;
+        r.pairtable = rnas[uid].pairtable;
+        r.uid = rnas[uid].uid;
+        r.struct_name = rnas[uid].struct_name;
+        r.nodes = rnas[uid].nodes;
+        r.links = rnas[uid].links;
+        r.rna_length = rnas[uid].rna_length;
+        r.elements = rnas[uid].elements;
+        r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
+        r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
+
+
+        rnaView.graph.addRNA(r, false);
     }
     console.log('rna', rnas)
 
     $('#SubmitJSON').button('reset');
     $('#addJSON').modal('hide');
+    rnaView.graph.deaf = false;
   };
 }
 

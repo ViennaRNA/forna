@@ -103,6 +103,10 @@ function Graph(element) {
             });
         }
 
+        rnaGraph.nodes.forEach(function(node) {
+            node.rna = rnaGraph;
+        });
+
         self.rnas[rnaGraph.uid] = rnaGraph;
         self.recalculateGraph();
 
