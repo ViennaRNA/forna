@@ -103,7 +103,24 @@ def create_app(static):
         result = RNA.fold(str(request.json['seq']))[0]
         return json.dumps(result), 201
 
+    @app.route('/inverse_fold', methods=['POST'])
+    # pylint: disable=W0612
+    def inverse_fold():
+        app.logger.info(request.json);
+        if not request.json:
+            abort(400, "Request has no json.")
+
+        if 'struct' not in request.json:
+            abort(400, "Request has no structure in the json.")
+
+        if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
+            abort(400, "Invalid structure: {}".format(request.json['struct']))
+
+        result = RNA.inverse_fold("", str(request.json['struct']))[0]
+        return json.dumps(result), 201
+
     @app.route('/colors_to_json', methods=['POST'])
+    # pylint: disable=W0612
     def colors_to_json():
         app.logger.info(request.json);
         if not request.json:

@@ -79,21 +79,34 @@ $("[data-toggle=tooltip]").tooltip();
 function RNA(sequence, structure, header) {
   var self = this;
   console.log(["New RNA with: ", sequence, structure, header].join('\n'));
-  console.log("structure:", structure);
 
   self.header = ko.observable(header);
-  self.sequence = ko.observable(sequence);
-  
+
   self.done = ko.observable(false);
   
   self.structure = ko.onDemandObservable( function() {
-      ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
-        self.structure(data);
-        self.json.refresh();
-        self.json();
-      }).error( function(jqXHR) {
-        addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-      });
+        if (self.sequence() !== '') {
+          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
+            self.structure(data);
+            self.json.refresh();
+            self.json();
+          }).error( function(jqXHR) {
+            addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+          });
+        }
+    }, self 
+  );
+
+  self.sequence = ko.onDemandObservable( function() {
+        if (self.structure() !== '') {
+          ajax(serverURL + '/inverse_fold', 'POST', JSON.stringify( {struct: self.structure()} )).success( function(data) {
+            self.sequence(data);
+            self.json.refresh();
+            self.json();
+          }).error( function(jqXHR) {
+            addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+          });
+        }
     }, self 
   );
   
@@ -121,18 +134,26 @@ function RNA(sequence, structure, header) {
       });
     }, self
   );
-  
-  if (structure === '') {
-    self.structure.refresh();
-    self.structure();
+
+  if (sequence === '') {
+      self.structure(structure);
+      self.sequence.refresh();
+      self.sequence();
   } else {
-    self.structure(structure);
-    self.json.refresh();
-    self.json();
+      self.sequence(sequence);
+      
+      if (structure === '') {
+        self.structure.refresh();
+        self.structure();
+      } else {
+        self.structure(structure);
+        self.json.refresh();
+        self.json();
+      }
   }
-  
+
   self.loaded = ko.computed( function() {
-    return (self.structure.loaded() && self.json.loaded() && self.done());
+    return (self.structure.loaded() && self.sequence.loaded() && self.json.loaded() && self.done());
   });
 }
 
@@ -462,6 +483,9 @@ function AddViewModel() {
         rna.sequence = rna.sequence.concat(line);
       } else if (/[\(\)\.\{\}\[\]]/g.test(line.substring(0, 1))) {
         // this is a structure
+        if (rna === undefined) {
+          rna = new tmpRNA();
+        }
         rna.structure = rna.structure.concat(line);
       } else {
         self.newInputError("You did not enter valid sequences, structures or fasta");
