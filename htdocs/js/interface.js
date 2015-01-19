@@ -302,7 +302,7 @@ function AddPDBViewModel() {
                         console.log('mols_json', mols_json);
 
                         for (var i = 0; i < mols_json.graphs.length; i++)
-                            rnaView.graph.addRNA(mols_json.graphs[i]);
+                            rnaView.graph.addRNA(mols_json.graphs[i], true );
 
                         console.log('extraLinks.length:', mols_json.extraLinks.length);
                         for (i = 0; i < mols_json.extraLinks.length; i++)
@@ -384,10 +384,11 @@ function AddJSONViewModel() {
 
     for (uid in rnas) {
         rnas[uid].rna = rnas[uid];
-        rnaView.graph.addRNA(rnas[uid]);
+        rnaView.graph.addRNA(rnas[uid], false);
     }
     console.log('rna', rnas)
 
+    $('#SubmitJSON').button('reset');
     $('#addJSON').modal('hide');
   };
 }

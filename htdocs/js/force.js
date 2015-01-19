@@ -83,7 +83,7 @@ function Graph(element) {
     self.rnas = {};
     self.extraLinks = []; //store links between different RNAs
 
-    self.addRNA = function(rnaGraph) {
+    self.addRNA = function(rnaGraph, avoidOthers) {
         // Add an RNAGraph, which contains nodes and links as part of the
         // structure
         // Each RNA will have uid to identify it
@@ -91,19 +91,17 @@ function Graph(element) {
         //
         var max_x;
 
-        if (self.graph.nodes.length > 0)
-            max_x = d3.max(self.graph.nodes.map(function(d) { return d.x; }));
-        else
-            max_x = 0;
+        if (avoidOthers) {
+            if (self.graph.nodes.length > 0)
+                max_x = d3.max(self.graph.nodes.map(function(d) { return d.x; }));
+            else
+                max_x = 0;
 
-
-        console.log('adding:', rnaGraph);
-        console.log('max_x:', max_x);
-
-        rnaGraph.nodes.forEach(function(node) {
-            node.x += max_x;
-            node.px += max_x;
-        });
+            rnaGraph.nodes.forEach(function(node) {
+                node.x += max_x;
+                node.px += max_x;
+            });
+        }
 
         self.rnas[rnaGraph.uid] = rnaGraph;
         self.recalculateGraph();
