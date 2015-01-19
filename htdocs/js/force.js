@@ -129,6 +129,11 @@ function Graph(element) {
         for (var i = 0; i < self.graph.nodes.length; i++)
             uids_to_nodes[self.graph.nodes[i].uid] = self.graph.nodes[i];
 
+        self.graph.links.forEach(function(link) {
+            link.source = uids_to_nodes[link.source.uid];
+            link.target = uids_to_nodes[link.target.uid];
+        });
+
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids

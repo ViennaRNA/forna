@@ -356,7 +356,6 @@ function AddJSONViewModel() {
   );
   
   self.inputError = ko.observable('');
-  self.submitted = ko.observable(false);
 
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -364,6 +363,7 @@ function AddJSONViewModel() {
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
+    $('#SubmitJSON').button('reset');
   };
 
   self.cancelAddJSON = function() {
@@ -373,13 +373,22 @@ function AddJSONViewModel() {
 
     
   self.submit = function() {
-    self.submitted(false);
-    $('#JSONSubmit').button('loading');
+    $('#SubmitJSON').button('loading');
 
-    console.log('text', self.input());
+    try{
+        var rnas = JSON.parse(self.input());
+    } catch(err) {
+        self.newInputError(err.message);
+        return;
+    }
 
+    for (uid in rnas) {
+        rnas[uid].rna = rnas[uid];
+        rnaView.graph.addRNA(rnas[uid]);
+    }
+    console.log('rna', rnas)
 
-    self.submitted(true);
+    $('#addJSON').modal('hide');
   };
 }
 
