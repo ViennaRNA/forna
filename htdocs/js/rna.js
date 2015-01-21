@@ -14,7 +14,6 @@ function generateUUID(){
     return uuid;
 }
 
-
 function RNAUtilities() {
     var self = this;
 
@@ -38,7 +37,6 @@ function RNAUtilities() {
         var TURN = 0;    //minimal number of nucleotides in the hairpin
 
         /* array init */
-        console.log('n:', n);
         mm = new Array(n + 1);
         for(var i = 0; i <= n; i++){
             mm[i] = new Array(n + 1);
@@ -47,15 +45,21 @@ function RNAUtilities() {
         }
         var maximum = 0;
 
+        console.log('pt:', pt);
         /* actual computation */
         for(var i = n - TURN - 1; i > 0; i--)
 
         for(var j = i + TURN + 1; j <= n; j++){
             maximum = mm[i][j-1];
-            for(var l = j - TURN - 1; l >= i; l--)
-            if(pt[l] === j)
-                // we have a base pair here
-                maximum = Math.max(maximum, ((l > i) ? mm[i][l-1] : 0) + 1 + ((j -l -3 > 0) ? mm[l+1][j-1] : 0));
+
+            for(var l = j - TURN - 1; l >= i; l--) {
+                if(pt[l] === j) {
+
+                    // we have a base pair here
+                    maximum = Math.max(maximum, ((l > i) ? mm[i][l-1] : 0) + 1 + ((j - l - 1 > 0) ? mm[l+1][j-1] : 0));
+                    console.log('l:', l, 'j:', j, 'maximum:', maximum);
+                }
+            }
 
             mm[i][j] = maximum;
         }
@@ -70,7 +74,7 @@ function RNAUtilities() {
                            Array(mm.length)).map(function() { return 0 }); 
                            //create an array containing zeros
 
-      console.log('mm.length:', mm.length);
+      console.log('mm', mm);
       self.mm_bt(mm, pt, old_pt, 1, mm.length-1);
       return pt;
     }
@@ -79,7 +83,6 @@ function RNAUtilities() {
         // Create a pairtable from the backtracking
       var maximum = mm[i][j];
       var TURN = 0;
-      console.log('mm', mm);
 
       if(j - i - 1 < TURN) return;    /* no more pairs */
 
@@ -93,7 +96,7 @@ function RNAUtilities() {
             continue;
 
         var left_part     = (q > i) ? mm[i][q-1] : 0;
-        var enclosed_part = (j - q - 3 > 0) ? mm[q+1][j-1] : 0;
+        var enclosed_part = (j - q - 1 > 0) ? mm[q+1][j-1] : 0;
 
         if(left_part + enclosed_part + 1 == maximum) {
             // there's a base pair between j and q
@@ -479,7 +482,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
-
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
