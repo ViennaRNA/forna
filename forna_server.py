@@ -99,8 +99,12 @@ def create_app(static):
         if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
-
-        result = RNA.fold(str(request.json['seq']))[0]
+        try:
+            result = RNA.fold(str(request.json['seq']))[0]
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Server exception: {}".format(ex))
+        
         return json.dumps(result), 201
 
     @app.route('/inverse_fold', methods=['POST'])
@@ -115,8 +119,13 @@ def create_app(static):
 
         if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
+        
+        try:
+            result = RNA.inverse_fold("", str(request.json['struct']))[0]
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Server exception: {}".format(ex))
 
-        result = RNA.inverse_fold("", str(request.json['struct']))[0]
         return json.dumps(result), 201
 
     @app.route('/colors_to_json', methods=['POST'])
