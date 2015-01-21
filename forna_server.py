@@ -21,6 +21,7 @@ import RNA
 from optparse import OptionParser
 
 import forgi.utilities.debug as fud
+import forgi.utilities.stuff as fus
 
 def create_app(static):
     '''
@@ -121,11 +122,12 @@ def create_app(static):
             abort(400, "Invalid structure: {}".format(request.json['struct']))
         
         try:
-            result = RNA.inverse_fold("", str(request.json['struct']))[0]
+            pt = fus.dotbracket_to_pairtable(str(request.json['struct'])) 
         except Exception as ex:
             app.logger.exception(ex)
-            abort(400, "Server exception: {}".format(ex))
+            abort(400, "Unbalanced brackets: {}".format(ex))
 
+        result = RNA.inverse_fold("", str(request.json['struct']))[0]
         return json.dumps(result), 201
 
     @app.route('/colors_to_json', methods=['POST'])
