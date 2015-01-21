@@ -327,7 +327,7 @@ function AddPDBViewModel() {
                         
                    },
                    error: function (jqXHR) {
-                        self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+                        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
                    },
                    cache: false,
                    contentType: false,
@@ -804,12 +804,10 @@ function RNAViewModel() {
               return value;
           }
 
-      });
+      }, "\t");
 
-      var url = 'data:text/json;charset=utf8,' + encodeURIComponent(data_string); 
-
-      window.open(url, '_blank');
-      window.focus();
+      var blob = new Blob([data_string], {type: "application/json"});
+      saveAs(blob, 'molecule.json')
   };
 
   self.savePNG = function() {
