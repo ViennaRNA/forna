@@ -726,7 +726,7 @@ function RNAViewModel() {
               return value;
           }
 
-      });
+      }, "\t");
 
       var blob = new Blob([data_string], {type: "application/json"});
       saveAs(blob, 'molecule.json')
