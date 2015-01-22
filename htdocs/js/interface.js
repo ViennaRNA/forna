@@ -194,6 +194,8 @@ function ColorViewModel() {
 
   self.cancelColor = function() {
     $('#addColors').modal('hide');
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
 
@@ -217,7 +219,7 @@ function ColorViewModel() {
 }
 
 function AddPDBViewModel() {
-    var self = this;
+  var self = this;
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
@@ -237,15 +239,20 @@ function AddPDBViewModel() {
       self.inputFile(file);
       console.log(file);
   };
-
+  /*
   function progressHandlingFunction(e){
       if(e.lengthComputable){
           $('progress').attr({value:e.loaded,max:e.total});
       }
   }
-
+  */
   self.cancelAddPDB = function() {
     $('#addPDB').modal('hide');
+    // reset the file upload form
+    $('#inputPDBFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
 
@@ -275,7 +282,7 @@ function AddPDBViewModel() {
       }
 
       var formData = new FormData();
-      var xhr = new XMLHttpRequest();
+      // var xhr = new XMLHttpRequest();
 
 
       formData.append('pdb_file', self.inputFile(), self.inputFile().name);
@@ -351,10 +358,8 @@ function AddPDBViewModel() {
 function AddJSONViewModel() {
   var self = this;
   
-  self.input = ko.observable(
-      ''
-  );
-  
+  self.input = ko.observable('');
+  self.inputFile = ko.observable(null);
   self.inputError = ko.observable('');
 
   self.newInputError = function(message) {
@@ -365,16 +370,23 @@ function AddJSONViewModel() {
     }
     $('#SubmitJSON').button('reset');
   };
+  
+  self.uploadJSON = function (file) {
+    self.inputFile(file);
+    console.log(file);
+  };
 
   self.cancelAddJSON = function() {
     $('#addJSON').modal('hide');
+    // reset the file upload form
+    $('#inputJSONFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
-
-    
-  self.submit = function() {
-    $('#SubmitJSON').button('loading');
-
+  
+  self.parseJSON = function(input) {
     try{
         var data = JSON.parse(self.input());
         var rnas = data.rnas;
@@ -383,7 +395,6 @@ function AddJSONViewModel() {
         self.newInputError(err.message);
         return;
     }
-
 
     for (uid in rnas) {
         if (rnas[uid].type == 'rna') {
@@ -420,9 +431,32 @@ function AddJSONViewModel() {
 
     console.log('rna', rnas)
 
-    $('#SubmitJSON').button('reset');
-    $('#addJSON').modal('hide');
-    rnaView.graph.deaf = false;
+        $('#SubmitJSON').button('reset');
+        $('#addJSON').modal('hide');
+        // reset the file upload form
+        rnaView.graph.deaf = false;
+    }
+  }
+    
+  self.submit = function() {
+    $('#SubmitJSON').button('loading');
+    
+    if (self.inputFile() !== null) {
+      var r = new FileReader();
+      r.onload = function(e) {
+        var content = e.target.result;
+        console.log("Parsing JSON file", content);
+	      self.parseJSON(content);
+	      $('#inputJSONFile').val('');
+        self.inputFile(null);
+      }
+      r.readAsText(self.inputFile());
+    } 
+    
+    if (self.input() != '') {
+      console.log("Parsing JSON string");
+      self.parseJSON(self.input());
+    }
   };
 }
 
@@ -445,9 +479,9 @@ function AddViewModel() {
   );
   
   self.newMolecules = ko.observableArray([]);
-  
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
+  self.inputFile = ko.observable(null);
 
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -455,6 +489,12 @@ function AddViewModel() {
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
+    $('#Submit').button('reset');
+  };
+  
+  self.uploadFasta = function (file) {
+      self.inputFile(file);
+      console.log(file);
   };
   
   self.loaded = ko.computed(function() {
@@ -463,11 +503,6 @@ function AddViewModel() {
       returnValue = (returnValue && rna.loaded());
     });
     returnValue = (returnValue && self.submitted());
-    
-    if (self.inputError().length > 0) {
-      $('#Submit').button('reset');
-      console.log("There was an error, button is reset");
-    }
     
     // here the code to hide modal and push the new molecules if everything is loaded correctly
     if((returnValue) && (self.inputError().length === 0)) {
@@ -486,59 +521,102 @@ function AddViewModel() {
 
   self.cancelAddMolecule = function() {
     $('#add').modal('hide');
+    // reset the file upload form
+    $('#inputFastaFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
 
-    
+  self.parseFasta = function(lines) {
+      function tmpRNA () {
+        var self = this;
+        self.sequence = '';
+        self.structure = '';
+        self.header = 'rna';
+      }
+      var rna;
+      
+      var BreakException= {};
+      
+      try {
+        var countErrors = 0;
+        
+        lines.forEach( function(line) {
+          line = line.replace(/[\s]/g,""); // remove any whitespaces
+          // check if it is a fasta header
+          if (line.substring(0, 1) == '>') {
+            // this is a header
+            if (rna !== undefined) {
+              // initialize real rna object
+              console.log("Added new rna molecule to newMolecules");
+              self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
+            }
+            rna = new tmpRNA();
+            rna.header = line.substring(1);
+          } else if (/^[ACGTUWSMKRYBDHV]+$/.test(line)) {
+            // this is a sequence
+            if (rna === undefined) {
+              rna = new tmpRNA();
+            }
+            rna.sequence = rna.sequence.concat(line);
+          } else if (/^[\(\)\.\{\}\[\]\<\>\*]+$/.test(line)) {
+            // this is a structure
+            if (rna === undefined) {
+              rna = new tmpRNA();
+            }
+            rna.structure = rna.structure.concat(line);
+          } else {
+            self.newInputError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
+            if (countErrors > 5) {
+              self.newInputError("[...]");
+              throw BreakException;
+            }
+            countErrors += 1;
+          }
+        });
+      } catch(e) {
+        if (e !== BreakException) throw e;
+      }
+      // also initialize the last object
+      console.log("Added new rna molecule to newMolecules");
+      self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
+      
+      // unlock the submitted
+      self.submitted(true);
+      $('#inputFastaFile').val('');
+      self.inputFile(null);
+  }
+  
   self.submit = function() {
     self.submitted(false);
     $('#Submit').button('loading');
     self.inputError('');
     self.newMolecules([]);
+    
     //remove leading/trailing/inbeteen newlines and split in at the remaining ones
-    var lines = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
-    
-    function tmpRNA () {
-      var self = this;
-      self.sequence = '';
-      self.structure = '';
-      self.header = 'rna';
+    var lines = [];
+    if (self.input() != '') {
+      lines = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
     }
-    var rna;
     
-    lines.forEach( function(line) {
-      line = line.replace(/[\s]/g,""); // remove any whitespaces
-      // check if it is a fasta header
-      if (line.substring(0, 1) == '>') {
-        // this is a header
-        if (rna !== undefined) {
-          // initialize real rna object
-          console.log("Add new rna molecule to newMolecules");
-          self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
-        }
-        rna = new tmpRNA();
-        rna.header = line.substring(1);
-      } else if (/[ACGTUWSMKRYBDHV]/g.test(line.substring(0, 1))) {
-        // this is a sequence
-        if (rna === undefined) {
-          rna = new tmpRNA();
-        }
-        rna.sequence = rna.sequence.concat(line);
-      } else if (/[\(\)\.\{\}\[\]]/g.test(line.substring(0, 1))) {
-        // this is a structure
-        if (rna === undefined) {
-          rna = new tmpRNA();
-        }
-        rna.structure = rna.structure.concat(line);
-      } else {
-        self.newInputError("You did not enter valid sequences, structures or fasta");
+    if (self.inputFile() !== null) {
+      var r = new FileReader();
+      r.onload = function(e) {
+        var content = e.target.result;
+        console.log(content);
+	      lines = lines.concat(content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"));
+	      console.log(lines);
+	      if (lines.length == 0) { self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!"); return; }
+	      self.parseFasta(lines);
       }
-    });
-    // also initialize the last object
-    console.log("Add new rna molecule to newMolecules");
-    self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
-    // unlock the submitted
-    self.submitted(true);
+      r.readAsText(self.inputFile());
+    } else {
+      console.log(lines);
+      if (lines.length == 0) { self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!"); return; }
+      self.parseFasta(lines);
+    }
   };
 }
 
