@@ -118,8 +118,8 @@ def create_app(static):
         if 'struct' not in request.json:
             abort(400, "Request has no structure in the json.")
 
-        if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
-            abort(400, "Invalid structure: {}".format(request.json['struct']))
+        if re.match("^[\(\)\.]+$", request.json['struct']) is None:
+            abort(400, "Invalid structure for inverse fold: {}".format(request.json['struct']))
         
         try:
             pt = fus.dotbracket_to_pairtable(str(request.json['struct'])) 
