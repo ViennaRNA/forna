@@ -128,6 +128,7 @@ function Graph(element) {
         // based on its uid. This will be used to create the links
         // between different RNAs
         var uids_to_nodes = {};
+
         for (var i = 0; i < self.graph.nodes.length; i++)
             uids_to_nodes[self.graph.nodes[i].uid] = self.graph.nodes[i];
 
@@ -139,6 +140,11 @@ function Graph(element) {
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids
+
+            if (!(self.extraLinks[i].target.uid in uids_to_nodes)) {
+                console.log("not there:", self.extraLinks[i]);
+            }
+
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
             
@@ -835,6 +841,8 @@ function Graph(element) {
         force.nodes(self.graph.nodes)
         .links(self.graph.links);
         
+        console.log('links', graph.links)
+
         if (self.animation) {
           force.start();
         }
