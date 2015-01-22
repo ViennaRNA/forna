@@ -435,7 +435,6 @@ function AddJSONViewModel() {
         $('#addJSON').modal('hide');
         // reset the file upload form
         rnaView.graph.deaf = false;
-    }
   }
     
   self.submit = function() {
