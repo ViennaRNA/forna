@@ -962,10 +962,22 @@ function Graph(element) {
             .attr('class', 'node-label')
             .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")
-            .text(function(d) { return d.num; });
+            .text(function(d) { 
+                if (d.node_type == 'nucleotide') {
+                    return d.struct_name + ":" + d.num;
+                } else {
+                    return '';
+                }
+            });
 
             node.append("svg:title")
-            .text(function(d) { return d.num; });
+            .text(function(d) { 
+                if (d.node_type == 'nucleotide') {
+                    return d.struct_name + ":" + d.num;
+                } else {
+                    return '';
+                }
+            });
 
             gnodes.exit().remove();
 

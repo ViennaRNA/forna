@@ -408,7 +408,7 @@ function AddViewModel() {
     var rna;
     
     lines.forEach( function(line) {
-      line = line.replace(/[\s]/g,"").toUpperCase(); // remove any whitespaces
+      line = line.replace(/[\s]/g,""); // remove any whitespaces
       // check if it is a fasta header
       if (line.substring(0, 1) == '>') {
         // this is a header
@@ -420,6 +420,7 @@ function AddViewModel() {
         rna = new tmpRNA();
         rna.header = line.substring(1);
       } else if (/[ACGTUWSMKRYBDHV]/g.test(line.substring(0, 1))) {
+        line = line.toUpperCase();
         // this is a sequence
         if (rna === undefined) {
           rna = new tmpRNA();
