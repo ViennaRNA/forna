@@ -639,11 +639,26 @@ function RNAViewModel() {
   
   self.saveSVG = function() {
     console.log("saving svg...");
+    var fake_links = Array.prototype.slice.call(document.querySelectorAll('[link_type=fake]'));
+    var parents = fake_links.map(function(d) { 
+        console.log('d', d); 
+        return d.parentNode; 
+    });
+
+    for (var i = 0; i < fake_links.length; i++) {
+        parents[i].removeChild(fake_links[i]);
+    }
+
     var svg = document.getElementById('plotting-area');
+    //svg = rnaView.graph.svg[0];
 
     //get svg source.
     var serializer = new XMLSerializer();
     var source = serializer.serializeToString(svg);
+
+    for (var i = 0; i < fake_links.length; i++) {
+        parents[i].appendChild(fake_links[i]);
+    }
 
     //add name spaces.
     if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){

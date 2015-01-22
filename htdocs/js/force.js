@@ -369,6 +369,8 @@ function Graph(element) {
     .attr("height", self.svgH)
     .attr("id", 'plotting-area');
 
+    self.svg = svg;
+
     var svg_graph = svg.append('svg:g')
     .call(zoomer)
     .on('mousemove', mousemove)
@@ -833,6 +835,12 @@ function Graph(element) {
         .style("stroke-opacity", self.displayParameters.linkOpacity)
         .style("stroke-width", function(d) { 
             return 2;
+        })
+        .attr('visibility', function(d) {
+            if (d.link_type == 'fake')
+                return 'hidden';
+            else
+                return 'visible';
         })
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
