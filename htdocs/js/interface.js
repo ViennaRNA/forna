@@ -56,6 +56,11 @@ function exitFullscreen() {
   }
 }
 
+// prevent popups to dissapear automatically
+$('.dropdown-menu input, .dropdown-menu label').click(function(e) {
+    e.stopPropagation();
+});
+
 // custom ajax call
 ajax = function(uri, method, data) {
   var request = {
@@ -443,6 +448,91 @@ function AddJSONViewModel() {
   };
 }
 
+function AddDatabaseViewModel() {
+  var self = this;
+  
+  self.extSeqID = ko.observable('');
+  self.inputError = ko.observable('');
+  self.newMolecules = ko.observableArray([]);
+  self.submitted = ko.observable(false);
+  
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+    $('#SubmitDB').button('reset');
+  };
+  
+  self.loaded = ko.computed(function() {
+    var returnValue = true;
+    self.newMolecules().forEach(function(rna) {
+      returnValue = (returnValue && rna.loaded());
+    });
+    returnValue = (returnValue && self.submitted());
+    
+    // here the code to hide modal and push the new molecules if everything is loaded correctly
+    if((returnValue) && (self.inputError().length === 0)) {
+      console.log("everything should be loaded now, updating graph!");
+      $('#addDB').modal('hide');
+      rnaView.graph.deaf = false;
+
+      if (self.newMolecules().length > 0) {
+          console.log('trying to add molecules');
+          rnaView.addMolecules(self.newMolecules());
+          self.submitted(false);
+          self.inputError('');
+          self.newMolecules([]);
+      }
+    }
+    return (returnValue);
+  });
+  
+  self.cancelAddDB = function() {
+    $('#add').modal('hide');
+    // reset the file upload form
+    $('#inputFastaFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
+    rnaView.graph.deaf = false;
+  };
+  
+  self.callSeachDB = function(d,e) {
+    if(e.keyCode === 13){
+      self.searchDB();
+    }
+    return true;
+  };
+  
+  self.searchDB = function() {
+    ajax('http://rnacentral.org/api/v1/rna/?external_id=' + self.extSeqID() + '&format=json', 'GET').success( function(data) {
+        $('#searchDBLabel').removeClass("glyphicon-refresh");
+        $('#searchDBLabel').removeClass("glyphicon-refresh-animate");
+        $('#searchDBLabel').addClass("glyphicon-search");
+        if (data.count == 1) {
+          console.log("Added new rna molecule to newMolecules from External Database");
+          self.newMolecules.push(new RNA(data.results[0].sequence, '', self.extSeqID()) );
+          self.submitDB();
+        }
+        
+      }).error( function(jqXHR) {
+        alert('ERROR: ' + jqXHR);
+      });
+  };
+  
+  self.submitDB = function() {
+    $('#Submit').button('loading');
+    
+    // do some processing and then enable start to submit
+    self.submitted(true);
+    self.extSeqID('');
+  };
+}
+
+
+
 function AddViewModel() {
   var self = this;
   
@@ -772,6 +862,12 @@ function RNAViewModel() {
     $('#addJSON').modal('show');
     self.graph.deaf = true;
   };
+  
+  self.showAddDB = function() {
+    $('#DBSubmit').button('reset');
+    $('#addDB').modal('show');
+    self.graph.deaf = true;
+  };
 
   self.showCustomColors = function() {
     //$('#ColorSubmit').button('reset');
@@ -844,6 +940,7 @@ var rnaView = new RNAViewModel();
 var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
 var addJSONView = new AddJSONViewModel();
+var addDBView = new AddDatabaseViewModel();
 var colorView = new ColorViewModel();
 
 ko.applyBindings(rnaView, document.getElementById('chart'));
@@ -851,3 +948,4 @@ ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));
 ko.applyBindings(addJSONView, document.getElementById('addJSON'));
+ko.applyBindings(addDBView, document.getElementById('addDB'));
