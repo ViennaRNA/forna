@@ -299,7 +299,7 @@ function AddPDBViewModel() {
                         
                    },
                    error: function (jqXHR) {
-                        self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+                        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
                    },
                    cache: false,
                    contentType: false,
