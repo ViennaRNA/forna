@@ -432,37 +432,53 @@ function AddJSONViewModel() {
   
   self.parseJSON = function(input) {
     try{
-        var rnas = JSON.parse(input);
+        var data = JSON.parse(self.input());
+        var rnas = data.rnas;
+        var extraLinks = data.extraLinks;
     } catch(err) {
         self.newInputError(err.message);
         return;
     }
 
     for (uid in rnas) {
-        r = new RNAGraph()
+        if (rnas[uid].type == 'rna') {
+            r = new RNAGraph()
 
-        r.seq = rnas[uid].seq;
-        r.dotbracket = rnas[uid].dotbracket;
-        r.circular = rnas[uid].circular;
-        r.pairtable = rnas[uid].pairtable;
-        r.uid = rnas[uid].uid;
-        r.struct_name = rnas[uid].struct_name;
-        r.nodes = rnas[uid].nodes;
-        r.links = rnas[uid].links;
-        r.rna_length = rnas[uid].rna_length;
-        r.elements = rnas[uid].elements;
-        r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
-        r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
-        
+            r.seq = rnas[uid].seq;
+            r.dotbracket = rnas[uid].dotbracket;
+            r.circular = rnas[uid].circular;
+            r.pairtable = rnas[uid].pairtable;
+            r.uid = rnas[uid].uid;
+            r.struct_name = rnas[uid].struct_name;
+            r.nodes = rnas[uid].nodes;
+            r.links = rnas[uid].links;
+            r.rna_length = rnas[uid].rna_length;
+            r.elements = rnas[uid].elements;
+            r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
+            r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
+        } else {
+            r = new ProteinGraph()
+            r.size = rnas[uid].size;
+            r.nodes = rnas[uid].nodes;
+            r.uid = rnas[uid].uid;
+        }
+
         rnaView.graph.addRNA(r, false);
-        
-        console.log('rna', rnas)
+    }
+
+    extraLinks.forEach(function(link) {
+        rnaView.graph.extraLinks.push(link);
+    });
+
+    rnaView.graph.recalculateGraph();
+    rnaView.graph.update();
+
+    console.log('rna', rnas)
 
         $('#SubmitJSON').button('reset');
         $('#addJSON').modal('hide');
         // reset the file upload form
         rnaView.graph.deaf = false;
-    }
   }
     
   self.submit = function() {
@@ -893,7 +909,7 @@ function RNAViewModel() {
   };
 
   self.saveJSON = function() {
-      var data = self.graph.rnas;
+      var data = {"rnas": self.graph.rnas, "extraLinks": self.graph.extraLinks};
       console.log('data:', data);
       var data_string = JSON.stringify(data, function(key, value) {
           //remove circular references

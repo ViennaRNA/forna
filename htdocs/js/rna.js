@@ -45,7 +45,6 @@ function RNAUtilities() {
         }
         var maximum = 0;
 
-        console.log('pt:', pt);
         /* actual computation */
         for(var i = n - TURN - 1; i > 0; i--)
 
@@ -57,7 +56,6 @@ function RNAUtilities() {
 
                     // we have a base pair here
                     maximum = Math.max(maximum, ((l > i) ? mm[i][l-1] : 0) + 1 + ((j - l - 1 > 0) ? mm[l+1][j-1] : 0));
-                    console.log('l:', l, 'j:', j, 'maximum:', maximum);
                 }
             }
 
@@ -74,7 +72,6 @@ function RNAUtilities() {
                            Array(mm.length)).map(function() { return 0 }); 
                            //create an array containing zeros
 
-      console.log('mm', mm);
       self.mm_bt(mm, pt, old_pt, 1, mm.length-1);
       return pt;
     }
@@ -100,7 +97,6 @@ function RNAUtilities() {
 
         if(left_part + enclosed_part + 1 == maximum) {
             // there's a base pair between j and q
-            console.log('left_part', left_part, 'enclosed_part', enclosed_part, "i", i, "j", j, "q", q);
             pt[q] = j;
             pt[j] = q;
 
@@ -159,7 +155,6 @@ function RNAUtilities() {
 
         for (key in stack) {
             if (stack[key].length > 0) {
-                console.log('stack', stack[key]);
                 throw "Unmatched base at position " + stack[key][0];
             }
         }
@@ -229,8 +224,6 @@ function RNAUtilities() {
             if (pt[i] !== 0 && (pt[i] < from || pt[i] > to))
                 unmatched.push([i,pt[i]]);
 
-        //console.log("orig_from:", orig_from, "orig_to:", orig_to);
-
         for (i = orig_from; i <= orig_to; i++) {
             while (pt[i] === 0 && i <= orig_to) i++;
 
@@ -258,13 +251,9 @@ function RNAUtilities() {
          * indicating the broken base pairs is returned.
          */
 
-        console.log('pt', pt)
-
         var mm = self.maximumMatching(pt);
         var new_pt = self.backtrackMaximumMatching(mm, pt);
         var removed = [];
-
-        console.log('new_pt', new_pt);
 
         for (var i = 1; i < pt.length; i++) {
             if (pt[i] < i)
@@ -418,6 +407,7 @@ function ColorScheme(colors_text) {
 function ProteinGraph(struct_name, size, uid) {
     var self = this;
 
+    self.type = 'protein';
     self.size = size;
     self.nodes = [{'name': 'P',
                    'num': 1,
@@ -429,7 +419,6 @@ function ProteinGraph(struct_name, size, uid) {
                    'size': size,
                    'uid': generateUUID()}];
 
-    console.log('protein_graph nodes:', self.nodes);
     self.links = [];
     self.uid = generateUUID();
 
@@ -456,6 +445,8 @@ function ProteinGraph(struct_name, size, uid) {
 function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
 
+    self.type = 'rna';
+
     if (arguments.length == 0) {
         self.seq = '';
         self.dotbracket = '';
@@ -471,7 +462,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
     if (self.dotbracket.length > 0 && self.dotbracket[self.dotbracket.length-1] == '*') {
         //circular RNA
         self.dotbracket = self.dotbracket.slice(0, self.dotbracket.length-1);
-        console.log('self.dotbracket:', self.dotbracket);
         self.circular = true;
     }
 
@@ -756,9 +746,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         if (self.circular) {
-            console.log('self.nodes[0]', self.nodes[0],
-                        'self.nodes[..', self.rna_length-1, self.nodes[self.rna_length-1]);
-
             self.links.push({'source': self.nodes[0],
                             'target': self.nodes[self.rna_length-1],
                             'link_type': 'backbone',
@@ -904,7 +891,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
     self.recalculate_elements = function() {
         self.remove_pseudoknots();
-        console.log('self.pseudoknot_pairs', self.pseudoknot_pairs)
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
 
         if (self.circular) {
@@ -960,7 +946,8 @@ function RNAGraph(seq, dotbracket, struct_name) {
         return self;
     };
 
-    self.recalculate_elements();
+    if (self.rna_length > 0)
+        self.recalculate_elements();
 }
 
 molecules_to_json = function(molecules_json) {
@@ -977,7 +964,6 @@ molecules_to_json = function(molecules_json) {
         var molecule = molecules_json.molecules[i];
 
         if (molecule.type == 'rna') {
-            console.log('molecule.ss:', molecule.ss);
             rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
             rg.elements_to_json()
             .add_positions('nucleotide', molecule.positions)
