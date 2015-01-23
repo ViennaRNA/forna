@@ -166,6 +166,7 @@ function RNAManager( done, newError ) {
     
     self.newMolecules = ko.observableArray([]);
     self.submitted = ko.observable(false);
+    self.error = ko.observable(false);
 
     self.loaded = ko.computed(function() {
         var returnValue = true;
@@ -175,8 +176,7 @@ function RNAManager( done, newError ) {
         returnValue = (returnValue && self.submitted());
 
         // here the code to hide modal and push the new molecules if everything is loaded correctly
-        // TODO check for erros?
-        if(returnValue) {
+        if(returnValue && !self.error()) {
           done();
 
           if (self.newMolecules().length > 0) {
@@ -188,8 +188,13 @@ function RNAManager( done, newError ) {
         return (returnValue);
     });
     
+    function reportError(message) {
+        self.error(true);
+        newError(message);
+    }
+    
     self.add = function(sequence, structure, header) {
-        self.newMolecules().push(new RNA(sequence, structure, header, newError));
+        self.newMolecules.push(new RNA(sequence, structure, header, reportError));
     };
     
     self.submit = function() {
@@ -199,6 +204,7 @@ function RNAManager( done, newError ) {
     self.reset = function() {
         self.newMolecules([]);
         self.submitted(false);
+        self.error(false);
     }
 }
 
@@ -508,11 +514,15 @@ function AddDatabaseViewModel() {
   
   self.extSeqID = ko.observable('');
   self.inputError = ko.observable('');
-  
-  var error = function(message) {
-    self.inputError(message);
+
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
     $('#SubmitDB').button('reset');
-  }
+  };
   
   var done = function() {
     console.log("everything should be loaded now, updating graph!");
@@ -520,7 +530,7 @@ function AddDatabaseViewModel() {
     rnaView.graph.deaf = false;
   };
   
-  var rnaManager = new RNAManager( error, done );
+  var rnaManager = new RNAManager( done, self.newInputError );
   
   self.cancelAddDB = function() {
     $('#add').modal('hide');
@@ -529,6 +539,8 @@ function AddDatabaseViewModel() {
     self.inputFile(null);
     // reset errors
     self.inputError('');
+    // reset Loader
+    rnaManager.reset();
     rnaView.graph.deaf = false;
   };
   
@@ -539,27 +551,79 @@ function AddDatabaseViewModel() {
     return true;
   };
   
+  self.searchResults = ko.observableArray([]);
+  self.nextLink = ko.observable(null);
+  self.previousLink = ko.observable(null);
+  self.resultsCount = ko.observable(-1);
+  
   self.searchDB = function() {
-    ajax('http://rnacentral.org/api/v1/rna/?external_id=' + self.extSeqID() + '&format=json', 'GET').success( function(data) {
-        $('#searchDBLabel').removeClass("glyphicon-refresh");
-        $('#searchDBLabel').removeClass("glyphicon-refresh-animate");
-        $('#searchDBLabel').addClass("glyphicon-search");
-        if (data.count == 1) {
-          console.log("Added new rna molecule to newMolecules from External Database");
-          self.newMolecules.push(new RNA(data.results[0].sequence, '', self.extSeqID()) );
-          self.submitDB();
+    if (self.extSeqID() != '') {
+        $('#searchDBLabel').removeClass("glyphicon-search");
+        $('#searchDBLabel').addClass("glyphicon-refresh");
+        $('#searchDBLabel').addClass("glyphicon-refresh-animate");
+        getResults('http://rnacentral.org/api/v1/rna/?external_id=' + self.extSeqID() + '&format=jsonp');
+    }
+  }
+  
+  self.turnPage = function(previous) {
+    if(previous) {
+        if(self.previousLink() !== null) {
+            getResults(self.previousLink());
         }
-        
-      }).error( function(jqXHR) {
-        alert('ERROR: ' + jqXHR);
-      });
+    } else {
+        if(self.nextLink() !== null) {
+            getResults(self.nextLink());
+        }
+    }
+  }
+  
+  function Result(data) {
+    var self = this;
+    self.data = data;
+    self.selected = ko.observable(false);
+  }
+  
+  function getResults(link) {
+    $.ajax({
+        url: link,
+        dataType: 'jsonp',
+        jsonp: false,
+        jsonpCallback: 'callback',
+        success: function(data) {
+            $('#searchDBLabel').removeClass("glyphicon-refresh");
+            $('#searchDBLabel').removeClass("glyphicon-refresh-animate");
+            $('#searchDBLabel').addClass("glyphicon-search");
+            data.results.forEach( function(data) {
+                self.searchResults.push(new Result(data));
+            });
+            self.nextLink(data.next);
+            self.previousLink(data.previous);
+            self.resultsCount(data.count);
+        },
+        error: function(jqXHR) {
+            alert('ERROR: ' + jqXHR);
+            $('#searchDBLabel').removeClass("glyphicon-refresh");
+            $('#searchDBLabel').removeClass("glyphicon-refresh-animate");
+            $('#searchDBLabel').addClass("glyphicon-search");
+        }
+    });
+  }
+  
+  self.selectItem = function(item) {
+    item.selected(!item.selected());
   };
   
   self.submitDB = function() {
-    $('#Submit').button('loading');
+    console.log(self.searchResults());
+    $('#SubmitDB').button('loading');
+    // reset errors
+    self.inputError('');
+    // reset Loader
+    rnaManager.reset();
     
-    // do some processing and then enable start to submit
-    self.submitted(true);
+    // select the RNAs which should be plotted and call rnaManager.add(sequnce, structure, header)
+    
+    rnaManager.submit();
     self.extSeqID('');
   };
 }
@@ -682,13 +746,18 @@ function AddViewModel() {
       rnaManager.add(rna.sequence, rna.structure, rna.header);
       
       // unlock the submitted
-      rnaManager.submit();
-      $('#inputFastaFile').val('');
-      self.inputFile(null);
+      if (self.inputError().length != 0) {
+        rnaManager.reset();
+      } else {
+          rnaManager.submit();
+          $('#inputFastaFile').val('');
+          self.inputFile(null);
+      }
   }
   
   self.submit = function() {
     $('#Submit').button('loading');
+    self.inputError('');
     rnaManager.reset();
     
     //remove leading/trailing/inbeteen newlines and split in at the remaining ones

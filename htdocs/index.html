@@ -91,14 +91,31 @@
                   <span class="glyphicon glyphicon-search" id="searchDBLabel" aria-hidden="true"></span>
                 </button>
               </span>
+            </div><br>
+            <!-- Results list -->
+            <div class="alert alert-info" role="alert" data-bind="visible: !resultsCount()" id="noResultsInfo">No Results found!</div>
+            <ul class="list-group" data-bind="foreach: searchResults" class="searchResult" style="word-wrap: break-word;">
+              <li class="list-group-item" data-bind="css: { active: selected }">
+                <a data-bind="attr: { href: data.url }" target="_blank"><h4 class="list-group-item-heading" data-bind="text: data.rnacentral_id"></h4></a>
+                <div data-bind="click: $parent.selectItem" style="overflow-x: hidden;">
+                    <span data-bind="text: data.sequence"></span><br>
+                    Sequence Length: <span data-bind="text: data.length"></span>
+                </div>
+              </li>
+            </ul>
+            <div data-bind="visible: resultsCount() > 10">
+                <div class="btn-group" role="group" aria-label="..." data-bind="">
+                    <button type="button" class="btn btn-default" data-bind="click: turnPage(true), enable: previousLink"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span></button>
+                    <button type="button" class="btn btn-default" data-bind="click: turnPage(false), enable: nextLink"><span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span></button>
+                </div>
             </div>
-            <!-- here the Results list schould go -->
+            <div style="float: right" data-bind="visible: resultsCount() != -1">Count: <span data-bind="text: resultsCount"></span></div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelAddDB">Cancel</button>
-          <button type="submit" id="DBSubmit" data-bind="click: DBSubmit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
+          <button type="submit" id="DBSubmit" data-bind="click: submitDB" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
