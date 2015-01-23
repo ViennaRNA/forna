@@ -81,12 +81,11 @@ ajax = function(uri, method, data) {
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
 
-function RNA(sequence, structure, header) {
+function RNA(sequence, structure, header , newError) {
   var self = this;
   console.log(["New RNA with: ", sequence, structure, header].join('\n'));
 
   self.header = ko.observable(header);
-
   self.done = ko.observable(false);
   
   self.structure = ko.onDemandObservable( function() {
@@ -96,7 +95,7 @@ function RNA(sequence, structure, header) {
             self.json.refresh();
             self.json();
           }).error( function(jqXHR) {
-            addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+            newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
           });
         }
     }, self 
@@ -109,7 +108,7 @@ function RNA(sequence, structure, header) {
             self.json.refresh();
             self.json();
           }).error( function(jqXHR) {
-            addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+            newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
           });
         }
     }, self 
@@ -132,10 +131,10 @@ function RNA(sequence, structure, header) {
             self.json(r);
             self.done(true);
         } catch (err) {
-            addView.newInputError(self.header() + ": ERROR: " + err );
+            newError(self.header() + ": ERROR: " + err );
         }
       }).error( function(jqXHR) {
-        addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+        newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
       });
     }, self
   );
@@ -162,6 +161,46 @@ function RNA(sequence, structure, header) {
   });
 }
 
+function RNAManager( done, newError ) {
+    var self = this;
+    
+    self.newMolecules = ko.observableArray([]);
+    self.submitted = ko.observable(false);
+
+    self.loaded = ko.computed(function() {
+        var returnValue = true;
+        self.newMolecules().forEach(function(rna) {
+          returnValue = (returnValue && rna.loaded());
+        });
+        returnValue = (returnValue && self.submitted());
+
+        // here the code to hide modal and push the new molecules if everything is loaded correctly
+        // TODO check for erros?
+        if(returnValue) {
+          done();
+
+          if (self.newMolecules().length > 0) {
+              console.log('trying to add molecules');
+              rnaView.addMolecules(self.newMolecules());
+              self.reset();
+          }
+        }
+        return (returnValue);
+    });
+    
+    self.add = function(sequence, structure, header) {
+        self.newMolecules().push(new RNA(sequence, structure, header, newError));
+    };
+    
+    self.submit = function() {
+        self.submitted(true);
+    };
+    
+    self.reset = function() {
+        self.newMolecules([]);
+        self.submitted(false);
+    }
+}
 
 function CustomColorScheme(text) {
     var self = this;
@@ -453,41 +492,19 @@ function AddDatabaseViewModel() {
   
   self.extSeqID = ko.observable('');
   self.inputError = ko.observable('');
-  self.newMolecules = ko.observableArray([]);
-  self.submitted = ko.observable(false);
   
-  self.newInputError = function(message) {
-    if (self.inputError() === '') {
-      self.inputError(message);
-    } else {
-      self.inputError([self.inputError(), message].join("<br>"));
-    }
+  var error = function(message) {
+    self.inputError(message);
     $('#SubmitDB').button('reset');
+  }
+  
+  var done = function() {
+    console.log("everything should be loaded now, updating graph!");
+    $('#addDB').modal('hide');
+    rnaView.graph.deaf = false;
   };
   
-  self.loaded = ko.computed(function() {
-    var returnValue = true;
-    self.newMolecules().forEach(function(rna) {
-      returnValue = (returnValue && rna.loaded());
-    });
-    returnValue = (returnValue && self.submitted());
-    
-    // here the code to hide modal and push the new molecules if everything is loaded correctly
-    if((returnValue) && (self.inputError().length === 0)) {
-      console.log("everything should be loaded now, updating graph!");
-      $('#addDB').modal('hide');
-      rnaView.graph.deaf = false;
-
-      if (self.newMolecules().length > 0) {
-          console.log('trying to add molecules');
-          rnaView.addMolecules(self.newMolecules());
-          self.submitted(false);
-          self.inputError('');
-          self.newMolecules([]);
-      }
-    }
-    return (returnValue);
-  });
+  var rnaManager = new RNAManager( error, done );
   
   self.cancelAddDB = function() {
     $('#add').modal('hide');
@@ -551,9 +568,7 @@ function AddViewModel() {
    */
   );
   
-  self.newMolecules = ko.observableArray([]);
   self.inputError = ko.observable('');
-  self.submitted = ko.observable(false);
   self.inputFile = ko.observable(null);
 
   self.newInputError = function(message) {
@@ -565,32 +580,18 @@ function AddViewModel() {
     $('#Submit').button('reset');
   };
   
+  var done = function() {
+    console.log("everything should be loaded now, updating graph!");
+    $('#add').modal('hide');
+    rnaView.graph.deaf = false;
+  };
+  
+  var rnaManager = new RNAManager( done, self.newInputError );
+  
   self.uploadFasta = function (file) {
       self.inputFile(file);
       console.log(file);
   };
-  
-  self.loaded = ko.computed(function() {
-    var returnValue = true;
-    self.newMolecules().forEach(function(rna) {
-      returnValue = (returnValue && rna.loaded());
-    });
-    returnValue = (returnValue && self.submitted());
-    
-    // here the code to hide modal and push the new molecules if everything is loaded correctly
-    if((returnValue) && (self.inputError().length === 0)) {
-      console.log("everything should be loaded now, updating graph!");
-      $('#add').modal('hide');
-      rnaView.graph.deaf = false;
-
-      if (self.newMolecules().length > 0) {
-          console.log('trying to add molecules');
-          rnaView.addMolecules(self.newMolecules());
-          self.newMolecules([]);
-      }
-    }
-    return (returnValue);
-  });
 
   self.cancelAddMolecule = function() {
     $('#add').modal('hide');
@@ -599,6 +600,8 @@ function AddViewModel() {
     self.inputFile(null);
     // reset errors
     self.inputError('');
+    // reset Loader
+    rnaManager.reset();
     rnaView.graph.deaf = false;
   };
 
@@ -610,6 +613,12 @@ function AddViewModel() {
         self.header = 'rna';
       }
       var rna;
+      
+      console.log(lines);
+      if (lines.length == 0) {
+        self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
+        return;
+      }
       
       var BreakException= {};
       
@@ -624,7 +633,7 @@ function AddViewModel() {
             if (rna !== undefined) {
               // initialize real rna object
               console.log("Added new rna molecule to newMolecules");
-              self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
+              rnaManager.add(rna.sequence, rna.structure, rna.header);
             }
             rna = new tmpRNA();
             rna.header = line.substring(1);
@@ -654,19 +663,17 @@ function AddViewModel() {
       }
       // also initialize the last object
       console.log("Added new rna molecule to newMolecules");
-      self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
+      rnaManager.add(rna.sequence, rna.structure, rna.header);
       
       // unlock the submitted
-      self.submitted(true);
+      rnaManager.submit();
       $('#inputFastaFile').val('');
       self.inputFile(null);
   }
   
   self.submit = function() {
-    self.submitted(false);
     $('#Submit').button('loading');
-    self.inputError('');
-    self.newMolecules([]);
+    rnaManager.reset();
     
     //remove leading/trailing/inbeteen newlines and split in at the remaining ones
     var lines = [];
@@ -680,14 +687,10 @@ function AddViewModel() {
         var content = e.target.result;
         console.log(content);
 	      lines = lines.concat(content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"));
-	      console.log(lines);
-	      if (lines.length == 0) { self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!"); return; }
 	      self.parseFasta(lines);
       }
       r.readAsText(self.inputFile());
     } else {
-      console.log(lines);
-      if (lines.length == 0) { self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!"); return; }
       self.parseFasta(lines);
     }
   };
