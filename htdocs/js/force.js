@@ -491,6 +491,7 @@ function Graph(element) {
     }
 
     var shift_keydown = false;
+    var ctrl_keydown = false;
 
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
@@ -500,7 +501,26 @@ function Graph(element) {
     }
 
     function dragged(d) {
+        if (ctrl_keydown) { 
+            var gnodes = vis_nodes.selectAll('g.gnode')
+            .attr('transform', function(f) {
+                var transform = d3.transform(d3.select(this).attr('transform'));
 
+                //console.log('transform1', transform.toString())
+
+                transform.translate[0] += d3.event.dx;
+                transform.translate[1] += d3.event.dy;
+
+                transform.translate[0] = 0;
+                transform.translate[1] = 0;
+
+                //console.log('transform2', transform.toString())
+
+                return transform.toString();
+            })
+
+           d3.event.sourceEvent.preventDefault();
+        }
     }
 
     function dragended(d) {
@@ -549,6 +569,9 @@ function Graph(element) {
             case 16:
                 shift_keydown = true;
                 break;
+            case 17:
+                ctrl_keydown = true;
+                break;
             case 67: //c
                 self.center_view();
                 break;
@@ -575,6 +598,7 @@ function Graph(element) {
 
     function keyup() {
         shift_keydown = false;
+        ctrl_keydown = false;
 
         svg_graph.call(zoomer);
 
@@ -836,7 +860,24 @@ function Graph(element) {
 
       svg.selectAll("[link_type=pseudoknot]").style('stroke-opacity', self.displayParameters.pseudoknotLinkOpacity);
     };
-    
+
+    function nudge(dx, dy) {
+        node.filter(function(d) { return d.selected; })
+        .attr("cx", function(d) { return d.x += dx; })
+        .attr("cy", function(d) { return d.y += dy; })
+
+        link.filter(function(d) { return d.source.selected; })
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; });
+
+        link.filter(function(d) { return d.target.selected; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+        d3.event.preventDefault();
+    }
+
+
     self.update = function () {
         force.nodes(self.graph.nodes)
         .links(self.graph.links);
