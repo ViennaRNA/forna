@@ -235,10 +235,6 @@ function AddPDBViewModel() {
     $('#PDBSubmit').button('reset');
   };
 
-  self.uploadPDB = function (file) {
-      self.inputFile(file);
-      console.log(file);
-  };
   /*
   function progressHandlingFunction(e){
       if(e.lengthComputable){
@@ -370,11 +366,6 @@ function AddJSONViewModel() {
     }
     $('#SubmitJSON').button('reset');
   };
-  
-  self.uploadJSON = function (file) {
-    self.inputFile(file);
-    console.log(file);
-  };
 
   self.cancelAddJSON = function() {
     $('#addJSON').modal('hide');
@@ -388,7 +379,7 @@ function AddJSONViewModel() {
   
   self.parseJSON = function(input) {
     try{
-        var data = JSON.parse(self.input());
+        var data = JSON.parse(input);
         var rnas = data.rnas;
         var extraLinks = data.extraLinks;
     } catch(err) {
@@ -430,31 +421,35 @@ function AddJSONViewModel() {
     rnaView.graph.update();
 
     console.log('rna', rnas)
-
-        $('#SubmitJSON').button('reset');
-        $('#addJSON').modal('hide');
-        // reset the file upload form
-        rnaView.graph.deaf = false;
+    // finish the form
+    $('#SubmitJSON').button('reset');
+    $('#addJSON').modal('hide');
+    // reset the file upload form
+    $('#inputJSONFile').val('');
+    self.inputFile(null);
+    rnaView.graph.deaf = false;
   }
     
   self.submit = function() {
     $('#SubmitJSON').button('loading');
+    self.inputError('');
     
-    if (self.inputFile() !== null) {
-      var r = new FileReader();
-      r.onload = function(e) {
-        var content = e.target.result;
-        console.log("Parsing JSON file", content);
-	      self.parseJSON(content);
-	      $('#inputJSONFile').val('');
-        self.inputFile(null);
-      }
-      r.readAsText(self.inputFile());
-    } 
-    
-    if (self.input() != '') {
-      console.log("Parsing JSON string");
-      self.parseJSON(self.input());
+    if ((self.inputFile() !== null) || (self.input() != '')) {
+        if (self.inputFile() !== null) {
+          var r = new FileReader();
+          r.onload = function(e) {
+            var content = e.target.result;
+            console.log("Parsing JSON file", content);
+	        self.parseJSON(content);
+          }
+          r.readAsText(self.inputFile());
+        }
+        if (self.input() != '') {
+          console.log("Parsing JSON string");
+          self.parseJSON(self.input());
+        }
+    } else {
+        self.newInputError("Please paste a JSON string or choose a JSON file to upload!");
     }
   };
 }
@@ -489,11 +484,6 @@ function AddViewModel() {
       self.inputError([self.inputError(), message].join("<br>"));
     }
     $('#Submit').button('reset');
-  };
-  
-  self.uploadFasta = function (file) {
-      self.inputFile(file);
-      console.log(file);
   };
   
   self.loaded = ko.computed(function() {
