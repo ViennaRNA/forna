@@ -204,8 +204,8 @@ function ColorViewModel() {
       self.inputError('');
       console.log('Clicked');
       console.log('self.input()', self.input());
-
-      cs =  new ColorScheme(self.input());
+      // submit new color scheme, remove trailing/leading/inbetween whitespaces
+      cs =  new ColorScheme(self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,""));
       cs.normalizeColors();
       console.log('cs.colors_json:', cs.colors_json);
 
