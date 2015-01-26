@@ -493,38 +493,55 @@ function Graph(element) {
     var shift_keydown = false;
     var ctrl_keydown = false;
 
+    function selectedNodes(mouseDownNode) {
+        var gnodes = vis_nodes.selectAll('g.gnode');
+
+        if (ctrl_keydown) {
+            return gnodes.filter(function(d) { return d.struct_name == mouseDownNode.struct_name; });
+
+            //return d3.selectAll('[struct_name=' + mouseDownNode.struct_name + ']');
+        } else {
+            return gnodes.filter(function(d) { return d.uid == mouseDownNode.uid; });
+            //return d3.select(this);
+        }
+    }
+
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
+
+        var toDrag = selectedNodes(d);
+        toDrag.each(function(d1) {
+            d1.fixed |= 2;
+        });
+
+        //console.log('toDrag:', toDrag);
+        //d3.event.sourceEvent.stopPropagation();
         //d3.select(self).classed("dragging", true);
         //
         rnaView.animation(true);
     }
 
     function dragged(d) {
-        if (ctrl_keydown) { 
-            var gnodes = vis_nodes.selectAll('g.gnode')
-            .attr('transform', function(f) {
-                var transform = d3.transform(d3.select(this).attr('transform'));
 
-                //console.log('transform1', transform.toString())
+        var toDrag = selectedNodes(d);
 
-                transform.translate[0] += d3.event.dx;
-                transform.translate[1] += d3.event.dy;
+        toDrag.each(function(d1) {
+            d1.x += d3.event.dx;
+            d1.y += d3.event.dy;
 
-                transform.translate[0] = 0;
-                transform.translate[1] = 0;
+            d1.px += d3.event.dx;
+            d1.py += d3.event.dy;
+        });
 
-                //console.log('transform2', transform.toString())
-
-                return transform.toString();
-            })
-
-           d3.event.sourceEvent.preventDefault();
-        }
+        force.resume();
+        //d3.event.sourceEvent.preventDefault();
     }
 
     function dragended(d) {
-        //d3.select(self).classed("dragging", false);
+        var toDrag = selectedNodes(d);
+        toDrag.each(function(d1) {
+            d1.fixed &= ~6;
+        });
     }
 
     function collide(node) {
@@ -552,8 +569,8 @@ function Graph(element) {
     }
 
 
-    var drag = force.drag()
-    .origin(function(d) { return d; })
+    var drag = d3.behavior.drag()
+    //.origin(function(d) { return d; })
     .on("dragstart", dragstarted)
     .on("drag", dragged)
     .on("dragend", dragended);
@@ -938,8 +955,6 @@ function Graph(element) {
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
 
-
-
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(self.graph.nodes, node_key);
             //.attr('pointer-events', 'all');
@@ -947,7 +962,8 @@ function Graph(element) {
             gnodes_enter = gnodes.enter()
             .append('g')
             .classed('noselect', true)
-            .classed('gnode', true);
+            .classed('gnode', true)
+             .attr('struct_name', function(d) { return d.struct_name; })
             //.each(function(d) { console.log('entering', d); })
 
             gnodes_enter
