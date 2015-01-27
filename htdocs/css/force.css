@@ -6,7 +6,7 @@ svg {
 }
 
 circle.node {
-  stroke: #fff;
+  stroke: #ccc;
   stroke-width: 1.5px;
   opacity: 1.;
 }
@@ -51,6 +51,16 @@ text {
 g.gnode {
 
 }
+
+circle.node.selected {
+  stroke: red;
+}
+
+.brush .extent {
+  fill-opacity: .1;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+  }
 
 .noselect {
     -webkit-touch-callout: none;

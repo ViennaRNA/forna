@@ -40,9 +40,9 @@ function Graph(element) {
         mouseup_node = null;
 
     var xScale = d3.scale.linear()
-    .domain([0,self.svgW]);
+    .domain([0,self.svgW]).range([0,self.svgW]);
     var yScale = d3.scale.linear()
-    .domain([0,self.svgH]);
+    .domain([0,self.svgH]).range([0, self.svgH]);
 
     var graph = self.graph = {
         "nodes":[],
@@ -235,13 +235,21 @@ function Graph(element) {
         self.svgH = svgH;
 
         //Set the output range of the scales
-        xScale.range([0, svgW]);
-        yScale.range([0, svgH]);
+        xScale.range([0, svgW]).domain([0, svgW]);
+        yScale.range([0, svgH]).domain([0, svgH]);
 
         //re-attach the scales to the zoom behaviour
         zoomer.x(xScale)
         .y(yScale);
 
+        self.brusher.x(xScale)
+        .y(yScale);
+
+        console.log('a zoomer.x()', zoomer.x().domain(), zoomer.x().range())
+        console.log('a zoomer.y()', zoomer.y().domain(), zoomer.y().range())
+
+        console.log('a brusher.x()', self.brusher.x().domain(), self.brusher.x().range())
+        console.log('a brusher.y()', self.brusher.y().domain(), self.brusher.y().range())
         //resize the background
         rect.attr("width", svgW)
         .attr("height", svgH);
@@ -372,13 +380,20 @@ function Graph(element) {
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
 
-    zoomer = d3.behavior.zoom().
-        scaleExtent([0.1,10]).
-        on("zoom", redraw);
+    zoomer = d3.behavior.zoom()
+        .scaleExtent([0.1,10])
+        .x(xScale)
+        .y(yScale)
+        .on("zoomstart", zoomstart)
+        .on("zoom", redraw);
 
     d3.select(element).select("svg").remove();
 
     var svg = d3.select(element)
+    .attr("tabindex", 1)
+    .on("keydown.brush", keydown)
+    .on("keyup.brush", keyup)
+    .each(function() { this.focus(); })
     .append("svg:svg")
     .attr("width", self.svgW)
     .attr("height", self.svgH)
@@ -399,9 +414,55 @@ function Graph(element) {
     //.attr("pointer-events", "all")
     .attr("id", "zrect");
 
+    var brush = svg_graph.append('g')
+    .datum(function() { return {selected: false, previouslySelected: false}; })
+    .attr("class", "brush");
     var vis = svg_graph.append("svg:g");
     var vis_links = vis.append("svg:g");
     var vis_nodes = vis.append("svg:g");
+
+
+    console.log('ole');
+
+    self.brusher = d3.svg.brush()
+                .x(xScale)
+                .y(yScale)
+               .on("brushstart", function(d) {
+                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
+                   gnodes.each(function(d) { d.previouslySelected = ctrl_keydown && d.selected; });
+               })
+               .on("brush", function() {
+                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
+                   console.log('brushing...')
+                   var extent = d3.event.target.extent();
+                   console.log('extent:', extent.toString());
+                   console.log('self.brusher.x().range()', self.brusher.y().domain(), self.brusher.x().range());
+
+                   gnodes.classed("selected", function(d) {
+                       return d.selected = d.previouslySelected ^
+                       (extent[0][0] <= d.x && d.x < extent[1][0]
+                        && extent[0][1] <= d.y && d.y < extent[1][1]);
+                   });
+               })
+               .on("brushend", function() {
+                   d3.event.target.clear();
+                   d3.select(this).call(d3.event.target);
+               })
+
+      brush.call(self.brusher)
+          .on("mousedown.brush", null)
+          .on("touchstart.brush", null)                                                                      
+          .on("touchmove.brush", null)                                                                       
+          .on("touchend.brush", null);                                                                       
+
+    function zoomstart() {
+        var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+        node.each(function(d) {
+                d.selected = false;
+                d.previouslySelected = false;
+                })
+        node.classed("selected", false);
+    }
 
     function redraw() {
         vis.attr("transform",
@@ -497,17 +558,24 @@ function Graph(element) {
         var gnodes = vis_nodes.selectAll('g.gnode');
 
         if (ctrl_keydown) {
-            return gnodes.filter(function(d) { return d.struct_name == mouseDownNode.struct_name; });
+            return gnodes.filter(function(d) { return d.selected; });
 
             //return d3.selectAll('[struct_name=' + mouseDownNode.struct_name + ']');
         } else {
-            return gnodes.filter(function(d) { return d.uid == mouseDownNode.uid; });
+            return gnodes.filter(function(d) { return d.selected ; });
             //return d3.select(this);
         }
     }
 
     function dragstarted(d) {
+        console.log('dragstarted')
         d3.event.sourceEvent.stopPropagation();
+
+        if (!d.selected) { // Don't deselect on shift-drag.
+            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            if (!ctrl_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
+            else d3.select(this).classed("selected", d.selected = true);
+        }
 
         var toDrag = selectedNodes(d);
         toDrag.each(function(d1) {
@@ -534,11 +602,12 @@ function Graph(element) {
         });
 
         force.resume();
-        //d3.event.sourceEvent.preventDefault();
+        d3.event.sourceEvent.preventDefault();
     }
 
     function dragended(d) {
         var toDrag = selectedNodes(d);
+
         toDrag.each(function(d1) {
             d1.fixed &= ~6;
         });
@@ -581,6 +650,7 @@ function Graph(element) {
             return;
 
         if (shift_keydown) return;
+
         key_is_down = true;
         switch (d3.event.keyCode) {
             case 16:
@@ -600,7 +670,7 @@ function Graph(element) {
                 }
         }
 
-        if (shift_keydown) {
+        if (shift_keydown || ctrl_keydown) {
             svg_graph.call(zoomer)
             .on("mousedown.zoom", null)
             .on("touchstart.zoom", null)
@@ -611,12 +681,24 @@ function Graph(element) {
             vis.selectAll('g.gnode')
             .on('mousedown.drag', null);
         }
+
+        if (ctrl_keydown) {
+          brush.select('.background').style('cursor', 'crosshair')
+          brush.call(self.brusher);
+        }
     }
 
     function keyup() {
         shift_keydown = false;
         ctrl_keydown = false;
 
+        brush.call(self.brusher)
+        .on("mousedown.brush", null)
+        .on("touchstart.brush", null)                                                                      
+        .on("touchmove.brush", null)                                                                       
+        .on("touchend.brush", null);                                                                       
+
+        brush.select('.background').style('cursor', 'auto')
         svg_graph.call(zoomer);
 
         vis.selectAll('g.gnode')
@@ -765,6 +847,13 @@ function Graph(element) {
     };
 
     node_mousedown = function(d) {
+        console.log('mousedown')
+        if (!d.selected) { // Don't deselect on shift-drag.
+            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            if (!ctrl_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
+            else d3.select(this).classed("selected", d.selected = true);
+        }
+
         if (!shift_keydown) {
             return;
         }
@@ -1030,7 +1119,6 @@ function Graph(element) {
                 }
                 })
             .attr("node_type", function(d) { return d.node_type; })
-            .style("stroke", node_stroke)
             .style('stroke-width', function(d) {
                 console.log('d.node_type:', d.node_type);
                 if (d.node_type == 'protein') {
