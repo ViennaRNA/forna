@@ -747,6 +747,7 @@ function Graph(element) {
             if (d.source.rna == d.target.rna) {
                 var r = d.source.rna;
 
+                r.add_pseudoknots();
                 r.pairtable[d.source.num] = 0;
                 r.pairtable[d.target.num] = 0;
 
