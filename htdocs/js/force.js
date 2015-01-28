@@ -429,7 +429,7 @@ function Graph(element) {
                 .y(yScale)
                .on("brushstart", function(d) {
                    var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
-                   gnodes.each(function(d) { d.previouslySelected = ctrl_keydown && d.selected; });
+                   gnodes.each(function(d) { d.previouslySelected = shift_keydown && d.selected; });
                })
                .on("brush", function() {
                    var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
@@ -557,7 +557,7 @@ function Graph(element) {
     function selectedNodes(mouseDownNode) {
         var gnodes = vis_nodes.selectAll('g.gnode');
 
-        if (ctrl_keydown) {
+        if (shift_keydown) {
             return gnodes.filter(function(d) { return d.selected; });
 
             //return d3.selectAll('[struct_name=' + mouseDownNode.struct_name + ']');
@@ -573,7 +573,7 @@ function Graph(element) {
 
         if (!d.selected) { // Don't deselect on shift-drag.
             var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
-            if (!ctrl_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
+            if (!shift_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
             else d3.select(this).classed("selected", d.selected = true);
         }
 
@@ -682,7 +682,7 @@ function Graph(element) {
             .on('mousedown.drag', null);
         }
 
-        if (ctrl_keydown) {
+        if (shift_keydown) {
           brush.select('.background').style('cursor', 'crosshair')
           brush.call(self.brusher);
         }
@@ -769,7 +769,7 @@ function Graph(element) {
     };
 
     link_click = function(d) {
-        if (!shift_keydown) {
+        if (!ctrl_keydown) {
             return;
         }
 
@@ -850,13 +850,14 @@ function Graph(element) {
         console.log('mousedown')
         if (!d.selected) { // Don't deselect on shift-drag.
             var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
-            if (!ctrl_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
+            if (!shift_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
             else d3.select(this).classed("selected", d.selected = true);
         }
 
-        if (!shift_keydown) {
+        if (!ctrl_keydown) {
             return;
         }
+
         mousedown_node = d;
 
         drag_line
