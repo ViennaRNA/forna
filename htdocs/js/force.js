@@ -995,7 +995,6 @@ function Graph(element) {
         d3.event.preventDefault();
     }
 
-
     self.update = function () {
         force.nodes(self.graph.nodes)
         .links(self.graph.links);
@@ -1125,6 +1124,7 @@ function Graph(element) {
 
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
+            .classed("label", function(d) { return d.node_type == 'label'; })
             .attr("r", function(d) { 
                 if (d.node_type == 'middle') return 0; 
                 else {
@@ -1137,6 +1137,8 @@ function Graph(element) {
                 console.log('d.node_type:', d.node_type);
                 if (d.node_type == 'protein') {
                     return 10;
+                } else if (d.node_type == 'label') {
+                    return 0;
                 }})
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
             .style("fill", node_fill)
