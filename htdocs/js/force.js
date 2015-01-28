@@ -778,6 +778,7 @@ function Graph(element) {
         if (d.link_type in invalid_links ) 
             return;
 
+        console.log('removing:', d);
         remove_link(d);
     };
 
@@ -912,7 +913,7 @@ function Graph(element) {
     };
     
     self.setPseudoknotStrength = function(value) {
-      self.linkStrength.pseudoknot = value;
+      self.linkStrengths.pseudoknot = value;
       self.update();
     };
     
