@@ -960,13 +960,15 @@ function Graph(element) {
     };
     
     self.displayLinks = function(value) {
+        console.log('display links');
       if (value === true) {
         self.displayParameters.linkOpacity=self.displayParameters.linkOpacityDefault;
       } else {
         self.displayParameters.linkOpacity=0;
       }
 
-      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
+        console.log('display links', self.displayParameters.linkOpacity);
+      svg.selectAll("[link_type=real],[link_type=basepair],[link_type=backbone],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
     };
 
     self.displayPseudoknotLinks = function(value) {
