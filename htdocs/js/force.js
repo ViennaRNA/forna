@@ -938,6 +938,11 @@ function Graph(element) {
         self.displayParameters.labelLinkOpacity=0;
         self.displayParameters.labelNodeFill = 'transparent';
       }
+
+      self.updateNumbering();
+    };
+
+    self.updateNumbering = function() {
       vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
       vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
@@ -1199,6 +1204,8 @@ function Graph(element) {
         if (self.animation) {
           force.start();
         }
+
+        self.updateNumbering();
     };
     
     setPlottingArea();
