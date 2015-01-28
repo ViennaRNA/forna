@@ -454,6 +454,7 @@ function Graph(element) {
           .on("touchstart.brush", null)                                                                      
           .on("touchmove.brush", null)                                                                       
           .on("touchend.brush", null);                                                                       
+      brush.select('.background').style('cursor', 'auto')
 
     function zoomstart() {
         var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
@@ -571,11 +572,7 @@ function Graph(element) {
         console.log('dragstarted')
         d3.event.sourceEvent.stopPropagation();
 
-        if (!d.selected) { // Don't deselect on shift-drag.
-            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
-            if (!shift_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
-            else d3.select(this).classed("selected", d.selected = true);
-        }
+        d3.select(this).select('circle').classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
 
         var toDrag = selectedNodes(d);
         toDrag.each(function(d1) {
@@ -808,6 +805,23 @@ function Graph(element) {
         self.update();
     };
 
+    node_mouseclick = function(d) {
+        console.log('click')
+        console.log('click', d.previouslySelected, d.selected)
+
+        if (d3.event.defaultPrevented) return;
+        console.log('click1')
+
+        if (!shift_keydown) {
+            //if the shift key isn't down, unselect everything
+            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
+        }
+
+        // always select this node
+        d3.select(this).select('circle').classed("selected", d.selected = !d.previouslySelected);
+    }
+
     node_mouseup = function(d) {
         if (mousedown_node) {
             mouseup_node = d;
@@ -847,12 +861,9 @@ function Graph(element) {
     };
 
     node_mousedown = function(d) {
-        console.log('mousedown')
-        if (!d.selected) { // Don't deselect on shift-drag.
-            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
-            if (!shift_keydown) node.classed("selected", function(p) { return p.selected = d === p; });
-            else d3.select(this).classed("selected", d.selected = true);
-        }
+      console.log('dragstarted', d.previouslySelected, d.selected)
+
+          d3.select(this).classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
 
         if (!ctrl_keydown) {
             return;
@@ -1054,6 +1065,7 @@ function Graph(element) {
             .classed('noselect', true)
             .classed('gnode', true)
              .attr('struct_name', function(d) { return d.struct_name; })
+             .each( function(d) { d.selected = d.previouslySelected = false; })
             //.each(function(d) { console.log('entering', d); })
 
             gnodes_enter
@@ -1061,6 +1073,7 @@ function Graph(element) {
             .on('mousedown', node_mousedown)
             .on('mousedrag', function(d) {})
             .on('mouseup', node_mouseup)
+            .on('click', node_mouseclick)
             .transition()
             .duration(750)
             .ease("elastic")
