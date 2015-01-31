@@ -64,6 +64,8 @@ function Graph(element) {
         "nodeLabelFill":  d3.rgb(50,50,50),
         "linkOpacityDefault": 0.8,
         "linkOpacity": 0.8,
+        "proteinLinkOpacityDefault": 0.8,
+        "proteinLinkOpacity": 0.8,
         "pseudoknotLinkOpacityDefault": 0.8,
         "pseudoknotLinkOpacity": 0.8,
         "labelLinkOpacityDefault": 0.8,
@@ -986,6 +988,16 @@ function Graph(element) {
       }
 
       svg.selectAll("[link_type=pseudoknot]").style('stroke-opacity', self.displayParameters.pseudoknotLinkOpacity);
+    };
+
+    self.displayProteinLinks = function(value) {
+      if (value === true) {
+        self.displayParameters.proteinLinkOpacity=self.displayParameters.proteintLinkOpacityDefault;
+      } else {
+        self.displayParameters.proteinLinkOpacity=0;
+      }
+
+      svg.selectAll("[link_type=protein_chain]").style('stroke-opacity', self.displayParameters.proteinLinkOpacity);
     };
 
     function nudge(dx, dy) {

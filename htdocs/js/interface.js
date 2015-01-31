@@ -741,6 +741,16 @@ function RNAViewModel() {
     }
   });
 
+  self.displayProteinLinks = ko.observable(true);
+  
+  self.displayProteinLinks.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the pseudoknot link option");
+    } else {
+      self.graph.displayProteinLinks(newValue);
+    }
+  });
+
   self.displayLinks = ko.observable(true);
   
   self.displayLinks.subscribe (function(newValue) {

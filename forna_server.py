@@ -19,6 +19,7 @@ import sys
 import os
 import RNA
 from optparse import OptionParser
+from werkzeug.contrib.fixers import ProxyFix
 
 import forgi.utilities.debug as fud
 import forgi.utilities.stuff as fus
@@ -29,6 +30,7 @@ def create_app(static):
 
     '''
     app = Flask(__name__, static_folder='htdocs')
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     @app.errorhandler(400)
     # pylint: disable=W0612
