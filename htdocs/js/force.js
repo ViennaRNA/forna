@@ -431,7 +431,7 @@ function Graph(element) {
                 .y(yScale)
                .on("brushstart", function(d) {
                    var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
-                   gnodes.each(function(d) { d.previouslySelected = shift_keydown && d.selected; });
+                   gnodes.each(function(d) { d.previouslySelected = ctrl_keydown && d.selected; });
                })
                .on("brush", function() {
                    var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
@@ -560,7 +560,7 @@ function Graph(element) {
     function selectedNodes(mouseDownNode) {
         var gnodes = vis_nodes.selectAll('g.gnode');
 
-        if (shift_keydown) {
+        if (ctrl_keydown) {
             return gnodes.filter(function(d) { return d.selected; });
 
             //return d3.selectAll('[struct_name=' + mouseDownNode.struct_name + ']');
@@ -571,8 +571,14 @@ function Graph(element) {
     }
 
     function dragstarted(d) {
-        console.log('dragstarted')
+        console.log('dragstarted', d.previouslySelected, d.selected)
         d3.event.sourceEvent.stopPropagation();
+
+      if (!d.selected && !ctrl_keydown) {
+          // if this node isn't selected, then we have to unselect every other node
+            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
+          }
 
         d3.select(this).select('circle').classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
 
@@ -681,7 +687,7 @@ function Graph(element) {
             .on('mousedown.drag', null);
         }
 
-        if (shift_keydown) {
+        if (ctrl_keydown) {
           brush.select('.background').style('cursor', 'crosshair')
           brush.call(self.brusher);
         }
@@ -706,7 +712,15 @@ function Graph(element) {
 
     d3.select(window)
     .on('keydown', keydown)
-    .on('keyup', keyup);
+    .on('keyup', keyup)
+    .on('mousedown', function() {  
+        console.log('blah'); 
+        if (d3.event) { 
+            d3.event.preventDefault(); 
+        }})
+    .on('contextmenu', function() {
+            d3.event.preventDefault(); 
+    });
 
     link_key = function(d) {
         return d.uid;
@@ -769,7 +783,7 @@ function Graph(element) {
     };
 
     link_click = function(d) {
-        if (!ctrl_keydown) {
+        if (!shift_keydown) {
             return;
         }
 
@@ -816,7 +830,7 @@ function Graph(element) {
         if (d3.event.defaultPrevented) return;
         console.log('click1')
 
-        if (!shift_keydown) {
+        if (!ctrl_keydown) {
             //if the shift key isn't down, unselect everything
             var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
             node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
@@ -865,11 +879,18 @@ function Graph(element) {
     };
 
     node_mousedown = function(d) {
-      console.log('dragstarted', d.previouslySelected, d.selected)
+      console.log('mousedown', d.previouslySelected, d.selected)
+
+      if (!d.selected && !ctrl_keydown) {
+          // if this node isn't selected, then we have to unselect every other node
+            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
+          }
+
 
           d3.select(this).classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
 
-        if (!ctrl_keydown) {
+        if (!shift_keydown) {
             return;
         }
 
