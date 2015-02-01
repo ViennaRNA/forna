@@ -61,7 +61,7 @@ body {
 
 textarea {
   font-family: "Lucida Console", Monaco, monospace;
-  height: 400px !important;
+  height: 350px !important;
   resize: none;
 }
 
@@ -103,4 +103,31 @@ textarea {
 .dropdown-menu > li.active, .dropdown-menu > li.active :hover, .dropdown-menu > li.active :active {
   color: white;
   background-color: #428BCA;
+}
+
+/* enable absolute positioning for inner addon buttons */
+.inner-addon { 
+    position: relative; 
+}
+
+/* style icon */
+.inner-addon .glyphicon {
+  position: absolute;
+  padding: 10px;
+}
+
+/* align icon */
+.left-addon .glyphicon  { left:  0px;}
+.right-addon .glyphicon { right: 0px;}
+
+/* add padding  */
+.left-addon input  { padding-left:  30px; }
+.right-addon input { padding-right: 30px; }
+
+span.button {
+    cursor: pointer;
+    color: lightgray;
+}
+span.button:hover {
+    color:gray;
 }

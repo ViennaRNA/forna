@@ -14,7 +14,6 @@ function generateUUID(){
     return uuid;
 }
 
-
 function RNAUtilities() {
     var self = this;
 
@@ -29,6 +28,89 @@ function RNAUtilities() {
             res[bracket[i]] = i;
         }
         return res;
+    };
+
+    self.maximumMatching = function maximumMatching(pt){
+        // Courtesy of the great Ronny Lorenz
+
+        var n = pt[0];
+        var TURN = 0;    //minimal number of nucleotides in the hairpin
+
+        /* array init */
+        mm = new Array(n + 1);
+        for(var i = 0; i <= n; i++){
+            mm[i] = new Array(n + 1);
+            for(var j = i; j <= n; j++)
+            mm[i][j] = 0;
+        }
+        var maximum = 0;
+
+        /* actual computation */
+        for(var i = n - TURN - 1; i > 0; i--)
+
+        for(var j = i + TURN + 1; j <= n; j++){
+            maximum = mm[i][j-1];
+
+            for(var l = j - TURN - 1; l >= i; l--) {
+                if(pt[l] === j) {
+
+                    // we have a base pair here
+                    maximum = Math.max(maximum, ((l > i) ? mm[i][l-1] : 0) + 1 + ((j - l - 1 > 0) ? mm[l+1][j-1] : 0));
+                }
+            }
+
+            mm[i][j] = maximum;
+        }
+
+        maximum = mm[1][n];
+
+        return mm;
+    };
+
+    self.backtrackMaximumMatching = function(mm, old_pt) {
+      var pt = Array.apply(null, 
+                           Array(mm.length)).map(function() { return 0 }); 
+                           //create an array containing zeros
+
+      self.mm_bt(mm, pt, old_pt, 1, mm.length-1);
+      return pt;
+    }
+
+    self.mm_bt = function(mm, pt, old_pt, i, j){
+        // Create a pairtable from the backtracking
+      var maximum = mm[i][j];
+      var TURN = 0;
+
+      if(j - i - 1 < TURN) return;    /* no more pairs */
+
+      if(mm[i][j-1] == maximum){      /* j is unpaired */
+        self.mm_bt(mm, pt, old_pt, i, j-1);
+        return;
+      }
+
+      for(var q = j - TURN - 1; q >= i; q--){  /* j is paired with some q */
+        if (old_pt[j] !== q)
+            continue;
+
+        var left_part     = (q > i) ? mm[i][q-1] : 0;
+        var enclosed_part = (j - q - 1 > 0) ? mm[q+1][j-1] : 0;
+
+        if(left_part + enclosed_part + 1 == maximum) {
+            // there's a base pair between j and q
+            pt[q] = j;
+            pt[j] = q;
+
+            if(i < q) 
+                self.mm_bt(mm, pt, old_pt, i, q - 1);
+
+            self.mm_bt(mm, pt, old_pt, q + 1, j - 1);
+            return;
+        }
+      }
+
+      //alert(i + "," + j + ": backtracking failed!");
+      console.log("FAILED!!!" + i + "," + j + ": backtracking failed!");
+
     };
 
     self.dotbracket_to_pairtable = function(dotbracket) {
@@ -73,7 +155,6 @@ function RNAUtilities() {
 
         for (key in stack) {
             if (stack[key].length > 0) {
-                console.log('stack', stack[key]);
                 throw "Unmatched base at position " + stack[key][0];
             }
         }
@@ -169,27 +250,21 @@ function RNAUtilities() {
          * The pairtable is manipulated in place and a list of tuples
          * indicating the broken base pairs is returned.
          */
-        var unmatched = [];
-        var to_remove = [];
+
+        var mm = self.maximumMatching(pt);
+        var new_pt = self.backtrackMaximumMatching(mm, pt);
         var removed = [];
 
-        var length_comparator = function(a,b) { return a.length - b.length; };
+        for (var i = 1; i < pt.length; i++) {
+            if (pt[i] < i)
+                continue;
 
-        do {
-            to_remove = self.find_unmatched(pt, 1, pt[0]);
-
-            to_remove.sort(length_comparator);
-            
-            if (to_remove.length > 0) {
-                for (var i = 0; i < to_remove[0].length; i++) {
-                    pt[to_remove[0][i][0]] = 0;
-                    pt[to_remove[0][i][1]] = 0;
-
-                    removed.push(to_remove[0][i]);
-                }
+            if (new_pt[i] != pt[i])  {
+                removed.push([i, pt[i]]);
+                pt[pt[i]] = 0;
+                pt[i] = 0;
             }
-        } while (to_remove.length > 0);
-        //} while ((to_remove = self.find_unmatched(pt, 0, pt[0])).length > 0);
+        }
 
         return removed;
     };
@@ -332,16 +407,18 @@ function ColorScheme(colors_text) {
 function ProteinGraph(struct_name, size, uid) {
     var self = this;
 
+    self.type = 'protein';
     self.size = size;
     self.nodes = [{'name': 'P',
                    'num': 1,
-                   'radius': Math.sqrt(size),
+                   'radius': 3 *  Math.sqrt(size),
                    'rna': self,
                    'node_type': 'protein',
                    'struct_name': struct_name,
                    'elem_type': 'p',
                    'size': size,
                    'uid': generateUUID()}];
+
     self.links = [];
     self.uid = generateUUID();
 
@@ -367,14 +444,24 @@ function ProteinGraph(struct_name, size, uid) {
 
 function RNAGraph(seq, dotbracket, struct_name) {
     var self = this;
-    self.seq = seq;
-    self.dotbracket = dotbracket;  //i.e. ..((..))..
+
+    self.type = 'rna';
+
+    if (arguments.length == 0) {
+        self.seq = '';
+        self.dotbracket = '';
+        self.struct_name = '';
+    } else {
+        self.seq = seq;
+        self.dotbracket = dotbracket;  //i.e. ..((..))..
+        self.struct_name = struct_name;
+    }
+
     self.circular = false;
 
-    if (dotbracket[dotbracket.length-1] == '*') {
+    if (self.dotbracket.length > 0 && self.dotbracket[self.dotbracket.length-1] == '*') {
         //circular RNA
-        self.dotbracket = dotbracket.slice(0, dotbracket.length-1);
-        console.log('self.dotbracket:', self.dotbracket);
+        self.dotbracket = self.dotbracket.slice(0, self.dotbracket.length-1);
         self.circular = true;
     }
 
@@ -385,8 +472,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.elements = {};            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
-    self.struct_name = struct_name;
-
 
     self.add_uids = function(uids) {
         for (var i = 0; i < uids.length; i++)
@@ -619,7 +704,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
         for (i = 1; i <= pt[0]; i++) {
             //create a node for each nucleotide
-            self.nodes.push({'name': seq[i-1],
+            self.nodes.push({'name': self.seq[i-1],
                              'num': i,
                              'radius': 6,
                              'rna': self,
@@ -661,9 +746,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         if (self.circular) {
-            console.log('self.nodes[0]', self.nodes[0],
-                        'self.nodes[..', self.rna_length-1, self.nodes[self.rna_length-1]);
-
             self.links.push({'source': self.nodes[0],
                             'target': self.nodes[self.rna_length-1],
                             'link_type': 'backbone',
@@ -809,7 +891,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
     self.recalculate_elements = function() {
         self.remove_pseudoknots();
-        console.log('self.pseudoknot_pairs', self.pseudoknot_pairs)
         self.elements = self.pt_to_elements(self.pairtable, 0, 1, self.dotbracket.length);
 
         if (self.circular) {
@@ -865,7 +946,8 @@ function RNAGraph(seq, dotbracket, struct_name) {
         return self;
     };
 
-    self.recalculate_elements();
+    if (self.rna_length > 0)
+        self.recalculate_elements();
 }
 
 molecules_to_json = function(molecules_json) {
@@ -882,7 +964,6 @@ molecules_to_json = function(molecules_json) {
         var molecule = molecules_json.molecules[i];
 
         if (molecule.type == 'rna') {
-            console.log('molecule.ss:', molecule.ss);
             rg = new RNAGraph(molecule.seq, molecule.ss, molecule.header);
             rg.elements_to_json()
             .add_positions('nucleotide', molecule.positions)

@@ -19,8 +19,10 @@ import sys
 import os
 import RNA
 from optparse import OptionParser
+from werkzeug.contrib.fixers import ProxyFix
 
 import forgi.utilities.debug as fud
+import forgi.utilities.stuff as fus
 
 def create_app(static):
     '''
@@ -28,6 +30,7 @@ def create_app(static):
 
     '''
     app = Flask(__name__, static_folder='htdocs')
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     @app.errorhandler(400)
     # pylint: disable=W0612
@@ -99,11 +102,38 @@ def create_app(static):
         if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
+        try:
+            result = RNA.fold(str(request.json['seq']))[0]
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Server exception: {}".format(ex))
+        
+        return json.dumps(result), 201
 
-        result = RNA.fold(str(request.json['seq']))[0]
+    @app.route('/inverse_fold', methods=['POST'])
+    # pylint: disable=W0612
+    def inverse_fold():
+        app.logger.info(request.json);
+        if not request.json:
+            abort(400, "Request has no json.")
+
+        if 'struct' not in request.json:
+            abort(400, "Request has no structure in the json.")
+
+        if re.match("^[\(\)\.]+$", request.json['struct']) is None:
+            abort(400, "Invalid structure for inverse fold: {}".format(request.json['struct']))
+        
+        try:
+            pt = fus.dotbracket_to_pairtable(str(request.json['struct'])) 
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Unbalanced brackets: {}".format(ex))
+
+        result = RNA.inverse_fold("", str(request.json['struct']))[0]
         return json.dumps(result), 201
 
     @app.route('/colors_to_json', methods=['POST'])
+    # pylint: disable=W0612
     def colors_to_json():
         app.logger.info(request.json);
         if not request.json:

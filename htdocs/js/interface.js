@@ -79,21 +79,34 @@ $("[data-toggle=tooltip]").tooltip();
 function RNA(sequence, structure, header) {
   var self = this;
   console.log(["New RNA with: ", sequence, structure, header].join('\n'));
-  console.log("structure:", structure);
 
   self.header = ko.observable(header);
-  self.sequence = ko.observable(sequence);
-  
+
   self.done = ko.observable(false);
   
   self.structure = ko.onDemandObservable( function() {
-      ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
-        self.structure(data);
-        self.json.refresh();
-        self.json();
-      }).error( function(jqXHR) {
-        addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-      });
+        if (self.sequence() !== '') {
+          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
+            self.structure(data);
+            self.json.refresh();
+            self.json();
+          }).error( function(jqXHR) {
+            addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+          });
+        }
+    }, self 
+  );
+
+  self.sequence = ko.onDemandObservable( function() {
+        if (self.structure() !== '') {
+          ajax(serverURL + '/inverse_fold', 'POST', JSON.stringify( {struct: self.structure()} )).success( function(data) {
+            self.sequence(data);
+            self.json.refresh();
+            self.json();
+          }).error( function(jqXHR) {
+            addView.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+          });
+        }
     }, self 
   );
   
@@ -121,18 +134,26 @@ function RNA(sequence, structure, header) {
       });
     }, self
   );
-  
-  if (structure === '') {
-    self.structure.refresh();
-    self.structure();
+
+  if (sequence === '') {
+      self.structure(structure);
+      self.sequence.refresh();
+      self.sequence();
   } else {
-    self.structure(structure);
-    self.json.refresh();
-    self.json();
+      self.sequence(sequence);
+      
+      if (structure === '') {
+        self.structure.refresh();
+        self.structure();
+      } else {
+        self.structure(structure);
+        self.json.refresh();
+        self.json();
+      }
   }
-  
+
   self.loaded = ko.computed( function() {
-    return (self.structure.loaded() && self.json.loaded() && self.done());
+    return (self.structure.loaded() && self.sequence.loaded() && self.json.loaded() && self.done());
   });
 }
 
@@ -173,6 +194,8 @@ function ColorViewModel() {
 
   self.cancelColor = function() {
     $('#addColors').modal('hide');
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
 
@@ -181,8 +204,8 @@ function ColorViewModel() {
       self.inputError('');
       console.log('Clicked');
       console.log('self.input()', self.input());
-
-      cs =  new ColorScheme(self.input());
+      // submit new color scheme, remove trailing/leading/inbetween whitespaces
+      cs =  new ColorScheme(self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,""));
       cs.normalizeColors();
       console.log('cs.colors_json:', cs.colors_json);
 
@@ -196,7 +219,7 @@ function ColorViewModel() {
 }
 
 function AddPDBViewModel() {
-    var self = this;
+  var self = this;
 
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
@@ -212,19 +235,20 @@ function AddPDBViewModel() {
     $('#PDBSubmit').button('reset');
   };
 
-  self.uploadPDB = function (file) {
-      self.inputFile(file);
-      console.log(file);
-  };
-
+  /*
   function progressHandlingFunction(e){
       if(e.lengthComputable){
           $('progress').attr({value:e.loaded,max:e.total});
       }
   }
-
+  */
   self.cancelAddPDB = function() {
     $('#addPDB').modal('hide');
+    // reset the file upload form
+    $('#inputPDBFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
 
@@ -254,7 +278,7 @@ function AddPDBViewModel() {
       }
 
       var formData = new FormData();
-      var xhr = new XMLHttpRequest();
+      // var xhr = new XMLHttpRequest();
 
 
       formData.append('pdb_file', self.inputFile(), self.inputFile().name);
@@ -281,7 +305,7 @@ function AddPDBViewModel() {
                         console.log('mols_json', mols_json);
 
                         for (var i = 0; i < mols_json.graphs.length; i++)
-                            rnaView.graph.addRNA(mols_json.graphs[i]);
+                            rnaView.graph.addRNA(mols_json.graphs[i], true );
 
                         console.log('extraLinks.length:', mols_json.extraLinks.length);
                         for (i = 0; i < mols_json.extraLinks.length; i++)
@@ -327,6 +351,109 @@ function AddPDBViewModel() {
   };
 }
 
+function AddJSONViewModel() {
+  var self = this;
+  
+  self.input = ko.observable('');
+  self.inputFile = ko.observable(null);
+  self.inputError = ko.observable('');
+
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+    $('#SubmitJSON').button('reset');
+  };
+
+  self.cancelAddJSON = function() {
+    $('#addJSON').modal('hide');
+    // reset the file upload form
+    $('#inputJSONFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
+    rnaView.graph.deaf = false;
+  };
+  
+  self.parseJSON = function(input) {
+    try{
+        var data = JSON.parse(input);
+        var rnas = data.rnas;
+        var extraLinks = data.extraLinks;
+    } catch(err) {
+        self.newInputError(err.message);
+        return;
+    }
+
+    for (uid in rnas) {
+        if (rnas[uid].type == 'rna') {
+            r = new RNAGraph()
+
+            r.seq = rnas[uid].seq;
+            r.dotbracket = rnas[uid].dotbracket;
+            r.circular = rnas[uid].circular;
+            r.pairtable = rnas[uid].pairtable;
+            r.uid = rnas[uid].uid;
+            r.struct_name = rnas[uid].struct_name;
+            r.nodes = rnas[uid].nodes;
+            r.links = rnas[uid].links;
+            r.rna_length = rnas[uid].rna_length;
+            r.elements = rnas[uid].elements;
+            r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
+            r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
+        } else {
+            r = new ProteinGraph()
+            r.size = rnas[uid].size;
+            r.nodes = rnas[uid].nodes;
+            r.uid = rnas[uid].uid;
+        }
+
+        rnaView.graph.addRNA(r, false);
+    }
+
+    extraLinks.forEach(function(link) {
+        rnaView.graph.extraLinks.push(link);
+    });
+
+    rnaView.graph.recalculateGraph();
+    rnaView.graph.update();
+
+    console.log('rna', rnas)
+    // finish the form
+    $('#SubmitJSON').button('reset');
+    $('#addJSON').modal('hide');
+    // reset the file upload form
+    $('#inputJSONFile').val('');
+    self.inputFile(null);
+    rnaView.graph.deaf = false;
+  }
+    
+  self.submit = function() {
+    $('#SubmitJSON').button('loading');
+    self.inputError('');
+    
+    if ((self.inputFile() !== null) || (self.input() != '')) {
+        if (self.inputFile() !== null) {
+          var r = new FileReader();
+          r.onload = function(e) {
+            var content = e.target.result;
+            console.log("Parsing JSON file", content);
+	        self.parseJSON(content);
+          }
+          r.readAsText(self.inputFile());
+        }
+        if (self.input() != '') {
+          console.log("Parsing JSON string");
+          self.parseJSON(self.input());
+        }
+    } else {
+        self.newInputError("Please paste a JSON string or choose a JSON file to upload!");
+    }
+  };
+}
+
 function AddViewModel() {
   var self = this;
   
@@ -346,9 +473,9 @@ function AddViewModel() {
   );
   
   self.newMolecules = ko.observableArray([]);
-  
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
+  self.inputFile = ko.observable(null);
 
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -356,6 +483,7 @@ function AddViewModel() {
     } else {
       self.inputError([self.inputError(), message].join("<br>"));
     }
+    $('#Submit').button('reset');
   };
   
   self.loaded = ko.computed(function() {
@@ -364,11 +492,6 @@ function AddViewModel() {
       returnValue = (returnValue && rna.loaded());
     });
     returnValue = (returnValue && self.submitted());
-    
-    if (self.inputError().length > 0) {
-      $('#Submit').button('reset');
-      console.log("There was an error, button is reset");
-    }
     
     // here the code to hide modal and push the new molecules if everything is loaded correctly
     if((returnValue) && (self.inputError().length === 0)) {
@@ -387,57 +510,102 @@ function AddViewModel() {
 
   self.cancelAddMolecule = function() {
     $('#add').modal('hide');
+    // reset the file upload form
+    $('#inputFastaFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
     rnaView.graph.deaf = false;
   };
 
-    
+  self.parseFasta = function(lines) {
+      function tmpRNA () {
+        var self = this;
+        self.sequence = '';
+        self.structure = '';
+        self.header = 'rna';
+      }
+      var rna;
+      
+      var BreakException= {};
+      
+      try {
+        var countErrors = 0;
+        
+        lines.forEach( function(line) {
+          line = line.replace(/[\s]/g,""); // remove any whitespaces
+          // check if it is a fasta header
+          if (line.substring(0, 1) == '>') {
+            // this is a header
+            if (rna !== undefined) {
+              // initialize real rna object
+              console.log("Added new rna molecule to newMolecules");
+              self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
+            }
+            rna = new tmpRNA();
+            rna.header = line.substring(1);
+          } else if (/^[ACGTUWSMKRYBDHV]+$/.test(line)) {
+            // this is a sequence
+            if (rna === undefined) {
+              rna = new tmpRNA();
+            }
+            rna.sequence = rna.sequence.concat(line);
+          } else if (/^[\(\)\.\{\}\[\]\<\>\*]+$/.test(line)) {
+            // this is a structure
+            if (rna === undefined) {
+              rna = new tmpRNA();
+            }
+            rna.structure = rna.structure.concat(line);
+          } else {
+            self.newInputError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
+            if (countErrors > 5) {
+              self.newInputError("[...]");
+              throw BreakException;
+            }
+            countErrors += 1;
+          }
+        });
+      } catch(e) {
+        if (e !== BreakException) throw e;
+      }
+      // also initialize the last object
+      console.log("Added new rna molecule to newMolecules");
+      self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
+      
+      // unlock the submitted
+      self.submitted(true);
+      $('#inputFastaFile').val('');
+      self.inputFile(null);
+  }
+  
   self.submit = function() {
     self.submitted(false);
     $('#Submit').button('loading');
     self.inputError('');
     self.newMolecules([]);
+    
     //remove leading/trailing/inbeteen newlines and split in at the remaining ones
-    var lines = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
-    
-    function tmpRNA () {
-      var self = this;
-      self.sequence = '';
-      self.structure = '';
-      self.header = 'rna';
+    var lines = [];
+    if (self.input() != '') {
+      lines = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
     }
-    var rna;
     
-    lines.forEach( function(line) {
-      line = line.replace(/[\s]/g,""); // remove any whitespaces
-      // check if it is a fasta header
-      if (line.substring(0, 1) == '>') {
-        // this is a header
-        if (rna !== undefined) {
-          // initialize real rna object
-          console.log("Add new rna molecule to newMolecules");
-          self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
-        }
-        rna = new tmpRNA();
-        rna.header = line.substring(1);
-      } else if (/[ACGTUWSMKRYBDHV]/g.test(line.substring(0, 1))) {
-        line = line.toUpperCase();
-        // this is a sequence
-        if (rna === undefined) {
-          rna = new tmpRNA();
-        }
-        rna.sequence = rna.sequence.concat(line);
-      } else if (/[\(\)\.\{\}\[\]]/g.test(line.substring(0, 1))) {
-        // this is a structure
-        rna.structure = rna.structure.concat(line);
-      } else {
-        self.newInputError("You did not enter valid sequences, structures or fasta");
+    if (self.inputFile() !== null) {
+      var r = new FileReader();
+      r.onload = function(e) {
+        var content = e.target.result;
+        console.log(content);
+	      lines = lines.concat(content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"));
+	      console.log(lines);
+	      if (lines.length == 0) { self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!"); return; }
+	      self.parseFasta(lines);
       }
-    });
-    // also initialize the last object
-    console.log("Add new rna molecule to newMolecules");
-    self.newMolecules.push(new RNA(rna.sequence, rna.structure, rna.header));
-    // unlock the submitted
-    self.submitted(true);
+      r.readAsText(self.inputFile());
+    } else {
+      console.log(lines);
+      if (lines.length == 0) { self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!"); return; }
+      self.parseFasta(lines);
+    }
   };
 }
 
@@ -508,7 +676,7 @@ function RNAViewModel() {
       console.log("graph is null, won't change the charge");
     } else {
       
-      self.graph.setCharge(newValue);
+        self.graph.setCharge(newValue);
     }
   });
 
@@ -563,6 +731,26 @@ function RNAViewModel() {
     }
   });
   
+  self.displayPseudoknotLinks = ko.observable(true);
+  
+  self.displayPseudoknotLinks.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the pseudoknot link option");
+    } else {
+      self.graph.displayPseudoknotLinks(newValue);
+    }
+  });
+
+  self.displayProteinLinks = ko.observable(true);
+  
+  self.displayProteinLinks.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the pseudoknot link option");
+    } else {
+      self.graph.displayProteinLinks(newValue);
+    }
+  });
+
   self.displayLinks = ko.observable(true);
   
   self.displayLinks.subscribe (function(newValue) {
@@ -595,6 +783,12 @@ function RNAViewModel() {
     self.graph.deaf = true;
   };
 
+  self.showAddJSON = function() {
+    $('#JSONSubmit').button('reset');
+    $('#addJSON').modal('show');
+    self.graph.deaf = true;
+  };
+
   self.showCustomColors = function() {
     //$('#ColorSubmit').button('reset');
     $('#addColors').modal('show');
@@ -616,7 +810,7 @@ function RNAViewModel() {
   };
 
   self.saveJSON = function() {
-      var data = self.graph.rnas;
+      var data = {"rnas": self.graph.rnas, "extraLinks": self.graph.extraLinks};
       console.log('data:', data);
       var data_string = JSON.stringify(data, function(key, value) {
           //remove circular references
@@ -626,12 +820,10 @@ function RNAViewModel() {
               return value;
           }
 
-      });
+      }, "\t");
 
-      var url = 'data:text/json;charset=utf8,' + encodeURIComponent(data_string); 
-
-      window.open(url, '_blank');
-      window.focus();
+      var blob = new Blob([data_string], {type: "application/json"});
+      saveAs(blob, 'molecule.json')
   };
 
   self.savePNG = function() {
@@ -682,9 +874,11 @@ function RNAViewModel() {
 var rnaView = new RNAViewModel();
 var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
+var addJSONView = new AddJSONViewModel();
 var colorView = new ColorViewModel();
 
 ko.applyBindings(rnaView, document.getElementById('chart'));
 ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));
+ko.applyBindings(addJSONView, document.getElementById('addJSON'));
