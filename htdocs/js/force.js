@@ -710,7 +710,7 @@ function Graph(element) {
         .call(drag);
     }
 
-    d3.select(window)
+    d3.select(element)
     .on('keydown', keydown)
     .on('keyup', keyup)
     .on('mousedown', function() {  
