@@ -401,6 +401,8 @@ function Graph(element) {
     .attr("height", self.svgH)
     .attr("id", 'plotting-area');
 
+    self.svg = svg;
+
     var svg_graph = svg.append('svg:g')
     .call(zoomer)
     .on('mousemove', mousemove)
@@ -1061,6 +1063,12 @@ function Graph(element) {
         .style("stroke-width", function(d) { 
             return 2;
         })
+        .attr('visibility', function(d) {
+            if (d.link_type == 'fake')
+                return 'hidden';
+            else
+                return 'visible';
+        })
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
@@ -1195,10 +1203,22 @@ function Graph(element) {
             .attr('class', 'node-label')
             .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")
-            .text(function(d) { return d.num; });
+            .text(function(d) { 
+                if (d.node_type == 'nucleotide') {
+                    return d.struct_name + ":" + d.num;
+                } else {
+                    return '';
+                }
+            });
 
             node.append("svg:title")
-            .text(function(d) { return d.num; });
+            .text(function(d) { 
+                if (d.node_type == 'nucleotide') {
+                    return d.struct_name + ":" + d.num;
+                } else {
+                    return '';
+                }
+            });
 
             gnodes.exit().remove();
 
