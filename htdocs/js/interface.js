@@ -12,6 +12,15 @@ $(window).resize(function() {
  setPlottingArea();
 });
 
+$(document).ready ( function() {
+    $('#JSONInput').bind("keyup click focus", function() { addJSONView.cursorPosition( getCursorPos('#JSONInput') ); });
+    $('#Input').bind("keyup click focus", function() { addView.cursorPosition( getCursorPos('#Input') ); });
+    
+    $('#add').on('shown.bs.modal', function () { $('#Input').focus(); });
+    $('#addJSON').on('shown.bs.modal', function () { $('#JSONInput').focus(); });
+    $('#addColors').on('shown.bs.modal', function () { $('#ColorInput').focus(); });
+});
+
 setPlottingArea = function() {
   var chartheight = $(window).height();
   if (!document.fullscreenElement &&    // alternative standard method
@@ -54,6 +63,15 @@ function exitFullscreen() {
   } else if (document.webkitExitFullscreen) {
     document.webkitExitFullscreen();
   }
+}
+
+function getCursorPos(element) {
+    p = $(element).val().substr(0, $(element)[0].selectionStart).split("\n");
+    // line is the number of lines
+    line = p.length;
+    // col is the length of the last line
+    col = p[p.length-1].length;
+    return [line, col].join(', ');
 }
 
 // custom ajax call
@@ -357,6 +375,7 @@ function AddJSONViewModel() {
   self.input = ko.observable('');
   self.inputFile = ko.observable(null);
   self.inputError = ko.observable('');
+  self.cursorPosition = ko.observable('');
 
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -476,6 +495,7 @@ function AddViewModel() {
   self.inputError = ko.observable('');
   self.submitted = ko.observable(false);
   self.inputFile = ko.observable(null);
+  self.cursorPosition = ko.observable('');
 
   self.newInputError = function(message) {
     if (self.inputError() === '') {
