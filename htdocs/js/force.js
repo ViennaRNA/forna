@@ -247,11 +247,6 @@ function Graph(element) {
         self.brusher.x(xScale)
         .y(yScale);
 
-        console.log('a zoomer.x()', zoomer.x().domain(), zoomer.x().range())
-        console.log('a zoomer.y()', zoomer.y().domain(), zoomer.y().range())
-
-        console.log('a brusher.x()', self.brusher.x().domain(), self.brusher.x().range())
-        console.log('a brusher.y()', self.brusher.y().domain(), self.brusher.y().range())
         //resize the background
         rect.attr("width", svgW)
         .attr("height", svgH);
@@ -328,7 +323,9 @@ function Graph(element) {
             scale = d3.scale.linear()
             .range(['white', 'steelblue'])
             .interpolate(d3.interpolateLab)
-            .domain([0, 1]);
+            .domain(self.customColors.domain);
+
+            console.log('scale.domain', scale.domain())
 
 
             nodes.style('fill', function(d) {
@@ -336,14 +333,14 @@ function Graph(element) {
                     return 'white';
                 } 
                 
-                if (self.customColors.hasOwnProperty(d.struct_name) &&
-                    self.customColors[d.struct_name].hasOwnProperty(d.num)) {
+                if (self.customColors.color_values.hasOwnProperty(d.struct_name) &&
+                    self.customColors.color_values[d.struct_name].hasOwnProperty(d.num)) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
-                    molecule_colors = self.customColors[d.struct_name];
+                    molecule_colors = self.customColors.color_values[d.struct_name];
                     return change_colors(molecule_colors, d, scale);
-                } else if (self.customColors.hasOwnProperty('')) {
-                    molecule_colors = self.customColors[''];
+                } else if (self.customColors.color_values.hasOwnProperty('')) {
+                    molecule_colors = self.customColors.color_values[''];
                     return change_colors(molecule_colors, d, scale);
                 }
 
@@ -426,8 +423,6 @@ function Graph(element) {
     var vis_nodes = vis.append("svg:g");
 
 
-    console.log('ole');
-
     self.brusher = d3.svg.brush()
                 .x(xScale)
                 .y(yScale)
@@ -437,10 +432,7 @@ function Graph(element) {
                })
                .on("brush", function() {
                    var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
-                   console.log('brushing...')
                    var extent = d3.event.target.extent();
-                   console.log('extent:', extent.toString());
-                   console.log('self.brusher.x().range()', self.brusher.y().domain(), self.brusher.x().range());
 
                    gnodes.classed("selected", function(d) {
                        return d.selected = d.previouslySelected ^
@@ -573,7 +565,6 @@ function Graph(element) {
     }
 
     function dragstarted(d) {
-        console.log('dragstarted', d.previouslySelected, d.selected)
         d3.event.sourceEvent.stopPropagation();
 
       if (!d.selected && !ctrl_keydown) {
@@ -589,7 +580,6 @@ function Graph(element) {
             d1.fixed |= 2;
         });
 
-        //console.log('toDrag:', toDrag);
         //d3.event.sourceEvent.stopPropagation();
         //d3.select(self).classed("dragging", true);
         //
@@ -716,7 +706,6 @@ function Graph(element) {
     .on('keydown', keydown)
     .on('keyup', keyup)
     .on('mousedown', function() {  
-        console.log('blah'); 
         if (d3.event) { 
             d3.event.preventDefault(); 
         }})
@@ -797,7 +786,6 @@ function Graph(element) {
         if (d.link_type in invalid_links ) 
             return;
 
-        console.log('removing:', d);
         remove_link(d);
     };
 
@@ -826,11 +814,7 @@ function Graph(element) {
     };
 
     node_mouseclick = function(d) {
-        console.log('click')
-        console.log('click', d.previouslySelected, d.selected)
-
         if (d3.event.defaultPrevented) return;
-        console.log('click1')
 
         if (!ctrl_keydown) {
             //if the shift key isn't down, unselect everything
@@ -856,7 +840,6 @@ function Graph(element) {
                             (self.graph.links[i].target == mouseup_node)) {
 
                     if (self.graph.links[i].link_type == 'basepair' || self.graph.links[i].link_type == 'pseudoknot') {
-                        console.log('basepair_exists');
                         return;
                     }
                 }
@@ -866,7 +849,6 @@ function Graph(element) {
                          ((self.graph.links[i].source == mousedown_node)  && 
                           (self.graph.links[i].target == mouseup_node))) {
                     if (self.graph.links[i].link_type == 'backbone') {
-                        console.log('backbone exists');
                         return;
                     }
                 }
@@ -881,8 +863,6 @@ function Graph(element) {
     };
 
     node_mousedown = function(d) {
-      console.log('mousedown', d.previouslySelected, d.selected)
-
       if (!d.selected && !ctrl_keydown) {
           // if this node isn't selected, then we have to unselect every other node
             var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
@@ -992,14 +972,12 @@ function Graph(element) {
     };
     
     self.displayLinks = function(value) {
-        console.log('display links');
       if (value === true) {
         self.displayParameters.linkOpacity=self.displayParameters.linkOpacityDefault;
       } else {
         self.displayParameters.linkOpacity=0;
       }
 
-        console.log('display links', self.displayParameters.linkOpacity);
       svg.selectAll("[link_type=real],[link_type=basepair],[link_type=backbone],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
     };
 
@@ -1043,8 +1021,6 @@ function Graph(element) {
         force.nodes(self.graph.nodes)
         .links(self.graph.links);
         
-        console.log('links', graph.links)
-
         if (self.animation) {
           force.start();
         }
@@ -1115,7 +1091,6 @@ function Graph(element) {
             .classed('gnode', true)
              .attr('struct_name', function(d) { return d.struct_name; })
              .each( function(d) { d.selected = d.previouslySelected = false; })
-            //.each(function(d) { console.log('entering', d); })
 
             gnodes_enter
             .call(drag)
@@ -1178,13 +1153,11 @@ function Graph(element) {
             .attr("r", function(d) { 
                 if (d.node_type == 'middle') return 0; 
                 else {
-                    console.log('d.radius:', d.radius); 
                     return d.radius; 
                 }
                 })
             .attr("node_type", function(d) { return d.node_type; })
             .style('stroke-width', function(d) {
-                console.log('d.node_type:', d.node_type);
                 if (d.node_type == 'protein') {
                     return 10;
                 } else if (d.node_type == 'label') {

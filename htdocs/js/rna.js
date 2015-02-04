@@ -327,7 +327,9 @@ function ColorScheme(colors_text) {
         var lines = color_text.split('\n');
         var curr_molecule = '';
         var counter = 1;
-        var colors_json = {'':{}};
+        var colors_json = {domain: [0,0], color_values: {'':{}}};
+        var domain_values = [];
+
 
         for (var i = 0; i < lines.length; i++) {
 
@@ -351,17 +353,25 @@ function ColorScheme(colors_text) {
                     color = parts[1]
 
                     for (var k = 0; k < nums.length; k++) {
-                        colors_json[curr_molecule][nums[k]] = color;
+                        if (isNaN(color)) {
+                            colors_json.color_values[curr_molecule][nums[k]] = color;
+                        } else {
+                            colors_json.color_values[curr_molecule][nums[k]] = +color;
+                            domain_values.push(Number(color));
+                        }
                     }
                 } else {
                     //it's a number, so we add it to the list of values
                     //seen for this molecule
-                    colors_json[curr_molecule][counter] = Number(words[j]);
+                    colors_json.color_values[curr_molecule][counter] = Number(words[j]);
                     counter += 1;
+
+                    domain_values.push(Number(words[j]));
                 }
             }
         }
 
+        colors_json.domain = [Math.min.apply(null, domain_values), Math.max.apply(null, domain_values)];
         self.colors_json = colors_json;
 
         return self;
@@ -379,8 +389,8 @@ function ColorScheme(colors_text) {
             var max_num = Number.MIN_VALUE;
 
             // iterate once to find the min and max values;
-            for (var resnum in self.colors_json[molecule_name]) {
-                value = self.colors_json[molecule_name][resnum];
+            for (var resnum in self.colors_json.color_values[molecule_name]) {
+                value = self.colors_json.color_values[molecule_name][resnum];
                 if (typeof value == 'number') {
                     if (value < min_num)
                         min_num = value;
@@ -390,10 +400,10 @@ function ColorScheme(colors_text) {
             }
 
             // iterate again to normalize
-            for (resnum in self.colors_json[molecule_name]) {
-                value = self.colors_json[molecule_name][resnum];
+            for (resnum in self.colors_json.color_values[molecule_name]) {
+                value = self.colors_json.color_values[molecule_name][resnum];
                 if (typeof value == 'number') {
-                    self.colors_json[molecule_name][resnum] = (value - min_num ) / (max_num - min_num);
+                    self.colors_json.color_values[molecule_name][resnum] = (value - min_num ) / (max_num - min_num);
                 }
             }
         }

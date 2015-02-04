@@ -112,7 +112,6 @@ function RNA(sequence, structure, header) {
   
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
-          //console.log('self.header', self.header());
         try {
             r = new RNAGraph(self.sequence(), self.structure(), self.header())
             .elements_to_json()
@@ -121,8 +120,6 @@ function RNA(sequence, structure, header) {
             .reinforce_stems()
             .reinforce_loops()
             .connect_fake_nodes();
-
-            console.log('r', r);
 
             self.json(r);
             self.done(true);
@@ -160,7 +157,6 @@ function RNA(sequence, structure, header) {
 
 function CustomColorScheme(text) {
     var self = this;
-    console.log('Adding new color scheme');
 
     self.text = ko.observable(text);
     self.done = ko.observable(false);
@@ -202,12 +198,9 @@ function ColorViewModel() {
   self.colorSubmit = function() {
       self.submitted(false);
       self.inputError('');
-      console.log('Clicked');
-      console.log('self.input()', self.input());
       // submit new color scheme, remove trailing/leading/inbetween whitespaces
       cs =  new ColorScheme(self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,""));
-      cs.normalizeColors();
-      console.log('cs.colors_json:', cs.colors_json);
+      //cs.normalizeColors();
 
       rnaView.graph.addCustomColors(cs.colors_json);
       rnaView.colors('custom');
@@ -255,9 +248,7 @@ function AddPDBViewModel() {
   self.submit = function() {
       self.submitted(false);
       self.inputError('');
-      console.log('Clicked');
       $('#PDBSubmit').button('loading');
-      //console.log('self.input()', self.inputFile());
 
       if (self.inputFile() === null) {
         self.newInputError("ERROR Please select a PDB file");
@@ -266,7 +257,6 @@ function AddPDBViewModel() {
 
       /*
       if (self.inputFile().type != 'chemical/x-pdb') {
-        console.log('file_type:', self.inputFile().type);
         self.newInputError("ERROR: Invalid file type, please upload a PDB file");
         return;
       }
@@ -282,7 +272,6 @@ function AddPDBViewModel() {
 
 
       formData.append('pdb_file', self.inputFile(), self.inputFile().name);
-      console.log("formData", formData);
 
       $.ajax({type: "POST",
                    url: serverURL + '/pdb_to_graph',
@@ -302,20 +291,15 @@ function AddPDBViewModel() {
                         data = JSON.parse(data);
 
                         mols_json = molecules_to_json(data);
-                        console.log('mols_json', mols_json);
 
                         for (var i = 0; i < mols_json.graphs.length; i++)
                             rnaView.graph.addRNA(mols_json.graphs[i], true );
 
-                        console.log('extraLinks.length:', mols_json.extraLinks.length);
                         for (i = 0; i < mols_json.extraLinks.length; i++)
                             rnaView.graph.extraLinks.push(mols_json.extraLinks[i]);
 
                         rnaView.graph.recalculateGraph();
                         rnaView.graph.update();
-
-                        console.log('rnaView.graph:', rnaView.graph);
-
 
                         rnaView.animation(true);
                         // the extra links contain supplementary information
@@ -332,12 +316,9 @@ function AddPDBViewModel() {
 
       /*
       var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ))
-      console.log('a', a);
 
         a.success( function(data) {
-            console.log('data', data)
             $('#addColors').modal('hide');
-            console.log('updating colors')
 
             self.colorSchemeJson(data);
             rnaView.graph.addCustomColors(self.colorSchemeJson());
@@ -439,13 +420,11 @@ function AddJSONViewModel() {
           var r = new FileReader();
           r.onload = function(e) {
             var content = e.target.result;
-            console.log("Parsing JSON file", content);
 	        self.parseJSON(content);
           }
           r.readAsText(self.inputFile());
         }
         if (self.input() != '') {
-          console.log("Parsing JSON string");
           self.parseJSON(self.input());
         }
     } else {
