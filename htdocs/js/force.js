@@ -707,10 +707,6 @@ function Graph(element) {
     d3.select(element)
     .on('keydown', keydown)
     .on('keyup', keyup)
-    .on('mousedown', function() {  
-        if (d3.event) { 
-            d3.event.preventDefault(); 
-        }})
     .on('contextmenu', function() {
             d3.event.preventDefault(); 
     });
