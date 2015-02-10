@@ -327,7 +327,7 @@ function ColorScheme(colors_text) {
         var lines = color_text.split('\n');
         var curr_molecule = '';
         var counter = 1;
-        var colors_json = {domain: [0,0], color_values: {'':{}}};
+        var colors_json = {color_values: {'':{}}, range:['white', 'steelblue']};
         var domain_values = [];
 
 
@@ -346,6 +346,22 @@ function ColorScheme(colors_text) {
 
             for (var j = 0; j < words.length; j++) {
                 if (isNaN(words[j])) {
+                    if (words[j].search("range") == 0) {
+                        //there's a color scale in this entry
+                        parts = words[j].split('=');
+                        parts_right = parts[1].split(':')
+                        colors_json.range = [parts_right[0], parts_right[1]];
+                        continue;
+                    }
+
+                    if (words[j].search("domain") == 0) {
+                        //there's a color scale in this entry
+                        parts = words[j].split('=');
+                        parts_right = parts[1].split(':')
+                        colors_json.domain = [parts_right[0], parts_right[1]];
+                        continue;
+                    }
+
                     // it's not a number, should be a combination 
                     // of a number (nucleotide #) and a color
                     parts = words[j].split(':');
@@ -371,7 +387,9 @@ function ColorScheme(colors_text) {
             }
         }
 
-        colors_json.domain = [Math.min.apply(null, domain_values), Math.max.apply(null, domain_values)];
+        if (!('domain' in colors_json))
+            colors_json.domain = [Math.min.apply(null, domain_values), Math.max.apply(null, domain_values)];
+
         self.colors_json = colors_json;
 
         return self;

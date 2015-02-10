@@ -211,6 +211,126 @@ function ColorViewModel() {
   };
 }
 
+function AddMMCIFViewModel() {
+  var self = this;
+
+  self.inputError = ko.observable('');
+  self.submitted = ko.observable(false);
+  self.colorSchemeJson = ko.observable({});
+  self.inputFile = ko.observable(null);
+
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+    $('#MMCIFSubmit').button('reset');
+  };
+
+  /*
+  function progressHandlingFunction(e){
+      if(e.lengthComputable){
+          $('progress').attr({value:e.loaded,max:e.total});
+      }
+  }
+  */
+  self.cancelAddMMCIF = function() {
+    $('#addMMCIF').modal('hide');
+    // reset the file upload form
+    $('#inputMMCIFFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
+    rnaView.graph.deaf = false;
+  };
+
+  self.submit = function() {
+      self.submitted(false);
+      self.inputError('');
+      $('#MMCIFSubmit').button('loading');
+
+      if (self.inputFile() === null) {
+        self.newInputError("ERROR Please select a MMCIF file");
+        return;
+      }
+
+      /*
+      if (self.inputFile().type != 'chemical/x-pdb') {
+        self.newInputError("ERROR: Invalid file type, please upload a MMCIF file");
+        return;
+      }
+      */
+
+      if (self.inputFile().size > 50000000) {
+        self.newInputError("ERROR: Selected file is too large");
+        return;
+      }
+
+      var formData = new FormData();
+      // var xhr = new XMLHttpRequest();
+
+
+      formData.append('pdb_file', self.inputFile(), self.inputFile().name);
+
+      $.ajax({type: "POST",
+                   url: serverURL + '/mmcif_to_graph',
+                   /*
+                   xhr: function() {  // Custom XMLHttpRequest
+                       var myXhr = $.ajaxSettings.xhr();
+                       if(myXhr.upload){ // Check if upload property exists
+                           myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
+                       }
+                       return myXhr;
+                   },
+                   */
+                   data: formData,
+                   success: function (data) {
+                        $('#addMMCIF').modal('hide');
+                        rnaView.graph.deaf = false;
+                        data = JSON.parse(data);
+
+                        mols_json = molecules_to_json(data);
+
+                        for (var i = 0; i < mols_json.graphs.length; i++)
+                            rnaView.graph.addRNA(mols_json.graphs[i], true );
+
+                        for (i = 0; i < mols_json.extraLinks.length; i++)
+                            rnaView.graph.extraLinks.push(mols_json.extraLinks[i]);
+
+                        rnaView.graph.recalculateGraph();
+                        rnaView.graph.update();
+
+                        rnaView.animation(true);
+                        // the extra links contain supplementary information
+                        rnaView.graph.changeColorScheme(rnaView.colors());
+                        
+                   },
+                   error: function (jqXHR) {
+                        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+                   },
+                   cache: false,
+                   contentType: false,
+                   processData: false
+      });
+
+      /*
+      var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ))
+
+        a.success( function(data) {
+            $('#addColors').modal('hide');
+
+            self.colorSchemeJson(data);
+            rnaView.graph.addCustomColors(self.colorSchemeJson());
+            rnaView.graph.changeColorScheme(rnaView.colors());
+        }).error( function(jqXHR) {
+            console.log('error again')
+            self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+            //$('#ColorSubmit').button('reset');
+        });
+    */
+  };
+}
 function AddPDBViewModel() {
   var self = this;
 
@@ -720,6 +840,16 @@ function RNAViewModel() {
     }
   });
 
+  self.displayProteinBindingHighlighting = ko.observable(true);
+  
+  self.displayProteinBindingHighlighting.subscribe (function(newValue) {
+    if (self.graph === null) {
+      console.log("graph is null, won't change the pseudoknot link option");
+    } else {
+      self.graph.displayProteinBindingHighlighting(newValue);
+    }
+  });
+
   self.displayProteinLinks = ko.observable(true);
   
   self.displayProteinLinks.subscribe (function(newValue) {
@@ -759,6 +889,12 @@ function RNAViewModel() {
   self.showAddPDB = function() {
     $('#PDBSubmit').button('reset');
     $('#addPDB').modal('show');
+    self.graph.deaf = true;
+  };
+
+  self.showAddMMCIF = function() {
+    $('#MMCIFSubmit').button('reset');
+    $('#addMMCIF').modal('show');
     self.graph.deaf = true;
   };
 
@@ -853,6 +989,7 @@ function RNAViewModel() {
 var rnaView = new RNAViewModel();
 var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
+var addMmcifView = new AddMMCIFViewModel();
 var addJSONView = new AddJSONViewModel();
 var colorView = new ColorViewModel();
 
@@ -860,4 +997,5 @@ ko.applyBindings(rnaView, document.getElementById('chart'));
 ko.applyBindings(addView, document.getElementById('add'));
 ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));
+ko.applyBindings(addMmcifView, document.getElementById('addMMCIF'));
 ko.applyBindings(addJSONView, document.getElementById('addJSON'));

@@ -145,6 +145,36 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
+  <!-- 'Add MMCIF molecule' modal -->
+  <div class="modal fade" id="addMMCIF" > <!-- data-bind="showModal: loaded"-->
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Add MMCIF File</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label for="Input">File Input</label>
+              <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
+                  <span class="glyphicon glyphicon-remove button" aria-hidden="true" data-bind="click: function() { $('#inputMMCIFFile').val(''); inputFile(null); }, visible: inputFile"></span>
+                  <input type="file" id="inputMMCIFFile" data-bind="event: { change: function() { inputFile($element.files[0]) }}">
+                   <p class="help-block">Please select a MMCIF file to extract the secondary structure from.</p>
+              </div>
+            </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
+          </form>
+          <!-- <progress></progress> -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelAddMMCIF">Cancel</button>
+          <button type="submit" id="MMCIFSubmit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <!-- 'Custom Colors' modal -->
   <div class="modal fade" id="addColors" > <!-- data-bind="showModal: loaded"-->
     <div class="modal-dialog">
@@ -322,6 +352,7 @@ AACCGG
             <ul class="dropdown-menu" role="menu">
                 <li role="presentation"><a data-bind="click: showAdd" >Add Sequence and Secondary Structure</a></li>
                 <li role="presentation"><a data-bind="click: showAddPDB">Add PDB File</a></li>
+                <li role="presentation"><a data-bind="click: showAddMMCIF">Add MMCIF File</a></li>
                 <li role="presentation"><a data-bind="click: showAddJSON">Add JSON File</a></li>
             </ul>
         </div>
@@ -413,6 +444,11 @@ AACCGG
               <li role="presentation" data-bind="css: {active: displayProteinLinks}">
                 <label role="menuitem">
                   <input type="checkbox" data-bind="checked: displayProteinLinks"> Protein Links
+                </label>
+              </li>
+              <li role="presentation" data-bind="css: {active: displayProteinBindingHighlighting}">
+                <label role="menuitem">
+                  <input type="checkbox" data-bind="checked: displayProteinBindingHighlighting"> Protein Bound Nucleotide Highlighting 
                 </label>
               </li>
               <li role="presentation" class="divider"></li>

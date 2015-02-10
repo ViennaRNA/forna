@@ -75,6 +75,8 @@ function Graph(element) {
         "labelNodeFill": 'white',
         "backgroundColorDefault": "white",
         "backgroundColor": "white",
+        "proteinBindingHighlighting": true,
+        "proteinBindingHighlightingDefault": true
     };
 
     self.colorScheme = 'structure';
@@ -321,9 +323,9 @@ function Graph(element) {
             // scale to be used in case the user passes scalar
             // values rather than color names
             scale = d3.scale.linear()
-            .range(['white', 'steelblue'])
             .interpolate(d3.interpolateLab)
-            .domain(self.customColors.domain);
+            .domain(self.customColors.domain)
+            .range(self.customColors.range);
 
             console.log('scale.domain', scale.domain())
 
@@ -952,7 +954,7 @@ function Graph(element) {
       vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
     };
-    
+
     self.displayNodeOutline = function(value) {
       if (value === true) {
         self.displayParameters.nodeStrokeWidth=self.displayParameters.nodeStrokeWidthDefault;
@@ -960,6 +962,8 @@ function Graph(element) {
         self.displayParameters.nodeStrokeWidth=0;
       }
       svg.selectAll('circle').style('stroke-width', self.displayParameters.nodeStrokeWidth);
+      svg.selectAll('circle').style('stroke', 'gray');
+
     };
     
     self.displayNodeLabel = function(value) {
@@ -1000,6 +1004,28 @@ function Graph(element) {
 
       svg.selectAll("[link_type=protein_chain]").style('stroke-opacity', self.displayParameters.proteinLinkOpacity);
     };
+
+    self.displayProteinBindingHighlighting = function(value) {
+        if (value == true) {
+            self.displayParameters.proteinBindingHighlighting=self.displayParameters.proteinBindingHighlightingDefault;
+        } else {
+            self.displayParameters.proteinBindingHighlighting=false;
+        }
+
+        self.displayNodeOutline(true);
+
+        if (self.displayParameters.proteinBindingHighlighting) {
+            var protein_links = svg.selectAll('[link_type=protein_chain]');
+            protein_links.each(function(d) {
+                var boundNodes = svg.selectAll("circle")
+                var onlyThese = boundNodes.filter(function(d1) { 
+                    return d1.node_type == 'nucleotide' && (d1 == d.source || d1 == d.target );
+                });
+
+                onlyThese.style('stroke-width', 3).style('stroke', 'red')
+            })
+        }
+    }
 
     function nudge(dx, dy) {
         node.filter(function(d) { return d.selected; })
@@ -1232,6 +1258,7 @@ function Graph(element) {
         }
 
         self.updateNumbering();
+        self.displayProteinBindingHighlighting(true);
     };
     
     setPlottingArea();

@@ -12,6 +12,7 @@ __email__       = "jango@tbi.univie.ac.at"
 
 from flask import Flask, request, abort
 
+import Bio.PDB as bpdb
 import forna
 import json
 import re
@@ -157,7 +158,23 @@ def create_app(static):
         name = secure_filename(request.files['pdb_file'].filename)
 
         try:
-            result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), 
+                                       name, parser=bpdb.PDBParser())
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "PDB file parsing error: {}".format(str(ex)))
+
+        return json.dumps(result), 201
+
+    @app.route('/mmcif_to_graph', methods=['POST'])
+    def mmcif_to_graph():
+        from werkzeug import secure_filename
+
+        name = secure_filename(request.files['pdb_file'].filename)
+
+        try:
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), 
+                                       name, parser=bpdb.MMCIFParser())
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "PDB file parsing error: {}".format(str(ex)))
