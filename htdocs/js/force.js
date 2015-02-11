@@ -429,11 +429,11 @@ function Graph(element) {
                 .x(xScale)
                 .y(yScale)
                .on("brushstart", function(d) {
-                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
+                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
                    gnodes.each(function(d) { d.previouslySelected = ctrl_keydown && d.selected; });
                })
                .on("brush", function() {
-                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('circle');
+                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
                    var extent = d3.event.target.extent();
 
                    gnodes.classed("selected", function(d) {
@@ -455,7 +455,7 @@ function Graph(element) {
       brush.select('.background').style('cursor', 'auto')
 
     function zoomstart() {
-        var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+        var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
         node.each(function(d) {
                 d.selected = false;
                 d.previouslySelected = false;
@@ -571,11 +571,11 @@ function Graph(element) {
 
       if (!d.selected && !ctrl_keydown) {
           // if this node isn't selected, then we have to unselect every other node
-            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
             node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
           }
 
-        d3.select(this).select('circle').classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
+        d3.select(this).select('.outline_node').classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
 
         var toDrag = selectedNodes(d);
         toDrag.each(function(d1) {
@@ -816,7 +816,7 @@ function Graph(element) {
 
         if (!ctrl_keydown) {
             //if the shift key isn't down, unselect everything
-            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
             node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
         }
 
@@ -863,7 +863,7 @@ function Graph(element) {
     node_mousedown = function(d) {
       if (!d.selected && !ctrl_keydown) {
           // if this node isn't selected, then we have to unselect every other node
-            var node = vis_nodes.selectAll('g.gnode').selectAll('circle');
+            var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
             node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
           }
 
@@ -1008,6 +1008,7 @@ function Graph(element) {
             self.displayParameters.proteinBindingHighlighting=false;
         }
 
+        /*
         self.displayNodeOutline(true);
 
         if (self.displayParameters.proteinBindingHighlighting) {
@@ -1021,6 +1022,7 @@ function Graph(element) {
                 onlyThese.style('stroke-width', 3).style('stroke', 'red')
             })
         }
+        */
     }
 
     function nudge(dx, dy) {
@@ -1168,6 +1170,16 @@ function Graph(element) {
             xlink.on('click', link_click);
 
             var circle_update = gnodes.select('circle');
+
+            // create nodes behind the circles which will serve to highlight them
+            var nucleotide_nodes = gnodes.filter(function(d) { return d.node_type == 'nucleotide';})
+            console.log('nucleotide_nodes', nucleotide_nodes);
+            nucleotide_nodes.append("svg:circle")
+            .attr('class', "outline_node")
+            .attr("r", function(d) { return d.radius+1; })
+            .style('stroke_width', 1)
+            .style('fill', 'red')
+
 
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")

@@ -57,8 +57,12 @@ g.gnode {
 
 }
 
-circle.node.selected {
-  stroke: red;
+circle.outline_node.selected {
+    visibility: visible;
+}
+
+circle.outline_node {
+    visibility: hidden;
 }
 
 .brush .extent {
