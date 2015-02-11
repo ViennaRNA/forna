@@ -1172,7 +1172,9 @@ function Graph(element) {
             var circle_update = gnodes.select('circle');
 
             // create nodes behind the circles which will serve to highlight them
-            var nucleotide_nodes = gnodes.filter(function(d) { return d.node_type == 'nucleotide';})
+            var nucleotide_nodes = gnodes.filter(function(d) { 
+                return d.node_type == 'nucleotide' || d.node_type == 'label';
+            })
             console.log('nucleotide_nodes', nucleotide_nodes);
             nucleotide_nodes.append("svg:circle")
             .attr('class', "outline_node")
