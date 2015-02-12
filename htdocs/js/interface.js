@@ -663,7 +663,7 @@ function AddViewModel() {
             }
             rna = new tmpRNA();
             rna.header = line.substring(1);
-          } else if (/^[ACGTUWSMKRYBDHV]+$/.test(line)) {
+          } else if (/^[ACGTUWSMKRYBDHV-]+$/.test(line.toUpperCase())) {
             // this is a sequence
             if (rna === undefined) {
               rna = new tmpRNA();
@@ -967,26 +967,26 @@ function RNAViewModel() {
   
   self.saveSVG = function() {
     console.log("saving svg...");
-    var fake_links = Array.prototype.slice.call(document.querySelectorAll('[link_type=fake]'));
-    var parents = fake_links.map(function(d) { 
-        console.log('d', d); 
+    var svg_clone = $('#plotting-area').clone();
+    //var to_remove = $('[link_type=fake],.brush,.outline_node', to_remove.clone());
+    var to_remove = $('[link_type=fake],.brush,.outline_node', svg_clone).toArray();
+
+    console.log('to_remove', to_remove);
+
+    var parents = to_remove.map(function(d) { 
         return d.parentNode; 
     });
 
-    for (var i = 0; i < fake_links.length; i++) {
-        parents[i].removeChild(fake_links[i]);
+    for (var i = 0; i < to_remove.length; i++) {
+        parents[i].removeChild(to_remove[i]);
     }
 
-    var svg = document.getElementById('plotting-area');
-    //svg = rnaView.graph.svg[0];
+    //var svg = document.getElementById('plotting-area');
+    var svg = svg_clone.get(0);
 
     //get svg source.
     var serializer = new XMLSerializer();
     var source = serializer.serializeToString(svg);
-
-    for (var i = 0; i < fake_links.length; i++) {
-        parents[i].appendChild(fake_links[i]);
-    }
 
     //add name spaces.
     if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
