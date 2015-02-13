@@ -5,10 +5,15 @@ svg {
   min-height: 100%;
 }
 
+
 circle.node {
-  stroke: #fff;
+  stroke: #ccc;
   stroke-width: 1.5px;
   opacity: 1.;
+}
+
+circle.node.label {
+    stroke: transparent;
 }
 
 line.link {
@@ -51,6 +56,20 @@ text {
 g.gnode {
 
 }
+
+circle.outline_node.selected {
+    visibility: visible;
+}
+
+circle.outline_node {
+    visibility: hidden;
+}
+
+.brush .extent {
+  fill-opacity: .1;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+  }
 
 .noselect {
     -webkit-touch-callout: none;

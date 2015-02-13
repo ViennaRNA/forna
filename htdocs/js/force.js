@@ -40,9 +40,9 @@ function Graph(element) {
         mouseup_node = null;
 
     var xScale = d3.scale.linear()
-    .domain([0,self.svgW]);
+    .domain([0,self.svgW]).range([0,self.svgW]);
     var yScale = d3.scale.linear()
-    .domain([0,self.svgH]);
+    .domain([0,self.svgH]).range([0, self.svgH]);
 
     var graph = self.graph = {
         "nodes":[],
@@ -64,6 +64,8 @@ function Graph(element) {
         "nodeLabelFill":  d3.rgb(50,50,50),
         "linkOpacityDefault": 0.8,
         "linkOpacity": 0.8,
+        "proteinLinkOpacityDefault": 0.8,
+        "proteinLinkOpacity": 0.8,
         "pseudoknotLinkOpacityDefault": 0.8,
         "pseudoknotLinkOpacity": 0.8,
         "labelLinkOpacityDefault": 0.8,
@@ -73,6 +75,8 @@ function Graph(element) {
         "labelNodeFill": 'white',
         "backgroundColorDefault": "white",
         "backgroundColor": "white",
+        "proteinBindingHighlighting": true,
+        "proteinBindingHighlightingDefault": true
     };
 
     self.colorScheme = 'structure';
@@ -235,11 +239,14 @@ function Graph(element) {
         self.svgH = svgH;
 
         //Set the output range of the scales
-        xScale.range([0, svgW]);
-        yScale.range([0, svgH]);
+        xScale.range([0, svgW]).domain([0, svgW]);
+        yScale.range([0, svgH]).domain([0, svgH]);
 
         //re-attach the scales to the zoom behaviour
         zoomer.x(xScale)
+        .y(yScale);
+
+        self.brusher.x(xScale)
         .y(yScale);
 
         //resize the background
@@ -316,9 +323,11 @@ function Graph(element) {
             // scale to be used in case the user passes scalar
             // values rather than color names
             scale = d3.scale.linear()
-            .range(['white', 'steelblue'])
             .interpolate(d3.interpolateLab)
-            .domain([0, 1]);
+            .domain(self.customColors.domain)
+            .range(self.customColors.range);
+
+            console.log('scale.domain', scale.domain())
 
 
             nodes.style('fill', function(d) {
@@ -326,14 +335,14 @@ function Graph(element) {
                     return 'white';
                 } 
                 
-                if (self.customColors.hasOwnProperty(d.struct_name) &&
-                    self.customColors[d.struct_name].hasOwnProperty(d.num)) {
+                if (self.customColors.color_values.hasOwnProperty(d.struct_name) &&
+                    self.customColors.color_values[d.struct_name].hasOwnProperty(d.num)) {
                     // if a molecule name is specified, it supercedes the default colors
                     // (for which no molecule name has been specified)
-                    molecule_colors = self.customColors[d.struct_name];
+                    molecule_colors = self.customColors.color_values[d.struct_name];
                     return change_colors(molecule_colors, d, scale);
-                } else if (self.customColors.hasOwnProperty('')) {
-                    molecule_colors = self.customColors[''];
+                } else if (self.customColors.color_values.hasOwnProperty('')) {
+                    molecule_colors = self.customColors.color_values[''];
                     return change_colors(molecule_colors, d, scale);
                 }
 
@@ -372,17 +381,26 @@ function Graph(element) {
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
 
-    zoomer = d3.behavior.zoom().
-        scaleExtent([0.1,10]).
-        on("zoom", redraw);
+    zoomer = d3.behavior.zoom()
+        .scaleExtent([0.1,10])
+        .x(xScale)
+        .y(yScale)
+        .on("zoomstart", zoomstart)
+        .on("zoom", redraw);
 
     d3.select(element).select("svg").remove();
 
     var svg = d3.select(element)
+    .attr("tabindex", 1)
+    .on("keydown.brush", keydown)
+    .on("keyup.brush", keyup)
+    .each(function() { this.focus(); })
     .append("svg:svg")
     .attr("width", self.svgW)
     .attr("height", self.svgH)
     .attr("id", 'plotting-area');
+
+    self.svg = svg;
 
     var svg_graph = svg.append('svg:g')
     .call(zoomer)
@@ -399,9 +417,51 @@ function Graph(element) {
     //.attr("pointer-events", "all")
     .attr("id", "zrect");
 
+    var brush = svg_graph.append('g')
+    .datum(function() { return {selected: false, previouslySelected: false}; })
+    .attr("class", "brush");
     var vis = svg_graph.append("svg:g");
     var vis_links = vis.append("svg:g");
     var vis_nodes = vis.append("svg:g");
+
+
+    self.brusher = d3.svg.brush()
+                .x(xScale)
+                .y(yScale)
+               .on("brushstart", function(d) {
+                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
+                   gnodes.each(function(d) { d.previouslySelected = ctrl_keydown && d.selected; });
+               })
+               .on("brush", function() {
+                   var gnodes = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
+                   var extent = d3.event.target.extent();
+
+                   gnodes.classed("selected", function(d) {
+                       return d.selected = d.previouslySelected ^
+                       (extent[0][0] <= d.x && d.x < extent[1][0]
+                        && extent[0][1] <= d.y && d.y < extent[1][1]);
+                   });
+               })
+               .on("brushend", function() {
+                   d3.event.target.clear();
+                   d3.select(this).call(d3.event.target);
+               })
+
+      brush.call(self.brusher)
+          .on("mousedown.brush", null)
+          .on("touchstart.brush", null)                                                                      
+          .on("touchmove.brush", null)                                                                       
+          .on("touchend.brush", null);                                                                       
+      brush.select('.background').style('cursor', 'auto')
+
+    function zoomstart() {
+        var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
+        node.each(function(d) {
+                d.selected = false;
+                d.previouslySelected = false;
+                })
+        node.classed("selected", false);
+    }
 
     function redraw() {
         vis.attr("transform",
@@ -491,9 +551,38 @@ function Graph(element) {
     }
 
     var shift_keydown = false;
+    var ctrl_keydown = false;
+
+    function selectedNodes(mouseDownNode) {
+        var gnodes = vis_nodes.selectAll('g.gnode');
+
+        if (ctrl_keydown) {
+            return gnodes.filter(function(d) { return d.selected; });
+
+            //return d3.selectAll('[struct_name=' + mouseDownNode.struct_name + ']');
+        } else {
+            return gnodes.filter(function(d) { return d.selected ; });
+            //return d3.select(this);
+        }
+    }
 
     function dragstarted(d) {
         d3.event.sourceEvent.stopPropagation();
+
+      if (!d.selected && !ctrl_keydown) {
+          // if this node isn't selected, then we have to unselect every other node
+            var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
+            node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
+          }
+
+        d3.select(this).select('.outline_node').classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
+
+        var toDrag = selectedNodes(d);
+        toDrag.each(function(d1) {
+            d1.fixed |= 2;
+        });
+
+        //d3.event.sourceEvent.stopPropagation();
         //d3.select(self).classed("dragging", true);
         //
         rnaView.animation(true);
@@ -501,10 +590,26 @@ function Graph(element) {
 
     function dragged(d) {
 
+        var toDrag = selectedNodes(d);
+
+        toDrag.each(function(d1) {
+            d1.x += d3.event.dx;
+            d1.y += d3.event.dy;
+
+            d1.px += d3.event.dx;
+            d1.py += d3.event.dy;
+        });
+
+        force.resume();
+        d3.event.sourceEvent.preventDefault();
     }
 
     function dragended(d) {
-        //d3.select(self).classed("dragging", false);
+        var toDrag = selectedNodes(d);
+
+        toDrag.each(function(d1) {
+            d1.fixed &= ~6;
+        });
     }
 
     function collide(node) {
@@ -532,8 +637,8 @@ function Graph(element) {
     }
 
 
-    var drag = force.drag()
-    .origin(function(d) { return d; })
+    var drag = d3.behavior.drag()
+    //.origin(function(d) { return d; })
     .on("dragstart", dragstarted)
     .on("drag", dragged)
     .on("dragend", dragended);
@@ -544,10 +649,14 @@ function Graph(element) {
             return;
 
         if (shift_keydown) return;
+
         key_is_down = true;
         switch (d3.event.keyCode) {
             case 16:
                 shift_keydown = true;
+                break;
+            case 17:
+                ctrl_keydown = true;
                 break;
             case 67: //c
                 self.center_view();
@@ -560,7 +669,7 @@ function Graph(element) {
                 }
         }
 
-        if (shift_keydown) {
+        if (shift_keydown || ctrl_keydown) {
             svg_graph.call(zoomer)
             .on("mousedown.zoom", null)
             .on("touchstart.zoom", null)
@@ -571,20 +680,36 @@ function Graph(element) {
             vis.selectAll('g.gnode')
             .on('mousedown.drag', null);
         }
+
+        if (ctrl_keydown) {
+          brush.select('.background').style('cursor', 'crosshair')
+          brush.call(self.brusher);
+        }
     }
 
     function keyup() {
         shift_keydown = false;
+        ctrl_keydown = false;
 
+        brush.call(self.brusher)
+        .on("mousedown.brush", null)
+        .on("touchstart.brush", null)                                                                      
+        .on("touchmove.brush", null)                                                                       
+        .on("touchend.brush", null);                                                                       
+
+        brush.select('.background').style('cursor', 'auto')
         svg_graph.call(zoomer);
 
         vis.selectAll('g.gnode')
         .call(drag);
     }
 
-    d3.select(window)
+    d3.select(element)
     .on('keydown', keydown)
-    .on('keyup', keyup);
+    .on('keyup', keyup)
+    .on('contextmenu', function() {
+            d3.event.preventDefault(); 
+    });
 
     link_key = function(d) {
         return d.uid;
@@ -627,6 +752,7 @@ function Graph(element) {
             if (d.source.rna == d.target.rna) {
                 var r = d.source.rna;
 
+                r.add_pseudoknots();
                 r.pairtable[d.source.num] = 0;
                 r.pairtable[d.target.num] = 0;
 
@@ -685,6 +811,19 @@ function Graph(element) {
         self.update();
     };
 
+    node_mouseclick = function(d) {
+        if (d3.event.defaultPrevented) return;
+
+        if (!ctrl_keydown) {
+            //if the shift key isn't down, unselect everything
+            var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
+            node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
+        }
+
+        // always select this node
+        d3.select(this).select('circle').classed("selected", d.selected = !d.previouslySelected);
+    }
+
     node_mouseup = function(d) {
         if (mousedown_node) {
             mouseup_node = d;
@@ -699,7 +838,6 @@ function Graph(element) {
                             (self.graph.links[i].target == mouseup_node)) {
 
                     if (self.graph.links[i].link_type == 'basepair' || self.graph.links[i].link_type == 'pseudoknot') {
-                        console.log('basepair_exists');
                         return;
                     }
                 }
@@ -709,7 +847,6 @@ function Graph(element) {
                          ((self.graph.links[i].source == mousedown_node)  && 
                           (self.graph.links[i].target == mouseup_node))) {
                     if (self.graph.links[i].link_type == 'backbone') {
-                        console.log('backbone exists');
                         return;
                     }
                 }
@@ -724,9 +861,19 @@ function Graph(element) {
     };
 
     node_mousedown = function(d) {
+      if (!d.selected && !ctrl_keydown) {
+          // if this node isn't selected, then we have to unselect every other node
+            var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
+            node.classed("selected", function(p) { return p.selected =  p.previouslySelected = false; })
+          }
+
+
+          d3.select(this).classed("selected", function(p) { d.previouslySelected = d.selected; return d.selected = true; });
+
         if (!shift_keydown) {
             return;
         }
+
         mousedown_node = d;
 
         drag_line
@@ -770,7 +917,7 @@ function Graph(element) {
     };
     
     self.setPseudoknotStrength = function(value) {
-      self.linkStrength.pseudoknot = value;
+      self.linkStrengths.pseudoknot = value;
       self.update();
     };
     
@@ -794,11 +941,16 @@ function Graph(element) {
         self.displayParameters.labelLinkOpacity=0;
         self.displayParameters.labelNodeFill = 'transparent';
       }
+
+      self.updateNumbering();
+    };
+
+    self.updateNumbering = function() {
       vis_nodes.selectAll('[node_type=label]').style('fill', self.displayParameters.labelNodeFill);
       vis_nodes.selectAll('[label_type=label]').style('fill', self.displayParameters.labelTextFill);
       vis_links.selectAll('[link_type=label_link]').style('stroke-opacity', self.displayParameters.labelLinkOpacity);
     };
-    
+
     self.displayNodeOutline = function(value) {
       if (value === true) {
         self.displayParameters.nodeStrokeWidth=self.displayParameters.nodeStrokeWidthDefault;
@@ -806,6 +958,8 @@ function Graph(element) {
         self.displayParameters.nodeStrokeWidth=0;
       }
       svg.selectAll('circle').style('stroke-width', self.displayParameters.nodeStrokeWidth);
+      svg.selectAll('circle').style('stroke', 'gray');
+
     };
     
     self.displayNodeLabel = function(value) {
@@ -824,7 +978,7 @@ function Graph(element) {
         self.displayParameters.linkOpacity=0;
       }
 
-      svg.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
+      svg.selectAll("[link_type=real],[link_type=basepair],[link_type=backbone],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain]").style('stroke-opacity', self.displayParameters.linkOpacity);
     };
 
     self.displayPseudoknotLinks = function(value) {
@@ -836,13 +990,61 @@ function Graph(element) {
 
       svg.selectAll("[link_type=pseudoknot]").style('stroke-opacity', self.displayParameters.pseudoknotLinkOpacity);
     };
-    
+
+    self.displayProteinLinks = function(value) {
+      if (value === true) {
+        self.displayParameters.proteinLinkOpacity=self.displayParameters.proteintLinkOpacityDefault;
+      } else {
+        self.displayParameters.proteinLinkOpacity=0;
+      }
+
+      svg.selectAll("[link_type=protein_chain]").style('stroke-opacity', self.displayParameters.proteinLinkOpacity);
+    };
+
+    self.displayProteinBindingHighlighting = function(value) {
+        if (value == true) {
+            self.displayParameters.proteinBindingHighlighting=self.displayParameters.proteinBindingHighlightingDefault;
+        } else {
+            self.displayParameters.proteinBindingHighlighting=false;
+        }
+
+        /*
+        self.displayNodeOutline(true);
+
+        if (self.displayParameters.proteinBindingHighlighting) {
+            var protein_links = svg.selectAll('[link_type=protein_chain]');
+            protein_links.each(function(d) {
+                var boundNodes = svg.selectAll("circle")
+                var onlyThese = boundNodes.filter(function(d1) { 
+                    return d1.node_type == 'nucleotide' && (d1 == d.source || d1 == d.target );
+                });
+
+                onlyThese.style('stroke-width', 3).style('stroke', 'red')
+            })
+        }
+        */
+    }
+
+    function nudge(dx, dy) {
+        node.filter(function(d) { return d.selected; })
+        .attr("cx", function(d) { return d.x += dx; })
+        .attr("cy", function(d) { return d.y += dy; })
+
+        link.filter(function(d) { return d.source.selected; })
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; });
+
+        link.filter(function(d) { return d.target.selected; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+        d3.event.preventDefault();
+    }
+
     self.update = function () {
         force.nodes(self.graph.nodes)
         .links(self.graph.links);
         
-        console.log('links', graph.links)
-
         if (self.animation) {
           force.start();
         }
@@ -860,6 +1062,12 @@ function Graph(element) {
         .style("stroke-opacity", self.displayParameters.linkOpacity)
         .style("stroke-width", function(d) { 
             return 2;
+        })
+        .attr('visibility', function(d) {
+            if (d.link_type == 'fake')
+                return 'hidden';
+            else
+                return 'visible';
         })
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
@@ -897,8 +1105,6 @@ function Graph(element) {
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
 
-
-
             var gnodes = vis_nodes.selectAll('g.gnode')
             .data(self.graph.nodes, node_key);
             //.attr('pointer-events', 'all');
@@ -906,14 +1112,16 @@ function Graph(element) {
             gnodes_enter = gnodes.enter()
             .append('g')
             .classed('noselect', true)
-            .classed('gnode', true);
-            //.each(function(d) { console.log('entering', d); })
+            .classed('gnode', true)
+             .attr('struct_name', function(d) { return d.struct_name; })
+             .each( function(d) { d.selected = d.previouslySelected = false; })
 
             gnodes_enter
             .call(drag)
             .on('mousedown', node_mousedown)
             .on('mousedrag', function(d) {})
             .on('mouseup', node_mouseup)
+            .on('click', node_mouseclick)
             .transition()
             .duration(750)
             .ease("elastic")
@@ -963,21 +1171,33 @@ function Graph(element) {
 
             var circle_update = gnodes.select('circle');
 
+            // create nodes behind the circles which will serve to highlight them
+            var nucleotide_nodes = gnodes.filter(function(d) { 
+                return d.node_type == 'nucleotide' || d.node_type == 'label';
+            })
+            console.log('nucleotide_nodes', nucleotide_nodes);
+            nucleotide_nodes.append("svg:circle")
+            .attr('class', "outline_node")
+            .attr("r", function(d) { return d.radius+1; })
+            .style('stroke_width', 1)
+            .style('fill', 'red')
+
+
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
+            .classed("label", function(d) { return d.node_type == 'label'; })
             .attr("r", function(d) { 
                 if (d.node_type == 'middle') return 0; 
                 else {
-                    console.log('d.radius:', d.radius); 
                     return d.radius; 
                 }
                 })
             .attr("node_type", function(d) { return d.node_type; })
-            .style("stroke", node_stroke)
             .style('stroke-width', function(d) {
-                console.log('d.node_type:', d.node_type);
                 if (d.node_type == 'protein') {
                     return 10;
+                } else if (d.node_type == 'label') {
+                    return 0;
                 }})
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
             .style("fill", node_fill)
@@ -992,10 +1212,22 @@ function Graph(element) {
             .attr('class', 'node-label')
             .attr("label_type", function(d) { return d.node_type; })
             .append("svg:title")
-            .text(function(d) { return d.num; });
+            .text(function(d) { 
+                if (d.node_type == 'nucleotide') {
+                    return d.struct_name + ":" + d.num;
+                } else {
+                    return '';
+                }
+            });
 
             node.append("svg:title")
-            .text(function(d) { return d.num; });
+            .text(function(d) { 
+                if (d.node_type == 'nucleotide') {
+                    return d.struct_name + ":" + d.num;
+                } else {
+                    return '';
+                }
+            });
 
             gnodes.exit().remove();
 
@@ -1034,6 +1266,9 @@ function Graph(element) {
         if (self.animation) {
           force.start();
         }
+
+        self.updateNumbering();
+        self.displayProteinBindingHighlighting(true);
     };
     
     setPlottingArea();

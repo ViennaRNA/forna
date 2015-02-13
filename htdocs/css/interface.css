@@ -126,4 +126,36 @@ textarea {
 @-moz-keyframes spinm {
     from { -moz-transform: rotate(0deg);}
     to { -moz-transform: rotate(360deg);}
+
+/* enable absolute positioning for inner addon buttons */
+.inner-addon { 
+    position: relative; 
+}
+
+/* style icon */
+.inner-addon .inner-item {
+  position: absolute;
+  padding: 8px;
+}
+
+/* align icon */
+.left-addon .inner-item  { left:  0px;}
+.right-addon .inner-item { right: 6px;}
+.inner-item-bottom { bottom: 0px;}
+.inner-item-top { top: 0px;}
+
+/* add padding  */
+.left-addon input  { padding-left:  30px; }
+.right-addon input { padding-right: 30px; }
+
+.inner-item {
+    color: lightgray;
+}
+
+.inner-item-button {
+    cursor: pointer;
+}
+
+.inner-item-button:hover {
+    color:gray;
 }

@@ -55,12 +55,19 @@
           <form role="form">
             <div class="form-group">
               <label for="Input">Sequence and Structure</label>
-              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
+              <div class="inner-addon right-addon">
+                  <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { input(''); }"></span>
+                  <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
+                  <span class="inner-item inner-item-bottom" data-bind="text: cursorPosition"></span>
+              </div>
             </div><br>
             <div class="form-group">
-              <label for="Input">And/Or load from File</label>
-              <input type="file" id="inputFastaFile" data-bind="event: { change: function() { uploadFasta($element.files[0]) }}">
-               <p class="help-block">Instead or in addition you may select a Fasta file.</p>
+              <label for="inputFastaFile">And/Or load from File</label>
+              <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
+                  <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { $('#inputFastaFile').val(''); inputFile(null); }, visible: inputFile"></span>
+                  <input type="file" id="inputFastaFile" data-bind="event: { change: function() { inputFile($element.files[0]) }}">
+                   <p class="help-block">Instead or in addition you may select a Fasta file.</p>
+              </div>
             </div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
@@ -132,13 +139,20 @@
         <div class="modal-body">
           <form role="form">
             <div class="form-group">
-              <label for="Input">JSON Text</label>
-              <textarea type="text" class="form-control" id="Input" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
+              <label for="JSONInput">JSON Text</label>
+                  <div class="inner-addon right-addon">
+                    <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { input(''); }"></span>
+                    <textarea type="text" class="form-control" id="JSONInput" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
+                    <span class="inner-item inner-item-bottom" data-bind="text: cursorPosition"></span>
+                  </div>
             </div><br>
             <div class="form-group">
-              <label for="Input">And/Or load from File</label>
-              <input type="file" id="inputJSONFile" data-bind="event: { change: function() { uploadJSON($element.files[0]) }}">
-               <p class="help-block">Instead or in addition you may select a JSON file.</p>
+              <label for="inputJSONFile">And/Or load from File</label>
+              <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
+                  <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { $('#inputJSONFile').val(''); inputFile(null); }, visible: inputFile"></span>
+                  <input type="file" id="inputJSONFile" data-bind="event: { change: function() { inputFile($element.files[0]) }}">
+                   <p class="help-block">Instead or in addition you may select a JSON file.</p>
+              </div>
             </div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
@@ -162,9 +176,12 @@
         <div class="modal-body">
           <form role="form">
             <div class="form-group">
-              <label for="Input">File Input</label>
-              <input type="file" id="inputPDBFile" data-bind="event: { change: function() { uploadPDB($element.files[0]) }}">
-               <p class="help-block">Please select a PDB file to extract the secondary structure from.</p>
+              <label for="inputPDBFile">File Input</label>
+              <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
+                  <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { $('#inputPDBFile').val(''); inputFile(null); }, visible: inputFile"></span>
+                  <input type="file" id="inputPDBFile" data-bind="event: { change: function() { inputFile($element.files[0]) }}">
+                   <p class="help-block">Please select a PDB file to extract the secondary structure from.</p>
+              </div>
             </div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
@@ -173,6 +190,36 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelAddPDB">Cancel</button>
           <button type="submit" id="PDBSubmit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <!-- 'Add MMCIF molecule' modal -->
+  <div class="modal fade" id="addMMCIF" > <!-- data-bind="showModal: loaded"-->
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Add MMCIF File</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label for="Input">File Input</label>
+              <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
+                  <span class="glyphicon glyphicon-remove button" aria-hidden="true" data-bind="click: function() { $('#inputMMCIFFile').val(''); inputFile(null); }, visible: inputFile"></span>
+                  <input type="file" id="inputMMCIFFile" data-bind="event: { change: function() { inputFile($element.files[0]) }}">
+                   <p class="help-block">Please select a MMCIF file to extract the secondary structure from.</p>
+              </div>
+            </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
+          </form>
+          <!-- <progress></progress> -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: cancelAddMMCIF">Cancel</button>
+          <button type="submit" id="MMCIFSubmit" data-bind="click: submit" class="btn btn-primary" data-loading-text="Loading...">Submit</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -189,7 +236,7 @@
         <div class="modal-body">
           <form role="form">
             <div class="form-group">
-              <label for="Input">Color Specifications:</label>
+              <label for="ColorInput">Color Specifications:</label>
               <textarea type="text" class="form-control" id="ColorInput" placeholder="" rows="2" data-bind="value: input" autofocus required></textarea>
             </div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
@@ -356,6 +403,7 @@ AACCGG
                 <li role="presentation"><a data-bind="click: showAdd" >Add Sequence and Secondary Structure</a></li>
                 <li role="presentation"><a data-bind="click: showAddDB" >Add from Database</a></li>
                 <li role="presentation"><a data-bind="click: showAddPDB">Add PDB File</a></li>
+                <li role="presentation"><a data-bind="click: showAddMMCIF">Add MMCIF File</a></li>
                 <li role="presentation"><a data-bind="click: showAddJSON">Add JSON File</a></li>
             </ul>
         </div>
@@ -442,6 +490,16 @@ AACCGG
               <li role="presentation" data-bind="css: {active: displayPseudoknotLinks}">
                 <label role="menuitem">
                   <input type="checkbox" data-bind="checked: displayPseudoknotLinks"> Pseudoknot Links
+                </label>
+              </li>
+              <li role="presentation" data-bind="css: {active: displayProteinLinks}">
+                <label role="menuitem">
+                  <input type="checkbox" data-bind="checked: displayProteinLinks"> Protein Links
+                </label>
+              </li>
+              <li role="presentation" data-bind="css: {active: displayProteinBindingHighlighting}">
+                <label role="menuitem">
+                  <input type="checkbox" data-bind="checked: displayProteinBindingHighlighting"> Protein Bound Nucleotide Highlighting 
                 </label>
               </li>
               <li role="presentation" class="divider"></li>

@@ -681,12 +681,16 @@ def main():
     print json.dumps(struct, sort_keys=True, indent=4, separators=(',', ': '))
 
 
-def pdb_to_json(text, name):
+def pdb_to_json(text, name, parser=None):
     '''
     Create a graph-layout displaying a pdb file which
     presumably contains some RNA
 
     The text is the contents of the pdb file.
+
+    :param text: The text of the pdb file.
+    :param name: The name of the pdb file.
+    :param parser: The PDB parser to use (Bio.PDB.PDBParser or Bio.PDB.MMCIFParser)
     '''
     with fus.make_temp_directory() as output_dir:
         fname = op.join(output_dir, '{}.pdb'.format(name))
@@ -696,7 +700,7 @@ def pdb_to_json(text, name):
             f.write(text)
             f.flush
 
-            struct = bpdb.PDBParser().get_structure('temp', fname)
+            struct = parser.get_structure('temp', fname)
             chains = struct.get_chains()
 
         molecules = []
@@ -719,12 +723,14 @@ def pdb_to_json(text, name):
                                "uids": [uuid.uuid4().hex]}]
 
                 pass
-            else:
+            elif ftup.is_rna(chain):
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
-                cg = ftmc.from_pdb(fname, chain_id=chain.id, remove_pseudoknots=True)
+                cg = ftmc.from_pdb(fname, chain_id=chain.id, 
+                                   remove_pseudoknots=True, parser=parser)
                 positions = fasta_to_positions(cg.to_fasta_string())
-                cg = ftmc.from_pdb(fname, chain_id=chain.id, remove_pseudoknots=False)
+                cg = ftmc.from_pdb(fname, chain_id=chain.id, 
+                                   remove_pseudoknots=False, parser=parser)
 
                 cgs[chain.id] = cg
                 molecules += [{"type": "rna",
@@ -734,6 +740,9 @@ def pdb_to_json(text, name):
                               "size": cg.seq_length,
                                "uids": [uuid.uuid4().hex for i in range(cg.seq_length)],
                               "positions": positions }]
+            else:
+                # hetatm type chains which are present in MMCIF files
+                pass
 
         # create a lookup table linking the id and residue number to the uid of 
         # that nucleotide and residue number

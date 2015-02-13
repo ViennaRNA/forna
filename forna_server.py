@@ -12,6 +12,7 @@ __email__       = "jango@tbi.univie.ac.at"
 
 from flask import Flask, request, abort
 
+import Bio.PDB as bpdb
 import forna
 import json
 import re
@@ -19,6 +20,7 @@ import sys
 import os
 import RNA
 from optparse import OptionParser
+from werkzeug.contrib.fixers import ProxyFix
 
 import forgi.utilities.debug as fud
 import forgi.utilities.stuff as fus
@@ -29,6 +31,7 @@ def create_app(static):
 
     '''
     app = Flask(__name__, static_folder='htdocs')
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     @app.errorhandler(400)
     # pylint: disable=W0612
@@ -65,7 +68,7 @@ def create_app(static):
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
 
-        if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
+        if re.match("^[ACGTUWSMKRYBDHV\-]+$", request.json['seq'].upper()) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
         if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
@@ -155,7 +158,23 @@ def create_app(static):
         name = secure_filename(request.files['pdb_file'].filename)
 
         try:
-            result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), 
+                                       name, parser=bpdb.PDBParser())
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "PDB file parsing error: {}".format(str(ex)))
+
+        return json.dumps(result), 201
+
+    @app.route('/mmcif_to_graph', methods=['POST'])
+    def mmcif_to_graph():
+        from werkzeug import secure_filename
+
+        name = secure_filename(request.files['pdb_file'].filename)
+
+        try:
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), 
+                                       name, parser=bpdb.MMCIFParser())
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "PDB file parsing error: {}".format(str(ex)))
