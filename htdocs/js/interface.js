@@ -386,9 +386,9 @@ function AddAPIViewModel() {
     $.ajax({
         url: link,
         dataType: 'jsonp',
-        jsonp: false,
-        jsonpCallback: 'callback',
+        timeout : 5000,
         success: function(data) {
+            console.log(data);
             done(data);
         },
         error: function(jqXHR) {
@@ -399,11 +399,12 @@ function AddAPIViewModel() {
   
   self.load = function(queries) {
     $('#addAPI').modal('show');
+    
     console.log(queries);
     
     switch(queries['id'].split("/")[0]) {
     case 'RNAfold':
-        //http://nibiru.tbi.univie.ac.at/forna/?id=RNAfold/msegvRMpMU&file=mfe_posent.json
+        //forna/?id=RNAfold/msegvRMpMU&file=mfe.json
         //http://rna.tbi.univie.ac.at/RNAfold/msegvRMpMU/mfe.json
         getAPIjson('http://rna.tbi.univie.ac.at/' + queries['id'] + '/' + queries['file'], function(data) {
             rnaManager.parseFasta(data.fasta, function() {
@@ -411,6 +412,17 @@ function AddAPIViewModel() {
                 $('#addAPI').modal('hide');
                 //TODO use color information!
             });
+        });
+        break;
+    case 'RNAcentral':
+        //forna/?id=RNAcentral/URS0000000001
+        //http://rnacentral.org/api/v1/rna/URS0000000001.json
+        getAPIjson('http://rnacentral.org/api/v1/rna/' + queries['id'].split("/")[1] + '?format=jsonp', function(data) {
+                console.log(data.sequence);
+                rnaManager.add(data.sequence, '', data.rnacentral_id);
+                rnaManager.submit();
+                console.log("loaded from RNAcentral");
+                $('#addAPI').modal('hide');
         });
         break;
     default:
@@ -772,127 +784,6 @@ function AddJSONViewModel() {
   };
 }
 
-function AddDatabaseViewModel() {
-  var self = this;
-  
-  self.extSeqID = ko.observable('');
-  self.inputError = ko.observable('');
-
-  self.newInputError = function(message) {
-    if (self.inputError() === '') {
-      self.inputError(message);
-    } else {
-      self.inputError([self.inputError(), message].join("<br>"));
-    }
-    $('#SubmitDB').button('reset');
-  };
-  
-  var done = function() {
-    console.log("everything should be loaded now, updating graph!");
-    $('#addDB').modal('hide');
-    rnaView.graph.deaf = false;
-  };
-  
-  var rnaManager = new RNAManager( done, self.newInputError );
-  
-  self.cancelAddDB = function() {
-    $('#add').modal('hide');
-    // reset the file upload form
-    $('#inputFastaFile').val('');
-    self.inputFile(null);
-    // reset errors
-    self.inputError('');
-    // reset Loader
-    rnaManager.reset();
-    rnaView.graph.deaf = false;
-  };
-  
-  self.callSeachDB = function(d,e) {
-    if(e.keyCode === 13){
-      self.searchDB();
-    }
-    return true;
-  };
-  
-  self.searchResults = ko.observableArray([]);
-  self.nextLink = ko.observable(null);
-  self.previousLink = ko.observable(null);
-  self.resultsCount = ko.observable(-1);
-  
-  self.searchDB = function() {
-    if (self.extSeqID() != '') {
-        $('#searchDBLabel').removeClass("glyphicon-search");
-        $('#searchDBLabel').addClass("glyphicon-refresh");
-        $('#searchDBLabel').addClass("glyphicon-refresh-animate");
-        getResults('http://rnacentral.org/api/v1/rna/?external_id=' + self.extSeqID() + '&format=jsonp');
-    }
-  }
-  
-  self.turnPage = function(previous) {
-    if(previous) {
-        if(self.previousLink() !== null) {
-            getResults(self.previousLink());
-        }
-    } else {
-        if(self.nextLink() !== null) {
-            getResults(self.nextLink());
-        }
-    }
-  }
-  
-  function Result(data) {
-    var self = this;
-    self.data = data;
-    self.selected = ko.observable(false);
-  }
-  
-  function getResults(link) {
-    $.ajax({
-        url: link,
-        dataType: 'jsonp',
-        jsonp: false,
-        jsonpCallback: 'callback',
-        success: function(data) {
-            $('#searchDBLabel').removeClass("glyphicon-refresh");
-            $('#searchDBLabel').removeClass("glyphicon-refresh-animate");
-            $('#searchDBLabel').addClass("glyphicon-search");
-            data.results.forEach( function(data) {
-                self.searchResults.push(new Result(data));
-            });
-            self.nextLink(data.next);
-            self.previousLink(data.previous);
-            self.resultsCount(data.count);
-        },
-        error: function(jqXHR) {
-            alert('ERROR: ' + jqXHR);
-            $('#searchDBLabel').removeClass("glyphicon-refresh");
-            $('#searchDBLabel').removeClass("glyphicon-refresh-animate");
-            $('#searchDBLabel').addClass("glyphicon-search");
-        }
-    });
-  }
-  
-  self.selectItem = function(item) {
-    item.selected(!item.selected());
-  };
-  
-  self.submitDB = function() {
-    console.log(self.searchResults());
-    $('#SubmitDB').button('loading');
-    // reset errors
-    self.inputError('');
-    // reset Loader
-    rnaManager.reset();
-    
-    // select the RNAs which should be plotted and call rnaManager.add(sequnce, structure, header)
-    
-    rnaManager.submit();
-    self.extSeqID('');
-  };
-}
-
-
-
 function AddViewModel() {
   var self = this;
   
@@ -1175,12 +1066,6 @@ function RNAViewModel() {
     $('#addJSON').modal('show');
     self.graph.deaf = true;
   };
-  
-  self.showAddDB = function() {
-    $('#DBSubmit').button('reset');
-    $('#addDB').modal('show');
-    self.graph.deaf = true;
-  };
 
   self.showCustomColors = function() {
     //$('#ColorSubmit').button('reset');
@@ -1270,7 +1155,6 @@ var addPdbView = new AddPDBViewModel();
 var addMmcifView = new AddMMCIFViewModel();
 var addJSONView = new AddJSONViewModel();
 var addAPIView = new AddAPIViewModel();
-var addDBView = new AddDatabaseViewModel();
 var colorView = new ColorViewModel();
 
 ko.applyBindings(rnaView, document.getElementById('chart'));
@@ -1280,4 +1164,3 @@ ko.applyBindings(addPdbView, document.getElementById('addPDB'));
 ko.applyBindings(addMmcifView, document.getElementById('addMMCIF'));
 ko.applyBindings(addJSONView, document.getElementById('addJSON'));
 ko.applyBindings(addAPIView, document.getElementById('addAPI'));
-ko.applyBindings(addDBView, document.getElementById('addDB'));
