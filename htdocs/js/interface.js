@@ -13,6 +13,19 @@ $(window).resize(function() {
 });
 
 $(document).ready ( function() {
+    // call this if there is a query string
+    if (document.location.search !== '') {
+        var queries = {};
+        $.each(document.location.search.substr(1).split('&'), function(c,q){
+            var query = q.split('=');
+            queries[query[0].toString()] = query[1].toString();
+        });
+        
+        addAPIView.load(queries);
+    }
+    
+    
+    
     $('#JSONInput').bind("keyup click focus", function() { addJSONView.cursorPosition( getCursorPos('#JSONInput') ); });
     $('#Input').bind("keyup click focus", function() { addView.cursorPosition( getCursorPos('#Input') ); });
     
@@ -221,6 +234,75 @@ function RNAManager( done, newError ) {
         self.submitted(false);
         self.error(false);
     }
+    
+    self.parseFasta = function(lines, done) {
+      function tmpRNA () {
+        var me = this;
+        me.sequence = '';
+        me.structure = '';
+        me.header = 'rna';
+      }
+      var rna;
+      
+      console.log(lines);
+      if (lines.length == 0) {
+        self.reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
+        return;
+      }
+      
+      var BreakException= {};
+      
+      try {
+        var countErrors = 0;
+        
+        lines.forEach( function(line) {
+          line = line.replace(/[\s]/g,""); // remove any whitespaces
+          // check if it is a fasta header
+          if (line.substring(0, 1) == '>') {
+            // this is a header
+            if (rna !== undefined) {
+              // initialize real rna object
+              console.log("Added new rna molecule to newMolecules");
+              self.add(rna.sequence, rna.structure, rna.header);
+            }
+            rna = new tmpRNA();
+            rna.header = line.substring(1);
+          } else if (/^[ACGTUWSMKRYBDHV-]+$/.test(line.toUpperCase())) {
+            // this is a sequence
+            if (rna === undefined) {
+              rna = new tmpRNA();
+            }
+            rna.sequence = rna.sequence.concat(line);
+          } else if (/^[\(\)\.\{\}\[\]\<\>\*]+$/.test(line)) {
+            // this is a structure
+            if (rna === undefined) {
+              rna = new tmpRNA();
+            }
+            rna.structure = rna.structure.concat(line);
+          } else {
+            self.reportError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
+            if (countErrors > 5) {
+              self.reportError("[...]");
+              throw BreakException;
+            }
+            countErrors += 1;
+          }
+        });
+      } catch(e) {
+        if (e !== BreakException) throw e;
+      }
+      // also initialize the last object
+      console.log("Added new rna molecule to newMolecules");
+      self.add(rna.sequence, rna.structure, rna.header);
+      
+      // unlock the submitted
+      if (self.error()) {
+        self.reset();
+      } else {
+          self.submit();
+          done();
+      }
+  }
 }
 
 function CustomColorScheme(text) {
@@ -276,6 +358,74 @@ function ColorViewModel() {
 
       $('#addColors').modal('hide');
       rnaView.graph.deaf = false;
+  };
+}
+
+function AddAPIViewModel() {
+  var self = this;
+  
+  self.inputError = ko.observable('');
+  
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+  };
+  
+  var done = function() {
+    console.log("everything should be loaded from API, updating graph!");
+    $('#addAPI').modal('hide');
+    rnaView.graph.deaf = false;
+  };
+  
+  var rnaManager = new RNAManager( done, self.newInputError );
+  
+  var getAPIjson = function(link, done) {
+    $.ajax({
+        url: link,
+        dataType: 'jsonp',
+        jsonp: false,
+        jsonpCallback: 'callback',
+        success: function(data) {
+            done(data);
+        },
+        error: function(jqXHR) {
+            self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+        }
+    });
+  }
+  
+  self.load = function(queries) {
+    $('#addAPI').modal('show');
+    console.log(queries);
+    
+    switch(queries['id'].split("/")[0]) {
+    case 'RNAfold':
+        //http://nibiru.tbi.univie.ac.at/forna/?id=RNAfold/msegvRMpMU&file=mfe_posent.json
+        //http://rna.tbi.univie.ac.at/RNAfold/msegvRMpMU/mfe.json
+        getAPIjson('http://rna.tbi.univie.ac.at/' + queries['id'] + '/' + queries['file'], function(data) {
+            rnaManager.parseFasta(data.fasta, function() {
+                console.log("loaded from API");
+                $('#addAPI').modal('hide');
+                //TODO use color information!
+            });
+        });
+        break;
+    default:
+        console.log("Error: ID of API unknown!");
+        self.dismissError(); 
+    }
+  }
+
+  self.dismissError = function() {
+    $('#addAPI').modal('hide');
+    // reset errors
+    self.inputError('');
+    // reset Loader
+    rnaManager.reset();
+    rnaView.graph.deaf = false;
   };
 }
 
@@ -774,7 +924,6 @@ function AddViewModel() {
     $('#Submit').button('reset');
   };
   
-<<<<<<< HEAD
   var done = function() {
     console.log("everything should be loaded now, updating graph!");
     $('#add').modal('hide');
@@ -787,29 +936,6 @@ function AddViewModel() {
       self.inputFile(file);
       console.log(file);
   };
-=======
-  self.loaded = ko.computed(function() {
-    var returnValue = true;
-    self.newMolecules().forEach(function(rna) {
-      returnValue = (returnValue && rna.loaded());
-    });
-    returnValue = (returnValue && self.submitted());
-    
-    // here the code to hide modal and push the new molecules if everything is loaded correctly
-    if((returnValue) && (self.inputError().length === 0)) {
-      console.log("everything should be loaded now, updating graph!");
-      $('#add').modal('hide');
-      rnaView.graph.deaf = false;
-
-      if (self.newMolecules().length > 0) {
-          console.log('trying to add molecules');
-          rnaView.addMolecules(self.newMolecules());
-          self.newMolecules([]);
-      }
-    }
-    return (returnValue);
-  });
->>>>>>> develop
 
   self.cancelAddMolecule = function() {
     $('#add').modal('hide');
@@ -822,76 +948,6 @@ function AddViewModel() {
     rnaManager.reset();
     rnaView.graph.deaf = false;
   };
-
-  self.parseFasta = function(lines) {
-      function tmpRNA () {
-        var self = this;
-        self.sequence = '';
-        self.structure = '';
-        self.header = 'rna';
-      }
-      var rna;
-      
-      console.log(lines);
-      if (lines.length == 0) {
-        self.newInputError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
-        return;
-      }
-      
-      var BreakException= {};
-      
-      try {
-        var countErrors = 0;
-        
-        lines.forEach( function(line) {
-          line = line.replace(/[\s]/g,""); // remove any whitespaces
-          // check if it is a fasta header
-          if (line.substring(0, 1) == '>') {
-            // this is a header
-            if (rna !== undefined) {
-              // initialize real rna object
-              console.log("Added new rna molecule to newMolecules");
-              rnaManager.add(rna.sequence, rna.structure, rna.header);
-            }
-            rna = new tmpRNA();
-            rna.header = line.substring(1);
-          } else if (/^[ACGTUWSMKRYBDHV-]+$/.test(line.toUpperCase())) {
-            // this is a sequence
-            if (rna === undefined) {
-              rna = new tmpRNA();
-            }
-            rna.sequence = rna.sequence.concat(line);
-          } else if (/^[\(\)\.\{\}\[\]\<\>\*]+$/.test(line)) {
-            // this is a structure
-            if (rna === undefined) {
-              rna = new tmpRNA();
-            }
-            rna.structure = rna.structure.concat(line);
-          } else {
-            self.newInputError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
-            if (countErrors > 5) {
-              self.newInputError("[...]");
-              throw BreakException;
-            }
-            countErrors += 1;
-          }
-        });
-      } catch(e) {
-        if (e !== BreakException) throw e;
-      }
-      // also initialize the last object
-      console.log("Added new rna molecule to newMolecules");
-      rnaManager.add(rna.sequence, rna.structure, rna.header);
-      
-      // unlock the submitted
-      if (self.inputError().length != 0) {
-        rnaManager.reset();
-      } else {
-          rnaManager.submit();
-          $('#inputFastaFile').val('');
-          self.inputFile(null);
-      }
-  }
   
   self.submit = function() {
     $('#Submit').button('loading');
@@ -904,17 +960,22 @@ function AddViewModel() {
       lines = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
     }
     
+    var endFunction = function() {
+          $('#inputFastaFile').val('');
+          self.inputFile(null);
+    };
+    
     if (self.inputFile() !== null) {
       var r = new FileReader();
       r.onload = function(e) {
         var content = e.target.result;
         console.log(content);
 	      lines = lines.concat(content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"));
-	      self.parseFasta(lines);
+	      rnaManager.parseFasta(lines, endFunction);
       }
       r.readAsText(self.inputFile());
     } else {
-      self.parseFasta(lines);
+      rnaManager.parseFasta(lines, endFunction);
     }
   };
 }
@@ -1208,6 +1269,7 @@ var addView = new AddViewModel();
 var addPdbView = new AddPDBViewModel();
 var addMmcifView = new AddMMCIFViewModel();
 var addJSONView = new AddJSONViewModel();
+var addAPIView = new AddAPIViewModel();
 var addDBView = new AddDatabaseViewModel();
 var colorView = new ColorViewModel();
 
@@ -1217,4 +1279,5 @@ ko.applyBindings(colorView, document.getElementById('addColors'));
 ko.applyBindings(addPdbView, document.getElementById('addPDB'));
 ko.applyBindings(addMmcifView, document.getElementById('addMMCIF'));
 ko.applyBindings(addJSONView, document.getElementById('addJSON'));
+ko.applyBindings(addAPIView, document.getElementById('addAPI'));
 ko.applyBindings(addDBView, document.getElementById('addDB'));
