@@ -90,7 +90,10 @@
         </div>
         <div class="modal-body">
           <form role="form">
-            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true" data-bind="visible: inputError().length == 0"></span>
+            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
+            data-bind="visible: inputError().length == 0"></span>
+            <span data-bind="visible: inputError().length == 0">&nbsp;&nbsp;Please wait while we are
+            getting your molecule...</span>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
         </div>
