@@ -102,8 +102,7 @@ eg:
 For the ViennaRNA webservices links will be provided!
 
 This way is also possible to embed ``forna`` on a website with a molecule preloaded:
-```
-<iframe src="forna.html/?RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
+```<iframe src="forna.html/?RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
 seamless='seamless' frameBorder="0" AllowFullScreen></iframe>
 ```
 
