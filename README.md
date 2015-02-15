@@ -97,12 +97,12 @@ if you have suggestions for additional platforms.
 
 To add a molecule using the ``RNAcentral-ID`` you can just call ``forna`` like this:
 <forna-domain>/?id=RNAcentral/<RNAcentral-ID>
-eg:
-[http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001)
+eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001)
 For the ViennaRNA webservices links will be provided!
 
 This way is also possible to embed ``forna`` on a website with a molecule preloaded:
-```<iframe src="forna.html/?RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
+```html
+<iframe src="forna.html/?RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
 seamless='seamless' frameBorder="0" AllowFullScreen></iframe>
 ```
 
