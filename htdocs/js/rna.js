@@ -541,7 +541,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         };
 
         for (i=0; i < self.elements.length; i++) {
-            if (self.elements[i][0] == 's')
+            if (self.elements[i][0] == 's' || self.elements[i][0] == 'e')
                 continue;
 
             var nucs = self.elements[i][2].filter(filter_nucs);
