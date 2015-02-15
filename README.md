@@ -89,6 +89,21 @@ python forna_server.py -s -d
 
 Documentation about the available options is provided using the ``-h`` option.
 
+#### APIs ####
+
+We offer the possibility to add an RNA molecule from supported platforms using URL encoded queries.
+At the moment the ViennaRNA webservices are supportet and the RNAcentral database. Please contact us
+if you have suggestions for additional platforms.
+
+To add a molecule using the RNAcentral ID you can just call ``forna`` like this:
+<forna-domain>/?id=RNAcentral/<RNAcentral-ID>
+eg: [http://nibiru.tbi.univie.ac.at/forna/?id=RNAcentral/URS0000000001](http://nibiru.tbi.univie.ac.at/forna/?id=RNAcentral/URS0000000001])
+
+For the ViennaRNA webservices links will be provided!
+
+This way is also possible to embed ``forna`` on a website with a molecule preloaded:
+<iframe 
+
 #### Contact ####
 
 Questions and/or comments can be sent to <forna@tbi.univie.ac.at>
