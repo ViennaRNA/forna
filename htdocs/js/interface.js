@@ -365,6 +365,7 @@ function AddAPIViewModel() {
   var self = this;
   
   self.inputError = ko.observable('');
+  self.loading = ko.observable(false);
   
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -375,6 +376,7 @@ function AddAPIViewModel() {
   };
   
   var done = function() {
+    self.loading(false);
     console.log("everything should be loaded from API, updating graph!");
     $('#addAPI').modal('hide');
     rnaView.graph.deaf = false;
@@ -398,7 +400,13 @@ function AddAPIViewModel() {
   }
   
   self.load = function(queries) {
-    $('#addAPI').modal('show');
+    // show the modal only if loading takes too long
+    self.loading(true);
+    setTimeout(function() {
+        if (self.loading()) {
+            $('#addAPI').modal('show');
+        }
+    }, 3000);
     
     console.log(queries);
     
@@ -432,6 +440,7 @@ function AddAPIViewModel() {
   }
 
   self.dismissError = function() {
+    self.loading(false);
     $('#addAPI').modal('hide');
     // reset errors
     self.inputError('');
