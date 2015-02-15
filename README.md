@@ -95,14 +95,16 @@ We offer the possibility to add an RNA molecule from supported platforms using U
 At the moment the ViennaRNA webservices are supportet and the RNAcentral database. Please contact us
 if you have suggestions for additional platforms.
 
-To add a molecule using the RNAcentral ID you can just call ``forna`` like this:
+To add a molecule using the ``RNAcentral-ID`` you can just call ``forna`` like this:
 <forna-domain>/?id=RNAcentral/<RNAcentral-ID>
 eg: [http://nibiru.tbi.univie.ac.at/forna/?id=RNAcentral/URS0000000001](http://nibiru.tbi.univie.ac.at/forna/?id=RNAcentral/URS0000000001])
-
 For the ViennaRNA webservices links will be provided!
 
 This way is also possible to embed ``forna`` on a website with a molecule preloaded:
-<iframe 
+```
+<iframe src="forna.html/?RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
+seamless='seamless' frameBorder="0" AllowFullScreen></iframe>
+```
 
 #### Contact ####
 
