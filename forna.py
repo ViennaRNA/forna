@@ -713,6 +713,7 @@ def pdb_to_json(text, name, parser=None):
         for chain in chains:
             # create a graph json for each structure in the pdb file
             if ftup.is_protein(chain):
+                print >>sys.stderr, "protein", chain
                 proteins.add(chain.id)
                 # process protein
                 molecules += [{"type": "protein",
@@ -724,6 +725,7 @@ def pdb_to_json(text, name, parser=None):
 
                 pass
             elif ftup.is_rna(chain):
+                print >>sys.stderr, "rna", chain
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
                 cg = ftmc.from_pdb(fname, chain_id=chain.id, 

@@ -1008,8 +1008,7 @@ function Graph(element) {
             self.displayParameters.proteinBindingHighlighting=false;
         }
 
-        /*
-        self.displayNodeOutline(true);
+        //self.displayNodeOutline(true);
 
         if (self.displayParameters.proteinBindingHighlighting) {
             var protein_links = svg.selectAll('[link_type=protein_chain]');
@@ -1022,7 +1021,6 @@ function Graph(element) {
                 onlyThese.style('stroke-width', 3).style('stroke', 'red')
             })
         }
-        */
     }
 
     function nudge(dx, dy) {
@@ -1172,16 +1170,14 @@ function Graph(element) {
             var circle_update = gnodes.select('circle');
 
             // create nodes behind the circles which will serve to highlight them
-            var nucleotide_nodes = gnodes.filter(function(d) { 
-                return d.node_type == 'nucleotide' || d.node_type == 'label';
+            var nucleotide_nodes = gnodes_enter.filter(function(d) { 
+                return d.node_type == 'nucleotide' || d.node_type == 'label' || d.node_type == 'protein';
             })
-            console.log('nucleotide_nodes', nucleotide_nodes);
             nucleotide_nodes.append("svg:circle")
             .attr('class', "outline_node")
             .attr("r", function(d) { return d.radius+1; })
             .style('stroke_width', 1)
             .style('fill', 'red')
-
 
             var node = gnodes_enter.append("svg:circle")
             .attr("class", "node")
