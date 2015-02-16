@@ -302,6 +302,34 @@
 
         This will color nucleotides 1-10 green and nucleotides 15-30 red and 13,46, and 101 blue.
 
+        <p>Colors can be specified for each molecule individually by preceding them with the
+        molecule's id</p>
+        <pre>
+        >molecule1
+        1-10:green 15-30:red  13,46,101:blue
+        >molecule2
+        0.98 .80 0.75
+        </pre>
+
+        <h5>Color ranges and domains</h5>
+        The default color range is white to steelblue. Custom ranges can be specified
+        by entering the following in the custom color screen.
+        <pre>
+        <pre>
+        >molecule1
+        1-10:green 15-30:red  13,46,101:blue
+        >molecule2
+        range=white:red
+        0.98 .80 0.75
+        </pre>
+
+        Color domains can be specified in a similar manner. The domain defines the values
+        over which the colors are spread:
+
+        <pre>
+        domain=0.5:1.0
+        0.98 .80 0.75
+        </pre>
           <h3>Psuedoknots</h3>
           Feel free to enter structures with pseudoknots. Here's the format:
 
