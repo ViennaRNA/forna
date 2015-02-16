@@ -91,7 +91,7 @@ Documentation about the available options is provided using the ``-h`` option.
 
 #### APIs ####
 
-We offer the possibility to add an RNA molecule from supported platforms using URL encoded queries.
+We provide the opportunity to add an RNA molecule from supported platforms using URL encoded queries.
 At the moment the ViennaRNA webservices and the RNAcentral database are supported as well as URL
 encoded data. Please contact us if you have suggestions for additional platforms.
 
@@ -99,7 +99,7 @@ To add a molecule using the RNAcentral-ID you can just call forna like this:
 ``forna-domain``/?id=RNAcentral/``RNAcentral-ID``
 eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001)
 
-For including the data directly in the URL, two formats are possible:
+To include the data directly in the URL, two formats are available:
 ``forna-domain``/?id=fasta&file=``fasta-file``
 eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n(((....)))](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n(((....))))
 ``forna-domain``/?id=url/``molecule-name``&sequence=``sequence``&structure=``structure``
@@ -108,7 +108,7 @@ In the first case it is possible to input multiple molecules at once. Note that 
 structure is optional, as we will predict the MFE structure in its absence.
 For the ViennaRNA webservices links will be provided!
 
-This way is also possible to embed forna on a website with a molecule preloaded:
+This way it's also possible to embed forna on a website with a molecule preloaded:
 
 ```
 <iframe src="forna/index.html?id=RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
