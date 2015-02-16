@@ -104,11 +104,10 @@ To include the data directly in the URL, two formats are available:
 eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n(((....)))](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n(((....))))
 ``forna-domain``/?id=url/``molecule-name``&sequence=``sequence``&structure=``structure``
 eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=url/name&sequence=AACGUUAGUU&structure=(((....)))](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=url/name&sequence=AACGUUAGUU&structure=(((....))))
-In the first case it is possible to input multiple molecules at once. Note that in both cases the
-structure is optional, as we will predict the MFE structure in its absence.
-For the ViennaRNA webservices links will be provided!
+In the first case it's possible to input multiple molecules at once by having them all in a single string which is passed to the 'file' query. Note that in both cases the
+structure is optional. If it's not provided, RNAfold will calculate and display the MFE structure.
 
-This way it's also possible to embed forna on a website with a molecule preloaded:
+This way it's also possible to embed forna on a website with a preloaded molecule.
 
 ```
 <iframe src="forna/index.html?id=RNAcentral/URS0000000001" align="center" height="650px" width="100%" 
