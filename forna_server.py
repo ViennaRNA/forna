@@ -67,7 +67,7 @@ def create_app(static):
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
 
-        if re.match("^[ACGTUWSMKRYBDHV]+$", request.json['seq']) is None:
+        if re.match("^[ACGTUWSMKRYBDHV-]+$", request.json['seq'].upper()) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
         if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
