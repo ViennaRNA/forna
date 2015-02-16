@@ -389,6 +389,7 @@ function AddAPIViewModel() {
         url: link,
         dataType: 'jsonp',
         timeout : 5000,
+        jsonpCallback: "callback",
         success: function(data) {
             console.log(data);
             done(data);
@@ -415,10 +416,19 @@ function AddAPIViewModel() {
         //forna/?id=RNAfold/msegvRMpMU&file=mfe.json
         //http://rna.tbi.univie.ac.at/RNAfold/msegvRMpMU/mfe.json
         getAPIjson('http://rna.tbi.univie.ac.at/' + queries['id'] + '/' + queries['file'], function(data) {
-            rnaManager.parseFasta(data.fasta, function() {
-                console.log("loaded from API");
+            rnaManager.parseFasta(data.fasta.split("\n"), function() {
+                console.log("loaded from RNAfold API");
                 $('#addAPI').modal('hide');
-                //TODO use color information!
+
+                // use the color information if available
+                if (data.colors !== undefined) {
+                    colorView.input(data.colors);
+                    cs =  new ColorScheme(data.colors.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,""));
+                    rnaView.graph.addCustomColors(cs.colors_json);
+                    rnaView.colors('custom');
+                    rnaView.graph.changeColorScheme(rnaView.colors());
+                    rnaView.graph.deaf = false;
+                }
             });
         });
         break;
@@ -429,9 +439,32 @@ function AddAPIViewModel() {
                 console.log(data.sequence);
                 rnaManager.add(data.sequence, '', data.rnacentral_id);
                 rnaManager.submit();
-                console.log("loaded from RNAcentral");
+                console.log("loaded from RNAcentral API");
                 $('#addAPI').modal('hide');
         });
+        break;
+    case 'fasta':
+        //forna/?id=fasta&file=>header\nAACGUUAGUU\n(((....)))
+        if (queries['file'] === undefined) {
+            self.newInputError("ERROR: You have to include a fasta file in the URL!");
+            break;
+        }
+        rnaManager.parseFasta(queries['file'].replace(/\%3E/g,">").split("\\n"), function() {
+            console.log("loaded from fasta API");
+            $('#addAPI').modal('hide');
+        });
+        break;
+    case 'url':
+        //forna/?id=inline/molecule_name&sequence=AGAUGA&structure=......
+        if (queries['sequence'] === undefined) { 
+            self.newInputError("ERROR: You have to define an input sequence!");
+            break; 
+        }
+        if (queries['structure'] === undefined) { queries['structure'] = ''; }
+        rnaManager.add(queries['sequence'],queries['structure'],queries['id'].split("/")[1]);
+        rnaManager.submit();
+        console.log("loaded from URL API");
+        $('#addAPI').modal('hide');
         break;
     default:
         console.log("Error: ID of API unknown!");
