@@ -544,7 +544,7 @@ function AddViewModel() {
             }
             rna = new tmpRNA();
             rna.header = line.substring(1);
-          } else if (/^[ACGTUWSMKRYBDHV-]+$/.test(line.toUpperCase())) {
+          } else if (/^[ACGTUWSMKRYBDHV\-]+$/.test(line.toUpperCase())) {
             // this is a sequence
             if (rna === undefined) {
               rna = new tmpRNA();
