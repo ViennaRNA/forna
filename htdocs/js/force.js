@@ -1009,6 +1009,7 @@ function Graph(element) {
         }
 
         //self.displayNodeOutline(true);
+        /*
 
         if (self.displayParameters.proteinBindingHighlighting) {
             var protein_links = svg.selectAll('[link_type=protein_chain]');
@@ -1021,6 +1022,7 @@ function Graph(element) {
                 onlyThese.style('stroke-width', 3).style('stroke', 'red')
             })
         }
+        */
     }
 
     function nudge(dx, dy) {
