@@ -388,7 +388,7 @@ function AddAPIViewModel() {
     $.ajax({
         url: link,
         dataType: 'jsonp',
-        timeout : 5000,
+        timeout : 6000,
         jsonpCallback: "callback",
         success: function(data) {
             console.log(data);
@@ -398,6 +398,15 @@ function AddAPIViewModel() {
             self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
         }
     });
+  }
+
+  var setColors = function(colors) {
+    colorView.input(colors);
+    cs =  new ColorScheme(colors.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,""));
+    rnaView.graph.addCustomColors(cs.colors_json);
+    rnaView.colors('custom');
+    rnaView.graph.changeColorScheme(rnaView.colors());
+    rnaView.graph.deaf = false;
   }
   
   self.load = function(queries) {
@@ -418,17 +427,13 @@ function AddAPIViewModel() {
         getAPIjson('http://rna.tbi.univie.ac.at/' + queries['id'] + '/' + queries['file'], function(data) {
             rnaManager.parseFasta(data.fasta.split("\n"), function() {
                 console.log("loaded from RNAfold API");
-                $('#addAPI').modal('hide');
-
                 // use the color information if available
                 if (data.colors !== undefined) {
-                    colorView.input(data.colors);
-                    cs =  new ColorScheme(data.colors.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,""));
-                    rnaView.graph.addCustomColors(cs.colors_json);
-                    rnaView.colors('custom');
-                    rnaView.graph.changeColorScheme(rnaView.colors());
-                    rnaView.graph.deaf = false;
+                    if(rnaView.colors() != 'custom') {
+                        setColors(data.colors);
+                    }
                 }
+                $('#addAPI').modal('hide');
             });
         });
         break;
@@ -469,6 +474,12 @@ function AddAPIViewModel() {
     default:
         console.log("Error: ID of API unknown!");
         self.dismissError(); 
+    }
+
+    // use the color information if available
+    // &colors=>name\n0.1\n0.5\n0.9\n1
+    if (queries['colors'] !== undefined) {
+        setColors(queries['colors'].replace(/\%3E/g,">").replace(/\\n/g,"\n"));
     }
   }
 
