@@ -24,6 +24,7 @@ from werkzeug.contrib.fixers import ProxyFix
 
 import forgi.utilities.debug as fud
 import forgi.utilities.stuff as fus
+import forna_db as fdb
 
 def create_app(static):
     '''
@@ -180,7 +181,28 @@ def create_app(static):
             abort(400, "PDB file parsing error: {}".format(str(ex)))
 
         return json.dumps(result), 201
-    
+
+    @app.route('/store_graph', methods=['POST'])
+    def store_graph():
+        graph = request.json['graph']
+        try:
+            identifier = fdb.put(graph)
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Database error: {}".format(str(ex)))
+        
+        return json.dumps(identifier), 201
+
+    @app.route('/get_graph', methods=['POST'])
+    def get_graph():
+        try:
+            graph = fdb.get(request.json['uuid'])
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Database error: {}".format(str(ex)))
+        
+        return json.dumps(graph), 201
+
     if static:
         print >> sys.stderr, " * Starting static"
         # serving static files for developmental purpose
@@ -241,7 +263,7 @@ def main():
     logging.basicConfig(filename=options.log_file,level=logging.INFO, 
                         format='%(asctime)s %(levelname)s: %(message)s '
                         '[in %(pathname)s:%(funcName)s:%(lineno)d]')
-
+    fdb.init()
     app = create_app(options.static)
     app.run(host=options.host, debug=options.debug, port=options.port)
 
