@@ -329,7 +329,7 @@ function ShareViewModel() {
         console.log(data);
         if (!location.origin)
              location.origin = location.protocol + "//" + location.host;
-        self.url(location.origin + '/?id=share/' + data)
+        self.url(location.origin + location.pathname + '?id=share/' + data)
     }).error( function(jqXHR) {
         newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
     });
@@ -418,14 +418,12 @@ function AddAPIViewModel() {
     $('#addAPI').modal('hide');
     // reset errors
     self.inputError('');
-    // reset Loader
-    rnaManager.reset();
     rnaView.graph.deaf = false;
   };
   
   var rnaManager = new RNAManager( self.done, self.newInputError );
   
-  var getAPIjson = function(link, done) {
+  var getAPIjson = function(link, finish) {
     $.ajax({
         url: link,
         dataType: 'jsonp',
@@ -433,7 +431,7 @@ function AddAPIViewModel() {
         jsonpCallback: "callback",
         success: function(data) {
             console.log(data);
-            done(data);
+            finish(data);
         },
         error: function(jqXHR) {
             self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
@@ -514,7 +512,7 @@ function AddAPIViewModel() {
         });
         break;
     case 'url':
-        //forna/?id=inline/molecule_name&sequence=AGAUGA&structure=......
+        //forna/?id=url/molecule_name&sequence=AGAUGA&structure=......
         if (queries['sequence'] === undefined) { 
             self.newInputError("ERROR: You have to define an input sequence!");
             break; 
