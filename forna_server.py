@@ -191,12 +191,13 @@ def create_app(static):
             app.logger.exception(ex)
             abort(400, "Database error: {}".format(str(ex)))
         
+        app.logger.info("Created Share ID {}".format(identifier))
         return json.dumps(identifier), 201
 
     @app.route('/get_graph/<id>', methods=['GET'])
     def get_graph(id):
         try:
-            app.logger.info("Served Share ID {}".format(id));
+            app.logger.info("Served Share ID {}".format(id))
             graph = fdb.get(id)
         except Exception as ex:
             app.logger.exception(ex)

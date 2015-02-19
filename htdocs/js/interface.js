@@ -335,7 +335,7 @@ function ShareViewModel() {
     });
   }
 
-  self.dismissError = function() {
+  self.done = function() {
     $('#shareView').modal('hide');
     // reset errors
     self.inputError('');
@@ -412,14 +412,18 @@ function AddAPIViewModel() {
     }
   };
   
-  var done = function() {
+  self.done = function() {
     self.loading(false);
     console.log("everything should be loaded from API, updating graph!");
     $('#addAPI').modal('hide');
+    // reset errors
+    self.inputError('');
+    // reset Loader
+    rnaManager.reset();
     rnaView.graph.deaf = false;
   };
   
-  var rnaManager = new RNAManager( done, self.newInputError );
+  var rnaManager = new RNAManager( self.done, self.newInputError );
   
   var getAPIjson = function(link, done) {
     $.ajax({
@@ -494,7 +498,7 @@ function AddAPIViewModel() {
                 } catch(err) {
                     self.newInputError(err.message);
                 }
-                done();
+                self.done();
                 $('#addAPI').modal('hide');
         });
         break;
@@ -532,16 +536,6 @@ function AddAPIViewModel() {
         setColors(queries['colors'].replace(/\%3E/g,">").replace(/\\n/g,"\n"));
     }
   }
-
-  self.dismissError = function() {
-    self.loading(false);
-    $('#addAPI').modal('hide');
-    // reset errors
-    self.inputError('');
-    // reset Loader
-    rnaManager.reset();
-    rnaView.graph.deaf = false;
-  };
 }
 
 function AddMMCIFViewModel() {

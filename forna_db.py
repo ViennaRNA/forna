@@ -13,8 +13,10 @@ import json
 import math
 import uuid
 import sqlite3
+import threading
+import time
 import sys
-from datetime import datetime, date
+import datetime
 
 database = 'forna.db'
 
@@ -29,6 +31,21 @@ def init():
     conn.commit()
     conn.close()
 
+    # start cleanup scheduler
+    clean_thread = threading.Thread(target = cleanup)
+    clean_thread.daemon = True
+    clean_thread.start()
+
+def cleanup():
+    while(True):
+        conn = sqlite3.connect(database)
+        c = conn.cursor()
+        c.execute('''DELETE FROM share WHERE date > DATE('now','-50 days')''')
+        conn.commit()
+        conn.close()
+        print " * Cleaning up database"
+        time.sleep(60*60*24)
+
 def put(json):
     """
     Store a json file in the database 
@@ -37,8 +54,7 @@ def put(json):
     identifier =  uuid.uuid4().hex
     conn = sqlite3.connect(database)
     c = conn.cursor()
-    data = (datetime.now(), identifier, json,)
-    c.execute('INSERT INTO share VALUES (?,?,?)', data)
+    c.execute('''INSERT INTO share VALUES (DATE('now'),?,?)''', (identifier, json,))
     
     conn.commit()
     conn.close()

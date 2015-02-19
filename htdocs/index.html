@@ -98,7 +98,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: dismissError">Cancel</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: done">Cancel</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -232,23 +232,26 @@
       <div class="modal-content">
         <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-          <h4 class="modal-title">Share a Link to the current State</h4>
+          <h4 class="modal-title">Share a Link of your View</h4>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="min-height: 150px;">
           <form role="form">
             <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
             data-bind="visible: (inputError().length == 0 && url().length == 0)"></span>
             <span data-bind="visible: (inputError().length == 0 && url().length == 0)">&nbsp;&nbsp;We are generating your link...</span>
-            <div class="input-group input-group-lg" data-bind="visible: url().length != 0">
-                <span class="input-group-addon glyphicon glyphicon-share-alt" id="url"></span>
-                <input id="shareURL" type="text" class="form-control" placeholder="..." aria-describedby="url" data-bind="value: url" onClick="this.select();" readonly
-                data-toggle="tooltip" data-placement="top" title="Ctrl+C" data-delay='{"show":"100", "hide":"50"}'>
+            <div data-bind="visible: url().length != 0">
+                <label>Using this link you can return to the current state. This link will be valid for at about 6 weeks.</label>
+                <div class="input-group input-group-lg">
+                    <input id="shareURL" type="text" class="form-control" placeholder="..." aria-describedby="url" data-bind="value: url" onClick="this.select();" readonly
+                    data-toggle="tooltip" data-placement="bottom" title="Ctrl + C" data-delay='{"show":"100", "hide":"50"}'>
+                    <span class="input-group-addon glyphicon glyphicon-share-alt" id="url"></span>
+                </div>
             </div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: dismissError">Cancel</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: done">Done</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
