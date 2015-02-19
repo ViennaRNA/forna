@@ -24,8 +24,6 @@ $(document).ready ( function() {
         addAPIView.load(queries);
     }
     
-    
-    
     $('#JSONInput').bind("keyup click focus", function() { addJSONView.cursorPosition( getCursorPos('#JSONInput') ); });
     $('#Input').bind("keyup click focus", function() { addView.cursorPosition( getCursorPos('#Input') ); });
     
