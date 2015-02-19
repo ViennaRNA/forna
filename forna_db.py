@@ -54,7 +54,8 @@ def get(identifier):
     conn = sqlite3.connect(database)
     c = conn.cursor()
     c.execute('SELECT json FROM share WHERE uuid=(?)', (identifier,))
-    json = c.fetchone()[0]
-
-    return json
+    result = c.fetchone()
+    if result is None:
+        raise NameError("This identifier is not available (any more)!")
+    return result[0]
 

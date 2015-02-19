@@ -226,6 +226,34 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal custom colors -->
 
+  <!-- 'Share Link modal -->
+  <div class="modal fade" id="shareView" > <!-- data-bind="showModal: loaded"-->
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Share a Link to the current State</h4>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
+            data-bind="visible: (inputError().length == 0 && url().length == 0)"></span>
+            <span data-bind="visible: (inputError().length == 0 && url().length == 0)">&nbsp;&nbsp;We are generating your link...</span>
+            <div class="input-group input-group-lg" data-bind="visible: url().length != 0">
+                <span class="input-group-addon glyphicon glyphicon-share-alt" id="url"></span>
+                <input id="shareURL" type="text" class="form-control" placeholder="..." aria-describedby="url" data-bind="value: url" onClick="this.select();" readonly
+                data-toggle="tooltip" data-placement="top" title="Ctrl+C" data-delay='{"show":"100", "hide":"50"}'>
+            </div>
+            <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click: dismissError">Cancel</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <!-- 'About' modal -->
   <div class="modal fade" id="about">
     <div class="modal-dialog">
@@ -527,12 +555,14 @@ AACCGG
               </li>
           </ul>            
         </div>
-        
+        <div class="btn-group" data-toggle="tooltip" data-placement="top" title="Fullscreen" data-delay='{"show":"800", "hide":"50"}'>
+          <button onclick="toggleFullScreen('main'); return false;" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen"></span></button>
+        </div>
       </div>
       
       <div class="menu-right">
-        <div class="btn-group" data-toggle="tooltip" data-placement="top" title="Fullscreen" data-delay='{"show":"800", "hide":"50"}'>
-          <button onclick="toggleFullScreen('main'); return false;" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen"></span></button>
+        <div class="btn-group" data-toggle="tooltip" data-placement="top" title="Share Link" data-delay='{"show":"800", "hide":"50"}'>
+          <button data-bind="click: shareLink" class="btn btn-default"><span class="glyphicon glyphicon-share-alt"></span></button>
         </div>
         <div class="btn-group dropup">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">

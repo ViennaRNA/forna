@@ -193,15 +193,16 @@ def create_app(static):
         
         return json.dumps(identifier), 201
 
-    @app.route('/get_graph', methods=['POST'])
-    def get_graph():
+    @app.route('/get_graph/<id>', methods=['GET'])
+    def get_graph(id):
         try:
-            graph = fdb.get(request.json['uuid'])
+            app.logger.info("Served Share ID {}".format(id));
+            graph = fdb.get(id)
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "Database error: {}".format(str(ex)))
         
-        return json.dumps(graph), 201
+        return "callback(" + json.dumps(graph) + ");", 201
 
     if static:
         print >> sys.stderr, " * Starting static"

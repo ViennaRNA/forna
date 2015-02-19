@@ -32,6 +32,7 @@ $(document).ready ( function() {
     $('#add').on('shown.bs.modal', function () { $('#Input').focus(); });
     $('#addJSON').on('shown.bs.modal', function () { $('#JSONInput').focus(); });
     $('#addColors').on('shown.bs.modal', function () { $('#ColorInput').focus(); });
+    $('#shareView').on('shown.bs.modal', function () { $('#shareURL').select(); });
 });
 
 setPlottingArea = function() {
@@ -305,6 +306,42 @@ function RNAManager( done, newError ) {
   }
 }
 
+function ShareViewModel() {
+  var self = this;
+  
+  self.inputError = ko.observable('');
+  self.url = ko.observable('');
+  
+  self.newInputError = function(message) {
+    if (self.inputError() === '') {
+      self.inputError(message);
+    } else {
+      self.inputError([self.inputError(), message].join("<br>"));
+    }
+  };
+  
+  self.init = function(queries) {
+    // show the modal only if loading takes too long
+    $('#shareView').modal('show');
+    var data_string = rnaView.graph.toJSON();
+
+    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string })).success( function(data) {
+        console.log(data);
+        if (!location.origin)
+             location.origin = location.protocol + "//" + location.host;
+        self.url(location.origin + '/?id=share/' + data)
+    }).error( function(jqXHR) {
+        newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+    });
+  }
+
+  self.dismissError = function() {
+    $('#shareView').modal('hide');
+    // reset errors
+    self.inputError('');
+  };
+}
+
 function CustomColorScheme(text) {
     var self = this;
 
@@ -445,6 +482,19 @@ function AddAPIViewModel() {
                 rnaManager.add(data.sequence, '', data.rnacentral_id);
                 rnaManager.submit();
                 console.log("loaded from RNAcentral API");
+                $('#addAPI').modal('hide');
+        });
+        break;
+    case 'share':
+        //forna/?id=share/<uuid>
+        getAPIjson(serverURL + "get_graph/"  + queries['id'].split("/")[1], function(data) {
+                console.log("loaded share id " + queries['id'].split("/")[1]);
+                try{
+                    rnaView.graph.fromJSON(data);
+                } catch(err) {
+                    self.newInputError(err.message);
+                }
+                done();
                 $('#addAPI').modal('hide');
         });
         break;
@@ -764,48 +814,11 @@ function AddJSONViewModel() {
   
   self.parseJSON = function(input) {
     try{
-        var data = JSON.parse(input);
-        var rnas = data.rnas;
-        var extraLinks = data.extraLinks;
+        rnaView.graph.fromJSON(input);
     } catch(err) {
         self.newInputError(err.message);
-        return;
     }
 
-    for (uid in rnas) {
-        if (rnas[uid].type == 'rna') {
-            r = new RNAGraph()
-
-            r.seq = rnas[uid].seq;
-            r.dotbracket = rnas[uid].dotbracket;
-            r.circular = rnas[uid].circular;
-            r.pairtable = rnas[uid].pairtable;
-            r.uid = rnas[uid].uid;
-            r.struct_name = rnas[uid].struct_name;
-            r.nodes = rnas[uid].nodes;
-            r.links = rnas[uid].links;
-            r.rna_length = rnas[uid].rna_length;
-            r.elements = rnas[uid].elements;
-            r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
-            r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
-        } else {
-            r = new ProteinGraph()
-            r.size = rnas[uid].size;
-            r.nodes = rnas[uid].nodes;
-            r.uid = rnas[uid].uid;
-        }
-
-        rnaView.graph.addRNA(r, false);
-    }
-
-    extraLinks.forEach(function(link) {
-        rnaView.graph.extraLinks.push(link);
-    });
-
-    rnaView.graph.recalculateGraph();
-    rnaView.graph.update();
-
-    console.log('rna', rnas)
     // finish the form
     $('#SubmitJSON').button('reset');
     $('#addJSON').modal('hide');
@@ -1129,7 +1142,11 @@ function RNAViewModel() {
   self.showAbout = function() {
     $('#about').modal('show');
   };
-  
+ 
+  self.shareLink = function() {
+    shareView.init();
+  };
+
   self.clearGraph = function() {
     // delete all nodes
     self.molecules([]);
@@ -1141,18 +1158,7 @@ function RNAViewModel() {
   };
 
   self.saveJSON = function() {
-      var data = {"rnas": self.graph.rnas, "extraLinks": self.graph.extraLinks};
-      console.log('data:', data);
-      var data_string = JSON.stringify(data, function(key, value) {
-          //remove circular references
-          if (key == 'rna') {
-              return;
-          } else {
-              return value;
-          }
-
-      }, "\t");
-
+      var data_string = self.graph.toJSON();
       var blob = new Blob([data_string], {type: "application/json"});
       saveAs(blob, 'molecule.json')
   };
@@ -1209,6 +1215,7 @@ var addMmcifView = new AddMMCIFViewModel();
 var addJSONView = new AddJSONViewModel();
 var addAPIView = new AddAPIViewModel();
 var colorView = new ColorViewModel();
+var shareView = new ShareViewModel();
 
 ko.applyBindings(rnaView, document.getElementById('chart'));
 ko.applyBindings(addView, document.getElementById('add'));
@@ -1217,3 +1224,4 @@ ko.applyBindings(addPdbView, document.getElementById('addPDB'));
 ko.applyBindings(addMmcifView, document.getElementById('addMMCIF'));
 ko.applyBindings(addJSONView, document.getElementById('addJSON'));
 ko.applyBindings(addAPIView, document.getElementById('addAPI'));
+ko.applyBindings(shareView, document.getElementById('shareView'));
