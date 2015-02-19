@@ -95,6 +95,7 @@ function getCursorPos(element) {
 ajax = function(uri, method, data) {
   var request = {
     url: uri,
+    timeout:10000,
     type: method,
     contentType: "application/json",
     accepts: "application/json",
