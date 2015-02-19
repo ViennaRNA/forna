@@ -230,6 +230,63 @@ function Graph(element) {
 
         self.update();
     };
+    
+    self.toJSON = function toJSON() {
+       var data = {"rnas": self.rnas, "extraLinks": self.extraLinks};
+            console.log('data:', data);
+            var data_string = JSON.stringify(data, function(key, value) {
+            //remove circular references
+            if (key == 'rna') {
+                return;
+            } else {
+                return value;
+            }
+       }, "\t");
+       return data_string;
+    };
+
+    self.fromJSON = function(json_string) {
+        try{
+            var data = JSON.parse(json_string);
+            var rnas = data.rnas;
+            var extraLinks = data.extraLinks;
+        } catch(err) {
+            throw err;
+        }
+
+        for (uid in rnas) {
+            if (rnas[uid].type == 'rna') {
+                r = new RNAGraph()
+
+                r.seq = rnas[uid].seq;
+                r.dotbracket = rnas[uid].dotbracket;
+                r.circular = rnas[uid].circular;
+                r.pairtable = rnas[uid].pairtable;
+                r.uid = rnas[uid].uid;
+                r.struct_name = rnas[uid].struct_name;
+                r.nodes = rnas[uid].nodes;
+                r.links = rnas[uid].links;
+                r.rna_length = rnas[uid].rna_length;
+                r.elements = rnas[uid].elements;
+                r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
+                r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
+            } else {
+                r = new ProteinGraph()
+                r.size = rnas[uid].size;
+                r.nodes = rnas[uid].nodes;
+                r.uid = rnas[uid].uid;
+            }
+
+            self.addRNA(r, false);
+        }
+
+        extraLinks.forEach(function(link) {
+            self.extraLinks.push(link);
+        });
+
+        self.recalculateGraph();
+        self.update();
+    };
 
     function setSize() {
         var svgW = $(element).width();
