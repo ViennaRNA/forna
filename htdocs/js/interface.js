@@ -215,6 +215,7 @@ function ColorViewModel() {
 
       $('#addColors').modal('hide');
       rnaView.graph.deaf = false;
+        $("#chart").focus();
   };
 }
 
@@ -250,6 +251,7 @@ function AddPDBViewModel() {
     // reset errors
     self.inputError('');
     rnaView.graph.deaf = false;
+        $("#chart").focus();
   };
 
   self.submit = function() {
@@ -299,6 +301,7 @@ function AddPDBViewModel() {
                    success: function (data) {
                         $('#addPDB').modal('hide');
                         rnaView.graph.deaf = false;
+                        $("#chart").focus();
                         data = JSON.parse(data);
 
                         mols_json = molecules_to_json(data);
@@ -375,6 +378,7 @@ function AddJSONViewModel() {
     // reset errors
     self.inputError('');
     rnaView.graph.deaf = false;
+    $("#chart").focus();
   };
   
   self.parseJSON = function(input) {
@@ -428,6 +432,7 @@ function AddJSONViewModel() {
     $('#inputJSONFile').val('');
     self.inputFile(null);
     rnaView.graph.deaf = false;
+    $("#chart").focus();
   }
     
   self.submit = function() {
@@ -517,6 +522,7 @@ function AddViewModel() {
     // reset errors
     self.inputError('');
     rnaView.graph.deaf = false;
+        $("#chart").focus();
   };
 
   self.parseFasta = function(lines) {

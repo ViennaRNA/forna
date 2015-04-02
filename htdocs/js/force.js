@@ -652,6 +652,8 @@ function Graph(element) {
     .on("dragend", dragended);
 
     function keydown() {
+        console.log('keydown:', d3.event.keyCode);
+
         if (self.deaf)
             // lalalalal, not listening
             return;
@@ -768,6 +770,7 @@ function Graph(element) {
                 r.add_pseudoknots();
                 r.pairtable[d.source.num] = 0;
                 r.pairtable[d.target.num] = 0;
+                r.dotbracket = rnaUtilities.pairtable_to_dotbracket(r.pairtable);
 
                 update_rna_graph(r);
 
@@ -813,6 +816,7 @@ function Graph(element) {
 
             r.pairtable[new_link.source.num] = new_link.target.num;
             r.pairtable[new_link.target.num] = new_link.source.num;
+            r.dotbracket = rnaUtilities.pairtable_to_dotbracket(r.pairtable);
 
             update_rna_graph(r);
 
