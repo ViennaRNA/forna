@@ -503,6 +503,7 @@ function AddViewModel() {
           console.log('trying to add molecules');
           rnaView.addMolecules(self.newMolecules());
           self.newMolecules([]);
+        $("#chart").focus();
       }
     }
     return (returnValue);
