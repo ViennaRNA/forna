@@ -20,7 +20,7 @@
   <link rel='stylesheet' type='text/css' href='css/bootstrap-switch.css' />
   <link rel='stylesheet' type='text/css' href='css/bootstrap-slider.min.css'/>
   <!-- custom CSS -->
-  <!--<link rel='stylesheet' type='text/css' href='css/force.css' /> -->
+  <link rel='stylesheet' type='text/css' href='css/fornac.css' />
   <link rel='stylesheet' type='text/css' href='css/interface.css' />
 
   <!-- Java Script -->
@@ -91,8 +91,8 @@
         <div class="modal-body">
           <form role="form">
             <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
-            data-bind="visible: inputError().length == 0"></span>
-            <span data-bind="visible: inputError().length == 0">&nbsp;&nbsp;Please wait while we are
+            data-bind="visible: inputError().length === 0"></span>
+            <span data-bind="visible: inputError().length === 0">&nbsp;&nbsp;Please wait while we are
             getting your molecule...</span>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
@@ -237,9 +237,9 @@
         <div class="modal-body" style="min-height: 150px;">
           <form role="form">
             <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
-            data-bind="visible: (inputError().length == 0 && url().length == 0)"></span>
-            <span data-bind="visible: (inputError().length == 0 && url().length == 0)">&nbsp;&nbsp;We are generating your link...</span>
-            <div data-bind="visible: url().length != 0">
+            data-bind="visible: (inputError().length === 0 && url().length === 0)"></span>
+            <span data-bind="visible: (inputError().length === 0 && url().length === 0)">&nbsp;&nbsp;We are generating your link...</span>
+            <div data-bind="visible: url().length !== 0">
                 <label>Using this link you can return to the current state. This link will be valid for at about 6 weeks.</label>
                 <div class="input-group input-group-lg">
                     <input id="shareURL" type="text" class="form-control" placeholder="..." aria-describedby="url" data-bind="value: url" onClick="this.select();" readonly
@@ -468,25 +468,25 @@ AACCGG
           </button>
           <ul class="dropdown-menu menu-form" role="menu">
             <li role="presentation" class="dropdown-header">Color Scheme</li>
-            <li role="presentation" data-bind="css: { active: colors() == 'positions' }">
+            <li role="presentation" data-bind="css: { active: colors() === 'positions' }">
               <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'"> Positions
               </label>
             <li>
-            <li role="presentation" data-bind="css: { active: colors() == 'structure' }">
+            <li role="presentation" data-bind="css: { active: colors() === 'structure' }">
               <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'"> Structure
               </label>
             </li>
-            <li role="presentation" data-bind="css: { active: colors() == 'sequence' }">
+            <li role="presentation" data-bind="css: { active: colors() === 'sequence' }">
               <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'"> Sequence
               </label>
             </li>
-            <li role="presentation" data-bind="css: { active: colors() == 'custom' }">
-              <label role="menuitem" style="text-align: middle;">
+            <li role="presentation" data-bind="css: { active: colors() === 'custom' }">
+              <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'custom', checkedVaue: 'custom'"> Custom&nbsp;
-                <button type="button" role="menuitem" data-bind="click: showCustomColors, attr: { 'class': colors() == 'custom' ? 'btn btn-xs btn-default' : 'btn btn-xs btn-primary' }">Set</button>
+                <button type="button" role="menuitem" data-bind="click: showCustomColors, attr: { 'class': colors() === 'custom' ? 'btn btn-xs btn-default' : 'btn btn-xs btn-primary' }">Set</button>
               </label>
             </li>
           </ul>
