@@ -4,24 +4,24 @@
   
   <title>forna</title>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="RNA Secondary Structure Visualization Using a Force Directed Graph Layout">
-  <meta name="keywords" content="RNA, secundary structure, visualization, force directed graph, plot, svg">
-  <meta name="author" content="Stefan Hammer">
-  <meta name="author" content="Peter Kerpedjiev">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="RNA Secondary Structure Visualization Using a Force Directed Graph Layout"/>
+  <meta name="keywords" content="RNA, secundary structure, visualization, force directed graph, plot, svg"/>
+  <meta name="author" content="Stefan Hammer"/>
+  <meta name="author" content="Peter Kerpedjiev"/>
 
-  <link rel="icon" type="image/png" href="img/favicon-192x192.png" sizes="192x192">
-  <link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32">
-  <link rel="icon" type="image/png" href="img/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="img/favicon-192x192.png" sizes="192x192"/>
+  <link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32"/>
+  <link rel="icon" type="image/png" href="img/favicon-16x16.png" sizes="16x16"/>
   
   <!-- CSS -->
   <!-- Bootstrap: http://getbootstrap.com/ -->
-  <link rel='stylesheet' type='text/css' href='css/bootstrap.min.css'>
-  <!-- custom CSS -->
-  <link rel='stylesheet' type='text/css' href='css/force.css' />
-  <link rel='stylesheet' type='text/css' href='css/interface.css' />
+  <link rel='stylesheet' type='text/css' href='css/bootstrap.min.css'/>
   <link rel='stylesheet' type='text/css' href='css/bootstrap-switch.css' />
   <link rel='stylesheet' type='text/css' href='css/bootstrap-slider.min.css'/>
+  <!-- custom CSS -->
+  <!--<link rel='stylesheet' type='text/css' href='css/force.css' /> -->
+  <link rel='stylesheet' type='text/css' href='css/interface.css' />
 
   <!-- Java Script -->
   <!-- jQuery -->
@@ -31,15 +31,15 @@
   <script type="text/javascript" src="js/knockout-bindings.js"></script>
   <!-- Bootstrap Javascript Plugins: http://getbootstrap.com/ -->
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <!-- bootstrap on off switch and slider -->
+  <script type="text/javascript" src="js/bootstrap-switch.js"></script>
+  <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
   <!-- D3 -->
   <script type="text/javascript" src="js/d3.js"></script>
   <!-- File Saver https://github.com/eligrey/FileSaver.js -->
   <script type="text/javascript" src="js/FileSaver.min.js"></script>
   <!-- saveSvgAsPng.js -->
   <script type="text/javascript" src="js/saveSvgAsPng.js"></script>
-  <!-- bootstrap on off switch and slider -->
-  <script type="text/javascript" src="js/bootstrap-switch.js"></script>
-  <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
 </head>
 <body>
 <div id="main">
@@ -590,24 +590,12 @@ AACCGG
       </div>
     </div>
     
-    <!-- rna javascript -->
-    <script type="text/javascript" src="js/rna.js"></script>
-    <!-- force field javascript -->
-    <script type="text/javascript" src="js/force.js"></script>
+    <!-- fornac javascript -->
+    <script type="text/javascript" src="js/fornac.js"></script>
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
     
   </div>
 </div> 
-
-  <script>  
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-55640065-1', 'auto');
-      ga('send', 'pageview');
-  </script>
 </body>
 </html>
