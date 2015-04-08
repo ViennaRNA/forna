@@ -8,6 +8,7 @@ htdocs/js/fornac.js:
 	cp fornac/css/fornac.css htdocs/css/
 
 clean:
-	rm -f htdocs/js/fornac.js htdocs/css/fornac.css
+	cd fornac && $(MAKE) clean
+	rm -f htdocs/js/fornac.js htdocs/css/fornac.css *.db *.log
 
 .PHONY: all
