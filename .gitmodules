@@ -1,0 +1,6 @@
+[submodule "fornac"]
+	path = fornac
+	url = https://github.com/pkerpedjiev/fornac.git
+[submodule "closure-compiler"]
+	path = closure-compiler
+	url = https://github.com/google/closure-compiler.git
