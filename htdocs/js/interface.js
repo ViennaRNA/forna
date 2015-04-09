@@ -22,13 +22,13 @@ $(document).ready ( function() {
             var query = q.split('=');
             queries[query[0].toString()] = query[1].toString();
         });
-        
+
         addAPIView.load(queries);
     }
-    
+
     $('#JSONInput').bind("keyup click focus", function() { addJSONView.cursorPosition( getCursorPos('#JSONInput') ); });
     $('#Input').bind("keyup click focus", function() { addView.cursorPosition( getCursorPos('#Input') ); });
-    
+
     $('#add').on('shown.bs.modal', function () { $('#Input').focus(); });
     $('#addJSON').on('shown.bs.modal', function () { $('#JSONInput').focus(); });
     $('#addColors').on('shown.bs.modal', function () { $('#ColorInput').focus(); });
@@ -41,7 +41,7 @@ setPlottingArea = function() {
     !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {
     chartheight = chartheight-2;
   }
-  
+
   $("#plotting-area").height(chartheight);
   var chartwidth = $("#chart").width();
   $("#plotting-area").width(chartwidth);
@@ -50,7 +50,7 @@ setPlottingArea = function() {
 // thanks to https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Using_full_screen_mode
 function toggleFullScreen(id) {
   var elem = document.getElementById(id);
-  
+
   if (!document.fullscreenElement &&    // alternative standard method
       !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  // current working methods
     if (elem.requestFullscreen) {
@@ -120,7 +120,7 @@ function RNA(sequence, structure, header , newError) {
 
   self.header = ko.observable(header);
   self.done = ko.observable(false);
-  
+
   self.structure = ko.onDemandObservable( function() {
         if (self.sequence() !== '') {
           ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
@@ -131,7 +131,7 @@ function RNA(sequence, structure, header , newError) {
             newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
           });
         }
-    }, self 
+    }, self
   );
 
   self.sequence = ko.onDemandObservable( function() {
@@ -144,9 +144,9 @@ function RNA(sequence, structure, header , newError) {
             newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
           });
         }
-    }, self 
+    }, self
   );
-  
+
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
         try {
@@ -175,7 +175,7 @@ function RNA(sequence, structure, header , newError) {
       self.sequence();
   } else {
       self.sequence(sequence);
-      
+
       if (structure === '') {
         self.structure.refresh();
         self.structure();
@@ -193,7 +193,7 @@ function RNA(sequence, structure, header , newError) {
 
 function RNAManager( done, newError ) {
     var self = this;
-    
+
     self.newMolecules = ko.observableArray([]);
     self.submitted = ko.observable(false);
     self.error = ko.observable(false);
@@ -217,26 +217,26 @@ function RNAManager( done, newError ) {
         }
         return (returnValue);
     });
-    
+
     function reportError(message) {
         self.error(true);
         newError(message);
     }
-    
+
     self.add = function(sequence, structure, header) {
         self.newMolecules.push(new RNA(sequence, structure, header, reportError));
     };
-    
+
     self.submit = function() {
         self.submitted(true);
     };
-    
+
     self.reset = function() {
         self.newMolecules([]);
         self.submitted(false);
         self.error(false);
     };
-    
+
     self.parseFasta = function(lines, done) {
       function tmpRNA () {
         var me = this;
@@ -245,18 +245,18 @@ function RNAManager( done, newError ) {
         me.header = 'rna';
       }
       var rna;
-      
+
       console.log(lines);
       if (lines.length === 0) {
         self.reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
         return;
       }
-      
+
       var BreakException= {};
-      
+
       try {
         var countErrors = 0;
-        
+
         lines.forEach( function(line) {
           line = line.replace(/[\s]/g,""); // remove any whitespaces
           // check if it is a fasta header
@@ -296,7 +296,7 @@ function RNAManager( done, newError ) {
       // also initialize the last object
       console.log("Added new rna molecule to newMolecules");
       self.add(rna.sequence, rna.structure, rna.header);
-      
+
       // unlock the submitted
       if (self.error()) {
         self.reset();
@@ -309,10 +309,10 @@ function RNAManager( done, newError ) {
 
 function ShareViewModel() {
   var self = this;
-  
+
   self.inputError = ko.observable('');
   self.url = ko.observable('');
-  
+
   self.newInputError = function(message) {
     if (self.inputError() === '') {
       self.inputError(message);
@@ -320,7 +320,7 @@ function ShareViewModel() {
       self.inputError([self.inputError(), message].join("<br>"));
     }
   };
-  
+
   self.init = function(queries) {
     // show the modal only if loading takes too long
     $('#shareView').modal('show');
@@ -399,10 +399,10 @@ function ColorViewModel() {
 
 function AddAPIViewModel() {
   var self = this;
-  
+
   self.inputError = ko.observable('');
   self.loading = ko.observable(false);
-  
+
   self.newInputError = function(message) {
     if (self.inputError() === '') {
       self.inputError(message);
@@ -410,7 +410,7 @@ function AddAPIViewModel() {
       self.inputError([self.inputError(), message].join("<br>"));
     }
   };
-  
+
   self.done = function() {
     self.loading(false);
     console.log("everything should be loaded from API, updating graph!");
@@ -418,9 +418,9 @@ function AddAPIViewModel() {
     // reset errors
     self.inputError('');
   };
-  
+
   var rnaManager = new RNAManager( self.done, self.newInputError );
-  
+
   var getAPIjson = function(link, finish) {
     $.ajax({
         url: link,
@@ -444,7 +444,7 @@ function AddAPIViewModel() {
     rnaView.colors('custom');
     rnaView.fornac.changeColorScheme(rnaView.colors());
   };
-  
+
   self.load = function(queries) {
     // show the modal only if loading takes too long
     self.loading(true);
@@ -453,9 +453,9 @@ function AddAPIViewModel() {
             $('#addAPI').modal('show');
         }
     }, 3000);
-    
+
     console.log(queries);
-    
+
     switch(queries['id'].split("/")[0]) {
     case 'RNAfold':
         //forna/?id=RNAfold/msegvRMpMU&file=mfe.json
@@ -510,9 +510,9 @@ function AddAPIViewModel() {
         break;
     case 'url':
         //forna/?id=url/molecule_name&sequence=AGAUGA&structure=......
-        if (queries['sequence'] === undefined) { 
+        if (queries['sequence'] === undefined) {
             self.newInputError("ERROR: You have to define an input sequence!");
-            break; 
+            break;
         }
         if (queries['structure'] === undefined) { queries['structure'] = ''; }
         rnaManager.add(queries['sequence'],queries['structure'],queries['id'].split("/")[1]);
@@ -522,7 +522,7 @@ function AddAPIViewModel() {
         break;
     default:
         console.log("Error: ID of API unknown!");
-        self.dismissError(); 
+        self.dismissError();
     }
 
     // use the color information if available
@@ -624,7 +624,7 @@ function AddMMCIFViewModel() {
                         rnaView.animation(true);
                         // the extra links contain supplementary information
                         rnaView.fornac.changeColorScheme(rnaView.colors());
-                        
+
                    },
                    error: function (jqXHR) {
                         self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
@@ -658,7 +658,8 @@ function AddPDBViewModel() {
   self.submitted = ko.observable(false);
   self.colorSchemeJson = ko.observable({});
   self.inputFile = ko.observable(null);
-
+  self.compounds = ko.observableArray([]);
+  
   self.newInputError = function(message) {
     if (self.inputError() === '') {
       self.inputError(message);
@@ -682,6 +683,64 @@ function AddPDBViewModel() {
     self.inputFile(null);
     // reset errors
     self.inputError('');
+  };
+  
+  function Compound(id, name, fragment, chain) {
+      var self = this;
+      self.id = id;
+      self.name = name;
+      self.fragment = fragment;
+      self.chain = chain;
+      self.selected = ko.observable(false);
+  }
+  
+  self.selectItem = function(item) {
+    item.selected(!item.selected());
+  };
+  
+  self.parsePDB = function() {    
+      var parse = function(content) {
+          var lines = content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
+          
+          var compnd = null;
+          for (var i = 0; i < lines.length; i++) {
+              var line = lines[i],
+                      header = line.substring(0,6).trim(),
+                      specification = line.substring(10,80).trim();
+              if (header === "COMPND") {
+                  var specs = specification.replace(/\;/g, "").split(":");
+                  console.log(specs);
+                  switch(specs[0]) {
+                    case "MOL_ID":
+                        if (compnd !== null) {
+                            self.compounds.push(compnd);
+                        }
+                        compnd = new Compound(specs[1]);
+                        break;
+                    case "MOLECULE":
+                        compnd.name = specs[1];
+                        break;
+                    case "CHAIN":
+                        compnd.chain = specs[1];
+                        break;
+                    case "FRAGMENT":
+                        compnd.fragment = specs[1];
+                        break;
+                  }
+              }
+          }
+          self.compounds.push(compnd);
+      };
+      
+      if (self.inputFile() !== null) {
+        var r = new FileReader();
+        r.onload = function(e) {
+            var content = e.target.result;
+            //console.log(content);
+            parse(content);
+        };
+        r.readAsText(self.inputFile());
+      }
   };
 
   self.submit = function() {
@@ -742,7 +801,7 @@ function AddPDBViewModel() {
                         rnaView.animation(true);
                         // the extra links contain supplementary information
                         rnaView.fornac.changeColorScheme(rnaView.colors());
-                        
+
                    },
                    error: function (jqXHR) {
                         self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
@@ -751,28 +810,14 @@ function AddPDBViewModel() {
                    contentType: false,
                    processData: false
       });
-
-      /*
-      var a = ajax(serverURL + '/colors_to_json', 'POST', JSON.stringify( {text: self.input()} ))
-
-        a.success( function(data) {
-            $('#addColors').modal('hide');
-
-            self.colorSchemeJson(data);
-            rnaView.fornac.addCustomColors(self.colorSchemeJson());
-            rnaView.fornac.changeColorScheme(rnaView.colors());
-        }).error( function(jqXHR) {
-            console.log('error again')
-            self.inputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-            //$('#ColorSubmit').button('reset');
-        });
-    */
+      
+      
   };
 }
 
 function AddJSONViewModel() {
   var self = this;
-  
+
   self.input = ko.observable('');
   self.inputFile = ko.observable(null);
   self.inputError = ko.observable('');
@@ -795,7 +840,7 @@ function AddJSONViewModel() {
     // reset errors
     self.inputError('');
   };
-  
+
   self.parseJSON = function(input) {
     try{
         rnaView.fornac.fromJSON(input);
@@ -810,11 +855,11 @@ function AddJSONViewModel() {
     $('#inputJSONFile').val('');
     self.inputFile(null);
   };
-    
+
   self.submit = function() {
     $('#SubmitJSON').button('loading');
     self.inputError('');
-    
+
     if ((self.inputFile() !== null) || (self.input() !== '')) {
         if (self.inputFile() !== null) {
           var r = new FileReader();
@@ -835,11 +880,11 @@ function AddJSONViewModel() {
 
 function AddViewModel() {
   var self = this;
-  
+
   self.input = ko.observable(
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
 ((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
-   
+
    /*
    '>\nAAAA\n.(.)*'
    '>m\nCUGCUCCACGCAAGGAGGUGGACUUAAGCGGCUCAUCCGGGUCUGCGAUAUCCACUGCGCGGUAUGCGCUCGCGAGUUCGAAUCUCGUCGCCAGUACACUGACUUCACUGGCGUGUCCGAGUGGUUAGGCAA\n..(((((((....(((((((((.....(((((((....))).))))....))))))((((.....))))..(((((.......)))))(((((((...........)))))))..)))..))))...)))..*'
@@ -850,7 +895,7 @@ function AddViewModel() {
    '>molecule1\nAAAAAA\n(([))]'
    */
   );
-  
+
   self.inputError = ko.observable('');
   self.inputFile = ko.observable(null);
   self.cursorPosition = ko.observable('');
@@ -863,14 +908,14 @@ function AddViewModel() {
     }
     $('#Submit').button('reset');
   };
-  
+
   var done = function() {
     console.log("everything should be loaded now, updating graph!");
     $('#add').modal('hide');
   };
-  
+
   var rnaManager = new RNAManager( done, self.newInputError );
-  
+
   self.uploadFasta = function (file) {
       self.inputFile(file);
       console.log(file);
@@ -886,23 +931,23 @@ function AddViewModel() {
     // reset Loader
     rnaManager.reset();
   };
-  
+
   self.submit = function() {
     $('#Submit').button('loading');
     self.inputError('');
     rnaManager.reset();
-    
+
     //remove leading/trailing/inbeteen newlines and split in at the remaining ones
     var lines = [];
     if (self.input() !== '') {
       lines = self.input().replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
     }
-    
+
     var endFunction = function() {
           $('#inputFastaFile').val('');
           self.inputFile(null);
     };
-    
+
     if (self.inputFile() !== null) {
       var r = new FileReader();
       r.onload = function(e) {
@@ -921,15 +966,15 @@ function AddViewModel() {
 // Knockout view model for RNA
 function RNAViewModel() {
   var self = this;
-  
+
   self.fornac = new FornaContainer("#chart", {'initialSize': [$("#chart").width(),$(window).height()-2]});
   setPlottingArea();
   self.molecules = ko.observableArray([]);
-  
+
   self.addMolecules = function(array) {
       // before we add molecules we need to enable animation
     self.animation(true);
-    
+
     self.molecules().concat(array);
     // add a new molecule to the graph
     array.forEach( function(rna) {
@@ -939,7 +984,7 @@ function RNAViewModel() {
     self.fornac.changeColorScheme(self.colors());
   };
   /*jshint multistr: true */
-  
+
   self.colors = ko.observable('structure'); // the color scheme setting can be structure/sequence/pairprobabilities
 
   self.colors.subscribe(function(newValue) {
@@ -954,9 +999,9 @@ function RNAViewModel() {
         self.fornac.changeColorScheme(newValue);
     }
   });
-  
+
   self.animation = ko.observable(true);
-  
+
   self.animation.subscribe( function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the animation state");
@@ -968,41 +1013,41 @@ function RNAViewModel() {
       }
     }
   });
-  
+
   self.friction = ko.observable(35);
   self.charge = ko.observable(-30);
-  
+
   self.friction.subscribe( function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the friction");
     } else {
-      
+
       self.fornac.setFriction(newValue/100);
     }
   });
-  
+
   self.charge.subscribe( function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the charge");
     } else {
-      
+
         self.fornac.setCharge(newValue);
     }
   });
 
   self.gravity = ko.observable(0);
-  
+
   self.gravity.subscribe( function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the gravity");
     } else {
-      
+
       self.fornac.setGravity(newValue/100);
     }
   });
-  
+
   self.pseudoknotStrength = ko.observable(0);
-  
+
   self.pseudoknotStrength.subscribe( function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the pseudoknotStrength");
@@ -1010,9 +1055,9 @@ function RNAViewModel() {
       self.fornac.setPseudoknotStrength(newValue);
     }
   });
-  
+
   self.background = ko.observable(true);
-  
+
   self.background.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the background option");
@@ -1020,9 +1065,9 @@ function RNAViewModel() {
       self.fornac.displayBackground(newValue);
     }
   });
-  
+
   self.numbering = ko.observable(true);
-  
+
   self.numbering.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the nubering option");
@@ -1030,9 +1075,9 @@ function RNAViewModel() {
       self.fornac.displayNumbering(newValue);
     }
   });
-  
+
   self.nodeLabel = ko.observable(true);
-  
+
   self.nodeLabel.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the node label option");
@@ -1040,9 +1085,9 @@ function RNAViewModel() {
       self.fornac.displayNodeLabel(newValue);
     }
   });
-  
+
   self.displayPseudoknotLinks = ko.observable(true);
-  
+
   self.displayPseudoknotLinks.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the pseudoknot link option");
@@ -1052,7 +1097,7 @@ function RNAViewModel() {
   });
 
   self.displayProteinBindingHighlighting = ko.observable(true);
-  
+
   self.displayProteinBindingHighlighting.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the pseudoknot link option");
@@ -1062,7 +1107,7 @@ function RNAViewModel() {
   });
 
   self.displayProteinLinks = ko.observable(true);
-  
+
   self.displayProteinLinks.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the pseudoknot link option");
@@ -1072,7 +1117,7 @@ function RNAViewModel() {
   });
 
   self.displayLinks = ko.observable(true);
-  
+
   self.displayLinks.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the display links option");
@@ -1080,9 +1125,9 @@ function RNAViewModel() {
       self.fornac.displayLinks(newValue);
     }
   });
-  
+
   self.nodeOutline = ko.observable(true);
-  
+
   self.nodeOutline.subscribe (function(newValue) {
     if (self.fornac === null) {
       console.log("graph is null, won't change the outline option");
@@ -1090,7 +1135,7 @@ function RNAViewModel() {
       self.fornac.displayNodeOutline(newValue);
     }
   });
-  
+
   self.showAdd = function() {
     $('#Submit').button('reset');
     $('#add').modal('show');
@@ -1120,11 +1165,11 @@ function RNAViewModel() {
     $('#addColors').modal('show');
     self.fornac.deaf = true;
   };
-  
+
   self.showAbout = function() {
     $('#about').modal('show');
   };
- 
+
   self.shareLink = function() {
     shareView.init();
   };
@@ -1134,7 +1179,7 @@ function RNAViewModel() {
     self.molecules([]);
     self.fornac.clearNodes();
   };
-  
+
   self.centerMolecules = function() {
     self.fornac.center_view();
   };
@@ -1148,7 +1193,7 @@ function RNAViewModel() {
   self.savePNG = function() {
     saveSvgAsPng(document.getElementById('plotting-area'), 'rna.png', 4);
   };
-  
+
   self.saveSVG = function() {
     console.log("saving svg...");
     var svg_clone = $('#plotting-area').clone();
@@ -1157,8 +1202,8 @@ function RNAViewModel() {
 
     console.log('to_remove', to_remove);
 
-    var parents = to_remove.map(function(d) { 
-        return d.parentNode; 
+    var parents = to_remove.map(function(d) {
+        return d.parentNode;
     });
 
     for (var i = 0; i < to_remove.length; i++) {
@@ -1179,7 +1224,7 @@ function RNAViewModel() {
     if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
         source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
     }
-    
+
     //add xml declaration
     source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
 
