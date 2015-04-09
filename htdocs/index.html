@@ -154,7 +154,7 @@
             <div class="form-group">
               <label for="inputPDBFile">File Input</label>
               <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
-                  <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { $('#inputPDBFile').val(''); inputFile(null); }, visible: inputFile"></span>
+                  <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { $('#inputPDBFile').val(''); inputFile(null); inputError(''); }, visible: inputFile"></span>
                   <input type="file" id="inputPDBFile" data-bind="event: { change: function() { inputFile($element.files[0]); parsePDB(); }}">
                    <p class="help-block">Please select a PDB file to extract the secondary structure from.</p>
                    <div data-bind="visible: inputFile() !== null" id="compoundList">
