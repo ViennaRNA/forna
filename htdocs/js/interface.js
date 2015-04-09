@@ -94,10 +94,10 @@ function getCursorPos(element) {
 }
 
 // custom ajax call
-ajax = function(uri, method, data) {
+ajax = function(uri, method, data, timeout) {
   var request = {
     url: uri,
-    timeout:10000,
+    timeout: timeout,
     type: method,
     contentType: "application/json",
     accepts: "application/json",
@@ -123,7 +123,7 @@ function RNA(sequence, structure, header , newError) {
 
   self.structure = ko.onDemandObservable( function() {
         if (self.sequence() !== '') {
-          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
+          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} ), 10000).success( function(data) {
             self.structure(data);
             self.json.refresh();
             self.json();
@@ -136,7 +136,7 @@ function RNA(sequence, structure, header , newError) {
 
   self.sequence = ko.onDemandObservable( function() {
         if (self.structure() !== '') {
-          ajax(serverURL + '/inverse_fold', 'POST', JSON.stringify( {struct: self.structure()} )).success( function(data) {
+          ajax(serverURL + '/inverse_fold', 'POST', JSON.stringify( {struct: self.structure()} ), 10000).success( function(data) {
             self.sequence(data);
             self.json.refresh();
             self.json();
@@ -148,7 +148,7 @@ function RNA(sequence, structure, header , newError) {
   );
 
   self.json = ko.onDemandObservable( function() {
-      ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
+      ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} ), 10000).success( function(data) {
         try {
             r = new RNAGraph(self.sequence(), self.structure(), self.header())
             .elementsToJson()
@@ -326,7 +326,7 @@ function ShareViewModel() {
     $('#shareView').modal('show');
     var data_string = rnaView.fornac.toJSON();
 
-    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string })).success( function(data) {
+    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string }), 10000).success( function(data) {
         console.log(data);
         if (!location.origin)
              location.origin = location.protocol + "//" + location.host;
@@ -688,12 +688,13 @@ function AddPDBViewModel() {
     self.inputError('');
   };
   
-  function Compound(id, name, fragment, chain) {
+  function Compound(id) {
       var self = this;
       self.id = id;
-      self.name = name;
-      self.fragment = fragment;
-      self.chain = chain;
+      self.name = "";
+      self.fragment = "";
+      self.chain = [];
+      self.chains = "";
       self.selected = ko.observable(true);
       self.data = "";
   }
@@ -701,8 +702,18 @@ function AddPDBViewModel() {
   self.selectItem = function(item) {
     item.selected(!item.selected());
   };
+
+  self.selectAll = function(value) {
+    ko.utils.arrayForEach(self.compounds(), function(compound) {
+       compound.selected(value); 
+    });
+  };
   
-  self.parsePDB = function() {    
+  self.parsePDB = function() {
+      // reset all global stuff
+      self.compounds([]);
+      self.conect = "";
+      self.inputError('');
       var parse = function(content) {
           var lines = content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
           var compnd = null;
@@ -725,7 +736,8 @@ function AddPDBViewModel() {
                         compnd.name = specs[1].trim();
                         break;
                     case "CHAIN":
-                        compnd.chain = specs[1].trim();
+                        compnd.chains = specs[1].trim();
+                        compnd.chain = specs[1].trim().split(", ");
                         break;
                     case "FRAGMENT":
                         compnd.fragment = specs[1].trim();
@@ -746,7 +758,9 @@ function AddPDBViewModel() {
           console.log(self.compounds());
           // push data to right place
           ko.utils.arrayForEach(self.compounds(), function(compound) {
-              compound.data = atoms[compound.chain];
+              compound.chain.forEach( function(c) {
+                  compound.data += atoms[c];
+              });
           });
       };
       
@@ -791,7 +805,7 @@ function AddPDBViewModel() {
       pdb_string += "\nEND";
       console.log(pdb_string);
       
-      ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} )).success( function(data) {
+      ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} ), 80000).success( function(data) {
         try {
           data = JSON.parse(data);
         } catch (err) {
