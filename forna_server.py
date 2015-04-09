@@ -156,11 +156,9 @@ def create_app(static):
     def pdb_to_graph():
         from werkzeug import secure_filename
 
-        name = secure_filename(request.files['pdb_file'].filename)
-
         try:
-            result = forna.pdb_to_json(request.files['pdb_file'].read(), 
-                                       name, parser=bpdb.PDBParser())
+            result = forna.pdb_to_json(request.json['pdb'], request.json['name'],
+                                       parser=bpdb.PDBParser())
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "PDB file parsing error: {}".format(str(ex)))

@@ -659,6 +659,7 @@ function AddPDBViewModel() {
   self.colorSchemeJson = ko.observable({});
   self.inputFile = ko.observable(null);
   self.compounds = ko.observableArray([]);
+  self.conect = "";
   
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -681,6 +682,8 @@ function AddPDBViewModel() {
     // reset the file upload form
     $('#inputPDBFile').val('');
     self.inputFile(null);
+    self.compounds([]);
+    self.conect = "";
     // reset errors
     self.inputError('');
   };
@@ -691,7 +694,8 @@ function AddPDBViewModel() {
       self.name = name;
       self.fragment = fragment;
       self.chain = chain;
-      self.selected = ko.observable(false);
+      self.selected = ko.observable(true);
+      self.data = "";
   }
   
   self.selectItem = function(item) {
@@ -701,35 +705,49 @@ function AddPDBViewModel() {
   self.parsePDB = function() {    
       var parse = function(content) {
           var lines = content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
-          
           var compnd = null;
+          var atoms = {};
           for (var i = 0; i < lines.length; i++) {
               var line = lines[i],
                       header = line.substring(0,6).trim(),
-                      specification = line.substring(10,80).trim();
+                      specification = line.substring(10,80).trim(),
+                      chainName = line.substring(21,22).trim();
               if (header === "COMPND") {
                   var specs = specification.replace(/\;/g, "").split(":");
-                  console.log(specs);
                   switch(specs[0]) {
                     case "MOL_ID":
                         if (compnd !== null) {
                             self.compounds.push(compnd);
                         }
-                        compnd = new Compound(specs[1]);
+                        compnd = new Compound(specs[1].trim());
                         break;
                     case "MOLECULE":
-                        compnd.name = specs[1];
+                        compnd.name = specs[1].trim();
                         break;
                     case "CHAIN":
-                        compnd.chain = specs[1];
+                        compnd.chain = specs[1].trim();
                         break;
                     case "FRAGMENT":
-                        compnd.fragment = specs[1];
+                        compnd.fragment = specs[1].trim();
                         break;
                   }
+              } else if (["ATOM", "HETATM", "ANISOU", "TER"].indexOf(header) > -1) {
+                if (atoms[chainName] !== undefined) {
+                    atoms[chainName] += ("\n" + line);
+                } else {
+                    atoms[chainName] = (line);
+                }
+              } else if (header === "CONECT") {
+                  self.conect += ("\n" + line);
               }
           }
+          // add last compound
           self.compounds.push(compnd);
+          console.log(self.compounds());
+          // push data to right place
+          ko.utils.arrayForEach(self.compounds(), function(compound) {
+              compound.data = atoms[compound.chain];
+          });
       };
       
       if (self.inputFile() !== null) {
@@ -752,66 +770,53 @@ function AddPDBViewModel() {
         self.newInputError("ERROR Please select a PDB file");
         return;
       }
-
       /*
       if (self.inputFile().type != 'chemical/x-pdb') {
         self.newInputError("ERROR: Invalid file type, please upload a PDB file");
         return;
       }
       */
-
       if (self.inputFile().size > 20000000) {
         self.newInputError("ERROR: Selected file is too large");
         return;
       }
-
-      var formData = new FormData();
-      // var xhr = new XMLHttpRequest();
-
-
-      formData.append('pdb_file', self.inputFile(), self.inputFile().name);
-
-      $.ajax({type: "POST",
-                   url: serverURL + '/pdb_to_graph',
-                   /*
-                   xhr: function() {  // Custom XMLHttpRequest
-                       var myXhr = $.ajaxSettings.xhr();
-                       if(myXhr.upload){ // Check if upload property exists
-                           myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
-                       }
-                       return myXhr;
-                   },
-                   */
-                   data: formData,
-                   success: function (data) {
-                        $('#addPDB').modal('hide');
-                        data = JSON.parse(data);
-
-                        mols_json = molecules_to_json(data);
-
-                        for (var i = 0; i < mols_json.graphs.length; i++)
-                            rnaView.fornac.addRNAJSON(mols_json.graphs[i], true );
-
-                        for (i = 0; i < mols_json.extraLinks.length; i++)
-                            rnaView.fornac.extraLinks.push(mols_json.extraLinks[i]);
-
-                        rnaView.fornac.recalculateGraph();
-                        rnaView.fornac.update();
-
-                        rnaView.animation(true);
-                        // the extra links contain supplementary information
-                        rnaView.fornac.changeColorScheme(rnaView.colors());
-
-                   },
-                   error: function (jqXHR) {
-                        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-                   },
-                   cache: false,
-                   contentType: false,
-                   processData: false
+      
+      var pdb_string = "";
+      ko.utils.arrayForEach(self.compounds(), function(compound) {
+        if(compound.selected()) {
+            pdb_string += (compound.data + "\n");
+        }
       });
+      pdb_string += self.conect;
+      pdb_string += "\nEND";
+      console.log(pdb_string);
       
-      
+      ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} )).success( function(data) {
+        try {
+          data = JSON.parse(data);
+        } catch (err) {
+          self.newInputError("ERROR" + err);
+        }
+        
+        mols_json = molecules_to_json(data);
+
+        for (var i = 0; i < mols_json.graphs.length; i++)
+            rnaView.fornac.addRNAJSON(mols_json.graphs[i], true );
+
+        for (i = 0; i < mols_json.extraLinks.length; i++)
+            rnaView.fornac.extraLinks.push(mols_json.extraLinks[i]);
+
+        rnaView.fornac.recalculateGraph();
+        rnaView.fornac.update();
+
+        rnaView.animation(true);
+        // the extra links contain supplementary information
+        rnaView.fornac.changeColorScheme(rnaView.colors());
+
+        self.cancelAddPDB();
+      }).error( function(jqXHR) {
+        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+      });
   };
 }
 
