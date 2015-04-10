@@ -682,7 +682,7 @@ function AddPDBViewModel() {
     // reset the file upload form
     $('#inputPDBFile').val('');
     self.inputFile(null);
-    self.compounds([]);
+    self.compounds.destroy();
     self.conect = "";
     // reset errors
     self.inputError('');
@@ -803,6 +803,7 @@ function AddPDBViewModel() {
       });
       pdb_string += self.conect;
       pdb_string += "\nEND";
+      pdb_string.replace(/\n\n/, "\n");
       console.log(pdb_string);
       
       ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} ), 80000).success( function(data) {

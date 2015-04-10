@@ -161,6 +161,12 @@ def create_app(static):
                                        parser=bpdb.PDBParser())
         except Exception as ex:
             app.logger.exception(ex)
+            # store pdb files sent to server and failed
+            if not os.path.exists("pdb"):
+                os.makedirs("pdb")
+            fo = open("pdb/"+request.json['name'], "wb")
+            fo.write(request.json['pdb'])
+            fo.close()
             abort(400, "PDB file parsing error: {}".format(str(ex)))
 
         return json.dumps(result), 201
