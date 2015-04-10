@@ -698,7 +698,7 @@ def pdb_to_json(text, name, parser=None):
         with open(fname, 'w') as f:
             # dump the pdb text to a temporary file
             f.write(text)
-            f.flush
+            f.flush()
 
             struct = parser.get_structure('temp', fname)
             chains = struct.get_chains()

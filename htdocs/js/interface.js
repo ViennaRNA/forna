@@ -94,10 +94,10 @@ function getCursorPos(element) {
 }
 
 // custom ajax call
-ajax = function(uri, method, data) {
+ajax = function(uri, method, data, timeout) {
   var request = {
     url: uri,
-    timeout:10000,
+    timeout: timeout,
     type: method,
     contentType: "application/json",
     accepts: "application/json",
@@ -123,7 +123,7 @@ function RNA(sequence, structure, header , newError) {
 
   self.structure = ko.onDemandObservable( function() {
         if (self.sequence() !== '') {
-          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} )).success( function(data) {
+          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} ), 10000).success( function(data) {
             self.structure(data);
             self.json.refresh();
             self.json();
@@ -136,7 +136,7 @@ function RNA(sequence, structure, header , newError) {
 
   self.sequence = ko.onDemandObservable( function() {
         if (self.structure() !== '') {
-          ajax(serverURL + '/inverse_fold', 'POST', JSON.stringify( {struct: self.structure()} )).success( function(data) {
+          ajax(serverURL + '/inverse_fold', 'POST', JSON.stringify( {struct: self.structure()} ), 10000).success( function(data) {
             self.sequence(data);
             self.json.refresh();
             self.json();
@@ -148,7 +148,7 @@ function RNA(sequence, structure, header , newError) {
   );
 
   self.json = ko.onDemandObservable( function() {
-      ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} )).success( function(data) {
+      ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} ), 10000).success( function(data) {
         try {
             r = new RNAGraph(self.sequence(), self.structure(), self.header())
             .elementsToJson()
@@ -326,7 +326,7 @@ function ShareViewModel() {
     $('#shareView').modal('show');
     var data_string = rnaView.fornac.toJSON();
 
-    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string })).success( function(data) {
+    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string }), 10000).success( function(data) {
         console.log(data);
         if (!location.origin)
              location.origin = location.protocol + "//" + location.host;
@@ -659,6 +659,7 @@ function AddPDBViewModel() {
   self.colorSchemeJson = ko.observable({});
   self.inputFile = ko.observable(null);
   self.compounds = ko.observableArray([]);
+  self.conect = "";
   
   self.newInputError = function(message) {
     if (self.inputError() === '') {
@@ -681,55 +682,86 @@ function AddPDBViewModel() {
     // reset the file upload form
     $('#inputPDBFile').val('');
     self.inputFile(null);
+    self.compounds.destroy();
+    self.conect = "";
     // reset errors
     self.inputError('');
   };
   
-  function Compound(id, name, fragment, chain) {
+  function Compound(id) {
       var self = this;
       self.id = id;
-      self.name = name;
-      self.fragment = fragment;
-      self.chain = chain;
-      self.selected = ko.observable(false);
+      self.name = "";
+      self.fragment = "";
+      self.chain = [];
+      self.chains = "";
+      self.selected = ko.observable(true);
+      self.data = "";
   }
   
   self.selectItem = function(item) {
     item.selected(!item.selected());
   };
+
+  self.selectAll = function(value) {
+    ko.utils.arrayForEach(self.compounds(), function(compound) {
+       compound.selected(value); 
+    });
+  };
   
-  self.parsePDB = function() {    
+  self.parsePDB = function() {
+      // reset all global stuff
+      self.compounds([]);
+      self.conect = "";
+      self.inputError('');
       var parse = function(content) {
           var lines = content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n");
-          
           var compnd = null;
+          var atoms = {};
           for (var i = 0; i < lines.length; i++) {
               var line = lines[i],
                       header = line.substring(0,6).trim(),
-                      specification = line.substring(10,80).trim();
+                      specification = line.substring(10,80).trim(),
+                      chainName = line.substring(21,22).trim();
               if (header === "COMPND") {
                   var specs = specification.replace(/\;/g, "").split(":");
-                  console.log(specs);
                   switch(specs[0]) {
                     case "MOL_ID":
                         if (compnd !== null) {
                             self.compounds.push(compnd);
                         }
-                        compnd = new Compound(specs[1]);
+                        compnd = new Compound(specs[1].trim());
                         break;
                     case "MOLECULE":
-                        compnd.name = specs[1];
+                        compnd.name = specs[1].trim();
                         break;
                     case "CHAIN":
-                        compnd.chain = specs[1];
+                        compnd.chains = specs[1].trim();
+                        compnd.chain = specs[1].trim().split(", ");
                         break;
                     case "FRAGMENT":
-                        compnd.fragment = specs[1];
+                        compnd.fragment = specs[1].trim();
                         break;
                   }
+              } else if (["ATOM", "HETATM", "ANISOU", "TER"].indexOf(header) > -1) {
+                if (atoms[chainName] !== undefined) {
+                    atoms[chainName] += ("\n" + line);
+                } else {
+                    atoms[chainName] = (line);
+                }
+              } else if (header === "CONECT") {
+                  self.conect += ("\n" + line);
               }
           }
+          // add last compound
           self.compounds.push(compnd);
+          console.log(self.compounds());
+          // push data to right place
+          ko.utils.arrayForEach(self.compounds(), function(compound) {
+              compound.chain.forEach( function(c) {
+                  compound.data += ("\n" + atoms[c]);
+              });
+          });
       };
       
       if (self.inputFile() !== null) {
@@ -752,66 +784,54 @@ function AddPDBViewModel() {
         self.newInputError("ERROR Please select a PDB file");
         return;
       }
-
       /*
       if (self.inputFile().type != 'chemical/x-pdb') {
         self.newInputError("ERROR: Invalid file type, please upload a PDB file");
         return;
       }
       */
-
       if (self.inputFile().size > 20000000) {
         self.newInputError("ERROR: Selected file is too large");
         return;
       }
-
-      var formData = new FormData();
-      // var xhr = new XMLHttpRequest();
-
-
-      formData.append('pdb_file', self.inputFile(), self.inputFile().name);
-
-      $.ajax({type: "POST",
-                   url: serverURL + '/pdb_to_graph',
-                   /*
-                   xhr: function() {  // Custom XMLHttpRequest
-                       var myXhr = $.ajaxSettings.xhr();
-                       if(myXhr.upload){ // Check if upload property exists
-                           myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
-                       }
-                       return myXhr;
-                   },
-                   */
-                   data: formData,
-                   success: function (data) {
-                        $('#addPDB').modal('hide');
-                        data = JSON.parse(data);
-
-                        mols_json = molecules_to_json(data);
-
-                        for (var i = 0; i < mols_json.graphs.length; i++)
-                            rnaView.fornac.addRNAJSON(mols_json.graphs[i], true );
-
-                        for (i = 0; i < mols_json.extraLinks.length; i++)
-                            rnaView.fornac.extraLinks.push(mols_json.extraLinks[i]);
-
-                        rnaView.fornac.recalculateGraph();
-                        rnaView.fornac.update();
-
-                        rnaView.animation(true);
-                        // the extra links contain supplementary information
-                        rnaView.fornac.changeColorScheme(rnaView.colors());
-
-                   },
-                   error: function (jqXHR) {
-                        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-                   },
-                   cache: false,
-                   contentType: false,
-                   processData: false
+      
+      var pdb_string = "";
+      ko.utils.arrayForEach(self.compounds(), function(compound) {
+        if(compound.selected()) {
+            pdb_string += ("\n" + compound.data);
+        }
       });
+      pdb_string += self.conect;
+      pdb_string += "\nEND";
+      pdb_string.replace(/\n\n/, "\n");
+      console.log(pdb_string);
       
-      
+      ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} ), 80000).success( function(data) {
+        try {
+          data = JSON.parse(data);
+        } catch (err) {
+          self.newInputError("ERROR" + err);
+        }
+        
+        mols_json = molecules_to_json(data);
+
+        for (var i = 0; i < mols_json.graphs.length; i++)
+            rnaView.fornac.addRNAJSON(mols_json.graphs[i], true );
+
+        for (i = 0; i < mols_json.extraLinks.length; i++)
+            rnaView.fornac.extraLinks.push(mols_json.extraLinks[i]);
+
+        rnaView.fornac.recalculateGraph();
+        rnaView.fornac.update();
+
+        rnaView.animation(true);
+        // the extra links contain supplementary information
+        rnaView.fornac.changeColorScheme(rnaView.colors());
+
+        self.cancelAddPDB();
+      }).error( function(jqXHR) {
+        self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+      });
   };
 }
 

@@ -158,16 +158,24 @@
                   <input type="file" id="inputPDBFile" data-bind="event: { change: function() { inputFile($element.files[0]); parsePDB(); }}">
                    <p class="help-block">Please select a PDB file to extract the secondary structure from.</p>
                    <div data-bind="visible: inputFile() !== null" id="compoundList">
-                       <label for="compoundList">Select a Compound to display:</label>
+                       <div class="btn-group btn-group-sm pull-right" role="group" aria-label="..." data-bind="visible: compounds().length > 0">
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(true)">All</button>
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(false)">None</button>
+                       </div>
+                       <label for="compoundList">Select compounds to display:</label>
                        <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
                        data-bind="visible: compounds().length === 0"></span>
-                       <ul class="list-group" data-bind="foreach: compounds" style="word-wrap: break-word;">
+                       <ul class="list-group" data-bind="foreach: compounds" style="word-wrap: break-word; margin: 16px;">
                            <li class="list-group-item" data-bind="click: $parent.selectItem, css: { active: selected }">
                                 <h4 class="list-group-item-heading" data-bind="text: name"></h4>
                                 Fragment: <span data-bind="text: fragment"></span><br>
-                                Chain: <span data-bind="text: chain"></span>
+                                Chains: <span data-bind="text: chains"></span>
                            </li>
                        </ul>
+                       <div class="btn-group btn-group-sm pull-right" role="group" aria-label="..." data-bind="visible: compounds().length > 0">
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(true)">All</button>
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(false)">None</button>
+                       </div>
                    </div>
               </div>
             </div>
