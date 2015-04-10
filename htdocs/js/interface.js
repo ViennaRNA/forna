@@ -759,7 +759,7 @@ function AddPDBViewModel() {
           // push data to right place
           ko.utils.arrayForEach(self.compounds(), function(compound) {
               compound.chain.forEach( function(c) {
-                  compound.data += atoms[c];
+                  compound.data += ("\n" + atoms[c]);
               });
           });
       };
@@ -798,7 +798,7 @@ function AddPDBViewModel() {
       var pdb_string = "";
       ko.utils.arrayForEach(self.compounds(), function(compound) {
         if(compound.selected()) {
-            pdb_string += (compound.data + "\n");
+            pdb_string += ("\n" + compound.data);
         }
       });
       pdb_string += self.conect;
