@@ -344,7 +344,7 @@
         <h5>Color ranges and domains</h5>
         The default color range is white to steelblue. Custom ranges can be specified
         by entering the following in the custom color screen.
-        <pre>
+
         <pre>
         >molecule1
         1-10:green 15-30:red  13,46,101:blue
@@ -406,6 +406,61 @@ AACCGG
           will be added as nodes with a size proportional to their length. Interactions between
           separate protein and nucleotide chains are displayed as dashed lines. The secondary
           structure is extracted using MC-Annotate [1].
+          <h2 id="container">Using Forna as a Javascript Visualization Container</h2>
+
+          In many situations, the user interaction is superfluous and the desired goal
+          is to simply display a secondary structure on a web page. This is a common
+          scenario in, for example, servers that predict a secondary structure. The
+          output, a dot-bracket string can simply be added to a FornaContainer
+          object to display.
+
+          While the specifics are detailed in the <a
+          href="https://github.com/pkerpedjiev/fornac">online
+      documentation</a>, The general pattern for use is shown in the example
+  web page below: <br />
+
+  <pre>
+&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;link rel="stylesheet" type="text/css" href="fornaf.css" media="screen" /&gt;
+This is an RNA container.
+
+&lt;div id='rna_ss'&gt; &lt;/div&gt;
+
+This is after the RNA container.
+
+    &lt;script type='text/javascript' src='jquery.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='d3.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='rnautils.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='rnagraph.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='simplernaplot.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='fornaf.js'&gt;&lt;/script&gt;
+
+    &lt;script type='text/javascript'&gt;
+var container = new FornaContainer("#rna_ss", {'applyForce': false});
+
+var options = {'structure': '((..((....)).(((....))).))',
+    'sequence':             'CGCUUCAUAUAAUCCUAAUGACCUAU'
+};
+
+
+container.addRNA(options.structure, options);
+&lt;/script&gt;
+
+
+&lt;/script&gt;
+</pre>
+
+   The two key features are the creation of a div to contain the
+   forna container and the javascript at the bottom which populates it with
+   an RNA sequence, secondary structure and some optional parameters.
+   The resulting web page can be seen in the screenshot below
+   where a visualization of the RNA secondary structure appears without
+   the need to first create a static image or call a java library.
+   <br />
+
+  <img src="img/forna-container-screenshot.png">
+
 
           <h2 id="contact">Contact</h2>
           <p>Questions and/or comments can be sent to <a href="mailto:forna@tbi.univie.ac.at">forna@tbi.univie.ac.at</a></p>
