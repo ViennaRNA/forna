@@ -116,7 +116,7 @@ $("[data-toggle=tooltip]").tooltip();
 
 function RNA(sequence, structure, header , newError) {
   var self = this;
-  console.log(["New RNA with: ", sequence, structure, header].join('\n'));
+  //console.log(["New RNA with: ", sequence, structure, header].join('\n'));
 
   self.header = ko.observable(header);
   self.done = ko.observable(false);
@@ -157,7 +157,6 @@ function RNA(sequence, structure, header , newError) {
             .reinforceStems()
             .reinforceLoops()
             .connectFakeNodes();
-            console.log("r", r);
             self.json(r);
             self.done(true);
         } catch (err) {
@@ -210,7 +209,6 @@ function RNAManager( done, newError ) {
           done();
 
           if (self.newMolecules().length > 0) {
-              console.log('trying to add molecules');
               rnaView.addMolecules(self.newMolecules());
               self.reset();
           }
@@ -246,7 +244,7 @@ function RNAManager( done, newError ) {
       }
       var rna;
 
-      console.log(lines);
+      //console.log(lines);
       if (lines.length === 0) {
         self.reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
         return;
@@ -264,7 +262,7 @@ function RNAManager( done, newError ) {
             // this is a header
             if (rna !== undefined) {
               // initialize real rna object
-              console.log("Added new rna molecule to newMolecules");
+              //console.log("Added new rna molecule to newMolecules");
               self.add(rna.sequence, rna.structure, rna.header);
             }
             rna = new tmpRNA();
@@ -294,7 +292,7 @@ function RNAManager( done, newError ) {
         if (e !== BreakException) throw e;
       }
       // also initialize the last object
-      console.log("Added new rna molecule to newMolecules");
+      //console.log("Added new rna molecule to newMolecules");
       self.add(rna.sequence, rna.structure, rna.header);
 
       // unlock the submitted
@@ -327,7 +325,7 @@ function ShareViewModel() {
     var data_string = rnaView.fornac.toJSON();
 
     ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string }), 10000).success( function(data) {
-        console.log(data);
+        //console.log(data);
         if (!location.origin)
              location.origin = location.protocol + "//" + location.host;
         self.url(location.origin + location.pathname + '?id=share/' + data);
@@ -416,7 +414,7 @@ function AddAPIViewModel() {
 
   self.done = function() {
     self.loading(false);
-    console.log("everything should be loaded from API, updating graph!");
+    //console.log("everything should be loaded from API, updating graph!");
     $('#addAPI').modal('hide');
     // reset errors
     self.inputError('');
@@ -433,7 +431,7 @@ function AddAPIViewModel() {
         timeout : 6000,
         jsonpCallback: "callback",
         success: function(data) {
-            console.log(data);
+            //console.log(data);
             finish(data);
         },
         error: function(jqXHR) {
@@ -459,7 +457,7 @@ function AddAPIViewModel() {
         }
     }, 3000);
 
-    console.log(queries);
+    //console.log(queries);
 
     switch(queries['id'].split("/")[0]) {
     case 'RNAfold':
@@ -467,7 +465,7 @@ function AddAPIViewModel() {
         //http://rna.tbi.univie.ac.at/RNAfold/msegvRMpMU/mfe.json
         getAPIjson('http://rna.tbi.univie.ac.at/' + queries['id'] + '/' + queries['file'], function(data) {
             rnaManager.parseFasta(data.fasta.split("\n"), function() {
-                console.log("loaded from RNAfold API");
+                //console.log("loaded from RNAfold API");
                 // use the color information if available
                 if (data.colors !== undefined) {
                     if(rnaView.colors() !== 'custom') {
@@ -482,17 +480,17 @@ function AddAPIViewModel() {
         //forna/?id=RNAcentral/URS0000000001
         //http://rnacentral.org/api/v1/rna/URS0000000001.json
         getAPIjson('http://rnacentral.org/api/v1/rna/' + queries['id'].split("/")[1] + '?format=jsonp', function(data) {
-                console.log(data.sequence);
+                //console.log(data.sequence);
                 rnaManager.add(data.sequence, '', data.rnacentral_id);
                 rnaManager.submit();
-                console.log("loaded from RNAcentral API");
+                //console.log("loaded from RNAcentral API");
                 $('#addAPI').modal('hide');
         });
         break;
     case 'share':
         //forna/?id=share/<uuid>
         getAPIjson(serverURL + "get_graph/"  + queries['id'].split("/")[1], function(data) {
-                console.log("loaded share id " + queries['id'].split("/")[1]);
+                //console.log("loaded share id " + queries['id'].split("/")[1]);
                 try{
                     rnaView.fornac.fromJSON(data);
                 } catch(err) {
@@ -509,7 +507,7 @@ function AddAPIViewModel() {
             break;
         }
         rnaManager.parseFasta(queries['file'].replace(/\%3E/g,">").split("\\n"), function() {
-            console.log("loaded from fasta API");
+            //console.log("loaded from fasta API");
             $('#addAPI').modal('hide');
         });
         break;
@@ -522,11 +520,11 @@ function AddAPIViewModel() {
         if (queries['structure'] === undefined) { queries['structure'] = ''; }
         rnaManager.add(queries['sequence'],queries['structure'],queries['id'].split("/")[1]);
         rnaManager.submit();
-        console.log("loaded from URL API");
+        //console.log("loaded from URL API");
         $('#addAPI').modal('hide');
         break;
     default:
-        console.log("Error: ID of API unknown!");
+        //console.log("Error: ID of API unknown!");
         self.dismissError();
     }
 
@@ -765,7 +763,7 @@ function AddPDBViewModel() {
           }
           // add last compound
           self.compounds.push(compnd);
-          console.log(self.compounds());
+          //console.log(self.compounds());
           // push data to right place
           ko.utils.arrayForEach(self.compounds(), function(compound) {
               compound.chain.forEach( function(c) {
@@ -814,7 +812,7 @@ function AddPDBViewModel() {
       pdb_string += self.conect;
       pdb_string += "\nEND";
       pdb_string.replace(/\n\n/, "\n");
-      console.log(pdb_string);
+      //console.log(pdb_string);
       
       ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} ), 80000).success( function(data) {
         try {
@@ -938,7 +936,7 @@ function AddViewModel() {
   };
 
   var done = function() {
-    console.log("everything should be loaded now, updating graph!");
+    //console.log("everything should be loaded now, updating graph!");
     $('#add').modal('hide');
     // reset the file upload form
     $('#inputFastaFile').val('');
@@ -953,7 +951,7 @@ function AddViewModel() {
 
   self.uploadFasta = function (file) {
       self.inputFile(file);
-      console.log(file);
+      //console.log(file);
   };
 
   self.cancelAddMolecule = function() {
@@ -992,7 +990,7 @@ function AddViewModel() {
       var r = new FileReader();
       r.onload = function(e) {
         var content = e.target.result;
-        console.log(content);
+        //console.log(content);
 	      lines = lines.concat(content.replace(/[\r\n]+/g,"\n").replace(/^[\r\n]+|[\r\n]+$/g,"").split("\n"));
 	      rnaManager.parseFasta(lines, endFunction);
       };
@@ -1018,7 +1016,7 @@ function RNAViewModel() {
     self.molecules().concat(array);
     // add a new molecule to the graph
     array.forEach( function(rna) {
-      console.log(rna.header());
+      //console.log(rna.header());
       self.fornac.addRNAJSON(rna.json(), true);
     });
     self.fornac.changeColorScheme(self.colors());
@@ -1033,7 +1031,7 @@ function RNAViewModel() {
           console.log("graph is null, won't update the color");
     } else {
         if (newValue === 'custom') {
-            console.log("Custom colors selected");
+            //console.log("Custom colors selected");
         }
         //console.log("self.fornac:", self.fornac.changeColorScheme);
         self.fornac.changeColorScheme(newValue);
@@ -1225,12 +1223,12 @@ function RNAViewModel() {
   };
 
   self.saveSVG = function() {
-    console.log("saving svg...");
+    //console.log("saving svg...");
     var svg_clone = $('#plotting-area').clone();
     //var to_remove = $('[link_type=fake],.brush,.outline_node', to_remove.clone());
     var to_remove = $('[link_type=fake],.brush,.outline_node', svg_clone).toArray();
 
-    console.log('to_remove', to_remove);
+    //console.log('to_remove', to_remove);
 
     var parents = to_remove.map(function(d) {
         return d.parentNode;
