@@ -939,7 +939,14 @@ function AddViewModel() {
 
   var done = function() {
     console.log("everything should be loaded now, updating graph!");
-    self.cancelAddMolecule();
+    $('#add').modal('hide');
+    // reset the file upload form
+    $('#inputFastaFile').val('');
+    self.inputFile(null);
+    // reset errors
+    self.inputError('');
+    rnaView.fornac.deaf = false;
+    $("#chart").focus();
   };
 
   var rnaManager = new RNAManager( done, self.newInputError );
