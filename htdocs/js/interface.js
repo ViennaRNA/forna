@@ -1019,7 +1019,7 @@ function RNAViewModel() {
     // add a new molecule to the graph
     array.forEach( function(rna) {
       console.log(rna.header());
-      self.fornac.addRNAJSON(rna.json(), false);
+      self.fornac.addRNAJSON(rna.json(), true);
     });
     self.fornac.changeColorScheme(self.colors());
   };
