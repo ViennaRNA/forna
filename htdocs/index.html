@@ -4,24 +4,24 @@
   
   <title>forna</title>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="RNA Secondary Structure Visualization Using a Force Directed Graph Layout">
-  <meta name="keywords" content="RNA, secundary structure, visualization, force directed graph, plot, svg">
-  <meta name="author" content="Stefan Hammer">
-  <meta name="author" content="Peter Kerpedjiev">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="RNA Secondary Structure Visualization Using a Force Directed Graph Layout"/>
+  <meta name="keywords" content="RNA, secundary structure, visualization, force directed graph, plot, svg"/>
+  <meta name="author" content="Stefan Hammer"/>
+  <meta name="author" content="Peter Kerpedjiev"/>
 
-  <link rel="icon" type="image/png" href="img/favicon-192x192.png" sizes="192x192">
-  <link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32">
-  <link rel="icon" type="image/png" href="img/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="img/favicon-192x192.png" sizes="192x192"/>
+  <link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32"/>
+  <link rel="icon" type="image/png" href="img/favicon-16x16.png" sizes="16x16"/>
   
   <!-- CSS -->
   <!-- Bootstrap: http://getbootstrap.com/ -->
-  <link rel='stylesheet' type='text/css' href='css/bootstrap.min.css'>
-  <!-- custom CSS -->
-  <link rel='stylesheet' type='text/css' href='css/force.css' />
-  <link rel='stylesheet' type='text/css' href='css/interface.css' />
+  <link rel='stylesheet' type='text/css' href='css/bootstrap.min.css'/>
   <link rel='stylesheet' type='text/css' href='css/bootstrap-switch.css' />
   <link rel='stylesheet' type='text/css' href='css/bootstrap-slider.min.css'/>
+  <!-- custom CSS -->
+  <link rel='stylesheet' type='text/css' href='css/fornac.css' />
+  <link rel='stylesheet' type='text/css' href='css/interface.css' />
 
   <!-- Java Script -->
   <!-- jQuery -->
@@ -31,15 +31,15 @@
   <script type="text/javascript" src="js/knockout-bindings.js"></script>
   <!-- Bootstrap Javascript Plugins: http://getbootstrap.com/ -->
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <!-- bootstrap on off switch and slider -->
+  <script type="text/javascript" src="js/bootstrap-switch.js"></script>
+  <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
   <!-- D3 -->
   <script type="text/javascript" src="js/d3.js"></script>
   <!-- File Saver https://github.com/eligrey/FileSaver.js -->
   <script type="text/javascript" src="js/FileSaver.min.js"></script>
   <!-- saveSvgAsPng.js -->
   <script type="text/javascript" src="js/saveSvgAsPng.js"></script>
-  <!-- bootstrap on off switch and slider -->
-  <script type="text/javascript" src="js/bootstrap-switch.js"></script>
-  <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
 </head>
 <body>
 <div id="main">
@@ -91,8 +91,8 @@
         <div class="modal-body">
           <form role="form">
             <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
-            data-bind="visible: inputError().length == 0"></span>
-            <span data-bind="visible: inputError().length == 0">&nbsp;&nbsp;Please wait while we are
+            data-bind="visible: inputError().length === 0"></span>
+            <span data-bind="visible: inputError().length === 0">&nbsp;&nbsp;Please wait while we are
             getting your molecule...</span>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
           </form>
@@ -155,8 +155,28 @@
               <label for="inputPDBFile">File Input</label>
               <div class="inner-addon left-addon" style="max-width:100%; overflow-x: hidden;">
                   <span class="glyphicon glyphicon-remove inner-item inner-item-button" aria-hidden="true" data-bind="click: function() { $('#inputPDBFile').val(''); inputFile(null); }, visible: inputFile"></span>
-                  <input type="file" id="inputPDBFile" data-bind="event: { change: function() { inputFile($element.files[0]) }}">
+                  <input type="file" id="inputPDBFile" data-bind="event: { change: function() { inputFile($element.files[0]); parsePDB(); }}">
                    <p class="help-block">Please select a PDB file to extract the secondary structure from.</p>
+                   <div data-bind="visible: inputFile() !== null" id="compoundList">
+                       <div class="btn-group btn-group-sm pull-right" role="group" aria-label="..." data-bind="visible: compounds().length > 0">
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(true)">All</button>
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(false)">None</button>
+                       </div>
+                       <label for="compoundList">Select compounds to display:</label>
+                       <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
+                       data-bind="visible: compounds().length === 0"></span>
+                       <ul class="list-group" data-bind="foreach: compounds" style="word-wrap: break-word; margin: 16px;">
+                           <li class="list-group-item" data-bind="click: $parent.selectItem, css: { active: selected }">
+                                <h4 class="list-group-item-heading" data-bind="text: name"></h4>
+                                Fragment: <span data-bind="text: fragment"></span><br>
+                                Chains: <span data-bind="text: chains"></span>
+                           </li>
+                       </ul>
+                       <div class="btn-group btn-group-sm pull-right" role="group" aria-label="..." data-bind="visible: compounds().length > 0">
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(true)">All</button>
+                         <button type="button" class="btn btn-default" data-bind="click: selectAll(false)">None</button>
+                       </div>
+                   </div>
               </div>
             </div>
             <div class="alert alert-danger" role="alert" data-bind="visible: inputError().length > 0, html: inputError" id="inputError"> </div>
@@ -226,7 +246,7 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal custom colors -->
 
-  <!-- 'Share Link modal -->
+  <!-- 'Share' Link modal -->
   <div class="modal fade" id="shareView" > <!-- data-bind="showModal: loaded"-->
     <div class="modal-dialog">
       <div class="modal-content">
@@ -237,9 +257,9 @@
         <div class="modal-body" style="min-height: 150px;">
           <form role="form">
             <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate" aria-hidden="true"
-            data-bind="visible: (inputError().length == 0 && url().length == 0)"></span>
-            <span data-bind="visible: (inputError().length == 0 && url().length == 0)">&nbsp;&nbsp;We are generating your link...</span>
-            <div data-bind="visible: url().length != 0">
+            data-bind="visible: (inputError().length === 0 && url().length === 0)"></span>
+            <span data-bind="visible: (inputError().length === 0 && url().length === 0)">&nbsp;&nbsp;We are generating your link...</span>
+            <div data-bind="visible: url().length !== 0">
                 <label>Using this link you can return to the current state. This link will be valid for at about 6 weeks.</label>
                 <div class="input-group input-group-lg">
                     <input id="shareURL" type="text" class="form-control" placeholder="..." aria-describedby="url" data-bind="value: url" onClick="this.select();" readonly
@@ -523,25 +543,25 @@ container.addRNA(options.structure, options);
           </button>
           <ul class="dropdown-menu menu-form" role="menu">
             <li role="presentation" class="dropdown-header">Color Scheme</li>
-            <li role="presentation" data-bind="css: { active: colors() == 'positions' }">
+            <li role="presentation" data-bind="css: { active: colors() === 'positions' }">
               <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'positions'"> Positions
               </label>
             <li>
-            <li role="presentation" data-bind="css: { active: colors() == 'structure' }">
+            <li role="presentation" data-bind="css: { active: colors() === 'structure' }">
               <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'structure'"> Structure
               </label>
             </li>
-            <li role="presentation" data-bind="css: { active: colors() == 'sequence' }">
+            <li role="presentation" data-bind="css: { active: colors() === 'sequence' }">
               <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'sequence'"> Sequence
               </label>
             </li>
-            <li role="presentation" data-bind="css: { active: colors() == 'custom' }">
-              <label role="menuitem" style="text-align: middle;">
+            <li role="presentation" data-bind="css: { active: colors() === 'custom' }">
+              <label role="menuitem">
                 <input type="radio" name="colors" data-bind="checked: colors, checkedValue: 'custom', checkedVaue: 'custom'"> Custom&nbsp;
-                <button type="button" role="menuitem" data-bind="click: showCustomColors, attr: { 'class': colors() == 'custom' ? 'btn btn-xs btn-default' : 'btn btn-xs btn-primary' }">Set</button>
+                <button type="button" role="menuitem" data-bind="click: showCustomColors, attr: { 'class': colors() === 'custom' ? 'btn btn-xs btn-default' : 'btn btn-xs btn-primary' }">Set</button>
               </label>
             </li>
           </ul>
@@ -645,24 +665,12 @@ container.addRNA(options.structure, options);
       </div>
     </div>
     
-    <!-- rna javascript -->
-    <script type="text/javascript" src="js/rna.js"></script>
-    <!-- force field javascript -->
-    <script type="text/javascript" src="js/force.js"></script>
+    <!-- fornac javascript -->
+    <script type="text/javascript" src="js/fornac.js"></script>
     <!-- interface javascript -->
     <script type="text/javascript" src="js/interface.js"></script>
     
   </div>
 </div> 
-
-  <script>  
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-55640065-1', 'auto');
-      ga('send', 'pageview');
-  </script>
 </body>
 </html>
