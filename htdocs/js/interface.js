@@ -380,6 +380,8 @@ function ColorViewModel() {
     $('#addColors').modal('hide');
     // reset errors
     self.inputError('');
+    rnaView.fornac.deaf = false;
+    $("#chart").focus();
   };
 
   self.colorSubmit = function() {
@@ -418,6 +420,8 @@ function AddAPIViewModel() {
     $('#addAPI').modal('hide');
     // reset errors
     self.inputError('');
+    rnaView.fornac.deaf = false;
+    $("#chart").focus();
   };
 
   var rnaManager = new RNAManager( self.done, self.newInputError );
@@ -610,7 +614,6 @@ function AddMMCIFViewModel() {
                    */
                    data: formData,
                    success: function (data) {
-                        $('#addMMCIF').modal('hide');
                         data = JSON.parse(data);
 
                         mols_json = molecules_to_json(data);
@@ -627,7 +630,8 @@ function AddMMCIFViewModel() {
                         rnaView.animation(true);
                         // the extra links contain supplementary information
                         rnaView.fornac.changeColorScheme(rnaView.colors());
-
+                        // close the dialoug and cleanup
+                        self.cancelAddMMCIF();
                    },
                    error: function (jqXHR) {
                         self.newInputError("ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
@@ -865,6 +869,7 @@ function AddJSONViewModel() {
     self.inputFile(null);
     // reset errors
     self.inputError('');
+    rnaView.fornac.deaf = false;
     $("#chart").focus();
   };
 
@@ -876,11 +881,7 @@ function AddJSONViewModel() {
     }
 
     // finish the form
-    $('#SubmitJSON').button('reset');
-    $('#addJSON').modal('hide');
-    // reset the file upload form
-    $('#inputJSONFile').val('');
-    self.inputFile(null);
+    self.cancelAddJSON();
   };
 
   self.submit = function() {
@@ -938,7 +939,7 @@ function AddViewModel() {
 
   var done = function() {
     console.log("everything should be loaded now, updating graph!");
-    $('#add').modal('hide');
+    self.cancelAddMolecule();
   };
 
   var rnaManager = new RNAManager( done, self.newInputError );
