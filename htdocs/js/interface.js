@@ -394,6 +394,7 @@ function ColorViewModel() {
       rnaView.fornac.changeColorScheme(rnaView.colors());
 
       $('#addColors').modal('hide');
+      $("#chart").focus();
   };
 }
 
@@ -564,6 +565,8 @@ function AddMMCIFViewModel() {
     self.inputFile(null);
     // reset errors
     self.inputError('');
+    rnaView.fornac.deaf = false;
+    $("#chart").focus();
   };
 
   self.submit = function() {
@@ -686,6 +689,9 @@ function AddPDBViewModel() {
     self.conect = "";
     // reset errors
     self.inputError('');
+
+    rnaView.fornac.deaf = false;
+    $("#chart").focus();
   };
   
   function Compound(id) {
@@ -859,6 +865,7 @@ function AddJSONViewModel() {
     self.inputFile(null);
     // reset errors
     self.inputError('');
+    $("#chart").focus();
   };
 
   self.parseJSON = function(input) {
@@ -950,6 +957,9 @@ function AddViewModel() {
     self.inputError('');
     // reset Loader
     rnaManager.reset();
+
+    rnaView.fornac.deaf = false;
+    $("#chart").focus();
   };
 
   self.submit = function() {
@@ -966,6 +976,8 @@ function AddViewModel() {
     var endFunction = function() {
           $('#inputFastaFile').val('');
           self.inputFile(null);
+          rnaView.fornac.deaf = false;
+          $("#chart").focus();
     };
 
     if (self.inputFile() !== null) {
