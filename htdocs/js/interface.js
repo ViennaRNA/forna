@@ -1136,16 +1136,6 @@ function RNAViewModel() {
     }
   });
 
-  self.displayProteinBindingHighlighting = ko.observable(true);
-
-  self.displayProteinBindingHighlighting.subscribe (function(newValue) {
-    if (self.fornac === null) {
-      console.log("graph is null, won't change the pseudoknot link option");
-    } else {
-      self.fornac.displayProteinBindingHighlighting(newValue);
-    }
-  });
-
   self.displayProteinLinks = ko.observable(true);
 
   self.displayProteinLinks.subscribe (function(newValue) {
