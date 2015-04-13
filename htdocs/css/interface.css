@@ -79,6 +79,10 @@ textarea {
   overflow-y: auto;
 }
 
+#shareURL {
+  cursor: pointer;
+}
+
 .dropdown-menu > li > a, .dropdown-menu > li > label {
   cursor: pointer;
 }
