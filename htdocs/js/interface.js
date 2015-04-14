@@ -114,7 +114,7 @@ ajax = function(uri, method, data, timeout) {
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
 
-function RNA(sequence, structure, header , newError) {
+function RNA(sequence, structure, header , start, newError) {
   var self = this;
   //console.log(["New RNA with: ", sequence, structure, header].join('\n'));
 
@@ -153,7 +153,7 @@ function RNA(sequence, structure, header , newError) {
             r = new RNAGraph(self.sequence(), self.structure(), self.header())
             .elementsToJson()
             .addPositions('nucleotide', data)
-            .addLabels()
+            .addLabels(parseInt(start))
             .reinforceStems()
             .reinforceLoops()
             .connectFakeNodes();
@@ -222,7 +222,18 @@ function RNAManager( done, newError ) {
     }
 
     self.add = function(sequence, structure, header) {
-        self.newMolecules.push(new RNA(sequence, structure, header, reportError));
+        var start = 1;
+        var headerarray = header.split("|");
+        var headerhash = {};
+        for (var i = 1; i < headerarray.length; i++) {
+            var parts = headerarray[i].split("=");
+            headerhash[parts[0]] = parts[1];
+        }
+        if ("end" in headerhash) { start =  headerhash["end"] - sequence.length + 1;}
+        if ("start" in headerhash) { start = headerhash["start"]; }
+        header = headerarray[0];
+        
+        self.newMolecules.push(new RNA(sequence, structure, header, start, reportError));
     };
 
     self.submit = function() {
@@ -518,7 +529,13 @@ function AddAPIViewModel() {
             break;
         }
         if (queries['structure'] === undefined) { queries['structure'] = ''; }
-        rnaManager.add(queries['sequence'],queries['structure'],queries['id'].split("/")[1]);
+        var header = queries['id'].split("/")[1];
+        if ("start" in queries) {
+            header += "|start="+queries['start'];
+        } else if ("end" in queries) {
+            header += "|end="+queries['end'];
+        }
+        rnaManager.add(queries['sequence'],queries['structure'],header);
         rnaManager.submit();
         //console.log("loaded from URL API");
         $('#addAPI').modal('hide');
