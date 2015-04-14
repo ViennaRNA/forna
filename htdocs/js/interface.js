@@ -489,7 +489,7 @@ function AddAPIViewModel() {
         break;
     case 'share':
         //forna/?id=share/<uuid>
-        getAPIjson(serverURL + "get_graph/"  + queries['id'].split("/")[1], function(data) {
+        getAPIjson(serverURL + "/get_graph/"  + queries['id'].split("/")[1], function(data) {
                 //console.log("loaded share id " + queries['id'].split("/")[1]);
                 try{
                     rnaView.fornac.fromJSON(data);
