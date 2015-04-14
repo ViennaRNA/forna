@@ -79,6 +79,10 @@ textarea {
   overflow-y: auto;
 }
 
+#shareURL {
+  cursor: pointer;
+}
+
 .dropdown-menu > li > a, .dropdown-menu > li > label {
   cursor: pointer;
 }
@@ -105,29 +109,58 @@ textarea {
   background-color: #428BCA;
 }
 
+/* loader spining thingi */
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -ms-animation: spin .7s infinite linear;
+    -webkit-animation: spinw .7s infinite linear;
+    -moz-animation: spinm .7s infinite linear;
+}
+ 
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+  
+@-webkit-keyframes spinw {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+ 
+@-moz-keyframes spinm {
+    from { -moz-transform: rotate(0deg);}
+    to { -moz-transform: rotate(360deg);}
+}
+
 /* enable absolute positioning for inner addon buttons */
 .inner-addon { 
     position: relative; 
 }
 
 /* style icon */
-.inner-addon .glyphicon {
+.inner-addon .inner-item {
   position: absolute;
-  padding: 10px;
+  padding: 8px;
 }
 
 /* align icon */
-.left-addon .glyphicon  { left:  0px;}
-.right-addon .glyphicon { right: 0px;}
+.left-addon .inner-item  { left:  0px;}
+.right-addon .inner-item { right: 6px;}
+.inner-item-bottom { bottom: 0px;}
+.inner-item-top { top: 0px;}
 
 /* add padding  */
 .left-addon input  { padding-left:  30px; }
 .right-addon input { padding-right: 30px; }
 
-span.button {
-    cursor: pointer;
+.inner-item {
     color: lightgray;
 }
-span.button:hover {
+
+.inner-item-button {
+    cursor: pointer;
+}
+
+.inner-item-button:hover {
     color:gray;
 }

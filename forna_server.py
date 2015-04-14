@@ -12,6 +12,7 @@ __email__       = "jango@tbi.univie.ac.at"
 
 from flask import Flask, request, abort
 
+import Bio.PDB as bpdb
 import forna
 import json
 import re
@@ -23,6 +24,7 @@ from werkzeug.contrib.fixers import ProxyFix
 
 import forgi.utilities.debug as fud
 import forgi.utilities.stuff as fus
+import forna_db as fdb
 
 def create_app(static):
     '''
@@ -154,16 +156,59 @@ def create_app(static):
     def pdb_to_graph():
         from werkzeug import secure_filename
 
+        try:
+            result = forna.pdb_to_json(request.json['pdb'], request.json['name'],
+                                       parser=bpdb.PDBParser())
+        except Exception as ex:
+            app.logger.exception(ex)
+            # store pdb files sent to server and failed
+            if not os.path.exists("pdb"):
+                os.makedirs("pdb")
+            fo = open("pdb/"+request.json['name'], "wb")
+            fo.write(request.json['pdb'])
+            fo.close()
+            abort(400, "PDB file parsing error: {}".format(str(ex)))
+
+        return json.dumps(result), 201
+
+    @app.route('/mmcif_to_graph', methods=['POST'])
+    def mmcif_to_graph():
+        from werkzeug import secure_filename
+
         name = secure_filename(request.files['pdb_file'].filename)
 
         try:
-            result = forna.pdb_to_json(request.files['pdb_file'].read(), name)
+            result = forna.pdb_to_json(request.files['pdb_file'].read(), 
+                                       name, parser=bpdb.MMCIFParser())
         except Exception as ex:
             app.logger.exception(ex)
             abort(400, "PDB file parsing error: {}".format(str(ex)))
 
         return json.dumps(result), 201
-    
+
+    @app.route('/store_graph', methods=['POST'])
+    def store_graph():
+        graph = request.json['graph']
+        try:
+            identifier = fdb.put(graph)
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Database error: {}".format(str(ex)))
+        
+        app.logger.info("Created Share ID {}".format(identifier))
+        return json.dumps(identifier), 201
+
+    @app.route('/get_graph/<id>', methods=['GET'])
+    def get_graph(id):
+        try:
+            app.logger.info("Served Share ID {}".format(id))
+            graph = fdb.get(id)
+        except Exception as ex:
+            app.logger.exception(ex)
+            abort(400, "Database error: {}".format(str(ex)))
+        
+        return "callback(" + json.dumps(graph) + ");", 201
+
     if static:
         print >> sys.stderr, " * Starting static"
         # serving static files for developmental purpose
@@ -224,7 +269,7 @@ def main():
     logging.basicConfig(filename=options.log_file,level=logging.INFO, 
                         format='%(asctime)s %(levelname)s: %(message)s '
                         '[in %(pathname)s:%(funcName)s:%(lineno)d]')
-
+    fdb.init()
     app = create_app(options.static)
     app.run(host=options.host, debug=options.debug, port=options.port)
 
