@@ -24,7 +24,7 @@ circle.outline_node {
 }
 
 circle.protein {
-    fill: blue;
+    fill: gray;
     fill-opacity: 0.5;
     stroke-width: 4;
 }
