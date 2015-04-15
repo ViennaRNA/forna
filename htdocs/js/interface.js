@@ -22,7 +22,6 @@ $(document).ready ( function() {
             var query = q.split('=');
             queries[query[0].toString()] = query[1].toString();
         });
-
         addAPIView.load(queries);
     }
 
@@ -257,7 +256,7 @@ function RNAManager( done, newError ) {
 
       //console.log(lines);
       if (lines.length === 0) {
-        self.reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
+        reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
         return;
       }
 
@@ -291,9 +290,9 @@ function RNAManager( done, newError ) {
             }
             rna.structure = rna.structure.concat(line);
           } else {
-            self.reportError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
+            reportError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
             if (countErrors > 5) {
-              self.reportError("[...]");
+              reportError("[...]");
               throw BreakException;
             }
             countErrors += 1;
