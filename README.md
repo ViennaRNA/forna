@@ -107,7 +107,7 @@ eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=RNAcentral/URS0000000001
 
 To include the data directly in the URL, two formats are available:
 ``forna-domain``/?id=fasta&file=``fasta-file``
-eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\)](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\))
+eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\\\nAACGUUAGUU\\\n\(\(\(....\)\)\)](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\))
 ``forna-domain``/?id=url/``molecule-name``&sequence=``sequence``&structure=``structure``
 eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=url/name&sequence=AACGUUAGUU&structure=\(\(\(....\)\)\)](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=url/name&sequence=AACGUUAGUU&structure=\(\(\(....\)\)\))
 In the first case it's possible to input multiple molecules at once by having them all in a single string which is passed to the 'file' query. Note that in both cases the
@@ -115,7 +115,7 @@ structure is optional. If it's not provided, RNAfold will calculate and display 
 
 For any platform it is also optionally possible to append a colors query using the custom color format:
 ``forna-domain``/?id=fasta&file=``fasta-file``&colors=``custom-color-format``
-eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\)&colors=>header\n0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\n0.7\n0.8\n0.9\n1](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\)&colors=>header\n0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\n0.7\n0.8\n0.9\n1)
+eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\\\nAACGUUAGUU\\\n\(\(\(....\)\)\)&colors=>header\\\n0\\\n0.1\\\n0.2\\\n0.3\\\n0.4\\\n0.5\\\n0.6\\\n0.7\\\n0.8\\\n0.9\\\n1](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\)&colors=>header\n0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\n0.7\n0.8\n0.9\n1)
 
 This way it's also possible to embed forna on a website with a preloaded molecule.
 
@@ -136,26 +136,26 @@ While the specifics are detailed in the [href="https://github.com/pkerpedjiev/fo
 the general pattern for use is shown in the example web page below: <br />
 
 ```html
-&lt;!DOCTYPE html&gt;
-&lt;meta charset="utf-8"&gt;
-&lt;link rel="stylesheet" type="text/css" href="fornac.css" media="screen" /&gt;
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="fornac.css" media="screen" />
 
 This is an RNA container.
-&lt;div id='rna_ss'&gt; &lt;/div&gt;
+<div id='rna_ss'> </div>
 This is after the RNA container.
 
-    &lt;script type='text/javascript' src='jquery.js'&gt;&lt;/script&gt;
-    &lt;script type='text/javascript' src='d3.js'&gt;&lt;/script&gt;
-    &lt;script type='text/javascript' src='fornac.js'&gt;&lt;/script&gt;
+    <script type='text/javascript' src='jquery.js'></script>
+    <script type='text/javascript' src='d3.js'></script>
+    <script type='text/javascript' src='fornac.js'></script>
 
-    &lt;script type='text/javascript'&gt;
+    <script type='text/javascript'>
         var container = new FornaContainer("#rna_ss", {'applyForce': false});
 
         var options = {'structure': '((..((....)).(((....))).))',
                        'sequence':             'CGCUUCAUAUAAUCCUAAUGACCUAU'};
 
         container.addRNA(options.structure, options);
-    &lt;/script&gt;
+    </script>
 ```
 
 The two key features are the creation of a div to contain the
