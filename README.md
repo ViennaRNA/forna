@@ -165,8 +165,7 @@ The resulting web page can be seen in the screenshot below
 where a visualization of the RNA secondary structure appears without
 the need to first create a static image or call a java library.
 
-
-   <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/master/htdocs/img/forna-container-screenshot.png" alt="fornac example" title="fornac example" width="400" />
+<img src="https://raw.githubusercontent.com/pkerpedjiev/forna/master/htdocs/img/forna-container-screenshot.png" alt="fornac example" title="fornac example"/>
 
 
 #### Contact ####
