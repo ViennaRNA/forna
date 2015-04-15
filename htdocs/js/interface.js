@@ -289,7 +289,10 @@ function RNAManager( done, newError ) {
               rna = new tmpRNA();
             }
             rna.structure = rna.structure.concat(line);
+          } else if (line === "") {
+            // skip
           } else {
+            console.log(line);
             reportError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
             if (countErrors > 5) {
               reportError("[...]");
@@ -516,7 +519,7 @@ function AddAPIViewModel() {
             self.newInputError("ERROR: You have to include a fasta file in the URL!");
             break;
         }
-        rnaManager.parseFasta(queries['file'].replace(/\%3E/g,">").split("\\n"), function() {
+        rnaManager.parseFasta(queries['file'].replace(/\%3E/g,">").replace(/\%5C/g,"\\").replace(/\%20/g,"\ ").split("\\n"), function() {
             //console.log("loaded from fasta API");
             $('#addAPI').modal('hide');
         });
@@ -547,7 +550,7 @@ function AddAPIViewModel() {
     // use the color information if available
     // &colors=>name\n0.1\n0.5\n0.9\n1
     if (queries['colors'] !== undefined) {
-        setColors(queries['colors'].replace(/\%3E/g,">").replace(/\\n/g,"\n"));
+        setColors(queries['colors'].replace(/\%3E/g,">").replace(/\%5C/g,"\\").replace(/\%20/g,"\ ").replace(/\\n/g,"\n"));
     }
   };
 }
