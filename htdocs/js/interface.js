@@ -22,7 +22,6 @@ $(document).ready ( function() {
             var query = q.split('=');
             queries[query[0].toString()] = query[1].toString();
         });
-
         addAPIView.load(queries);
     }
 
@@ -114,7 +113,7 @@ ajax = function(uri, method, data, timeout) {
 // initialize bootstrap tooltips
 $("[data-toggle=tooltip]").tooltip();
 
-function RNA(sequence, structure, header , newError) {
+function RNA(sequence, structure, header , start, newError) {
   var self = this;
   //console.log(["New RNA with: ", sequence, structure, header].join('\n'));
 
@@ -153,7 +152,7 @@ function RNA(sequence, structure, header , newError) {
             r = new RNAGraph(self.sequence(), self.structure(), self.header())
             .elementsToJson()
             .addPositions('nucleotide', data)
-            .addLabels()
+            .addLabels(parseInt(start))
             .reinforceStems()
             .reinforceLoops()
             .connectFakeNodes();
@@ -222,7 +221,18 @@ function RNAManager( done, newError ) {
     }
 
     self.add = function(sequence, structure, header) {
-        self.newMolecules.push(new RNA(sequence, structure, header, reportError));
+        var start = 1;
+        var headerarray = header.split("|");
+        var headerhash = {};
+        for (var i = 1; i < headerarray.length; i++) {
+            var parts = headerarray[i].split("=");
+            headerhash[parts[0]] = parts[1];
+        }
+        if ("end" in headerhash) { start =  headerhash["end"] - sequence.length + 1;}
+        if ("start" in headerhash) { start = headerhash["start"]; }
+        header = headerarray[0];
+        
+        self.newMolecules.push(new RNA(sequence, structure, header, start, reportError));
     };
 
     self.submit = function() {
@@ -246,7 +256,7 @@ function RNAManager( done, newError ) {
 
       //console.log(lines);
       if (lines.length === 0) {
-        self.reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
+        reportError("Please insert at least one Sequence or Structure, or choose a Fasta file!");
         return;
       }
 
@@ -279,10 +289,13 @@ function RNAManager( done, newError ) {
               rna = new tmpRNA();
             }
             rna.structure = rna.structure.concat(line);
+          } else if (line === "") {
+            // skip
           } else {
-            self.reportError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
+            console.log(line);
+            reportError("Please check this line: ".concat(line.substring(0, 100)).concat(" ..."));
             if (countErrors > 5) {
-              self.reportError("[...]");
+              reportError("[...]");
               throw BreakException;
             }
             countErrors += 1;
@@ -506,7 +519,7 @@ function AddAPIViewModel() {
             self.newInputError("ERROR: You have to include a fasta file in the URL!");
             break;
         }
-        rnaManager.parseFasta(queries['file'].replace(/\%3E/g,">").split("\\n"), function() {
+        rnaManager.parseFasta(queries['file'].replace(/\%3E/g,">").replace(/\%5C/g,"\\").replace(/\%20/g,"\ ").split("\\n"), function() {
             //console.log("loaded from fasta API");
             $('#addAPI').modal('hide');
         });
@@ -518,7 +531,13 @@ function AddAPIViewModel() {
             break;
         }
         if (queries['structure'] === undefined) { queries['structure'] = ''; }
-        rnaManager.add(queries['sequence'],queries['structure'],queries['id'].split("/")[1]);
+        var header = queries['id'].split("/")[1];
+        if ("start" in queries) {
+            header += "|start="+queries['start'];
+        } else if ("end" in queries) {
+            header += "|end="+queries['end'];
+        }
+        rnaManager.add(queries['sequence'],queries['structure'],header);
         rnaManager.submit();
         //console.log("loaded from URL API");
         $('#addAPI').modal('hide');
@@ -531,7 +550,7 @@ function AddAPIViewModel() {
     // use the color information if available
     // &colors=>name\n0.1\n0.5\n0.9\n1
     if (queries['colors'] !== undefined) {
-        setColors(queries['colors'].replace(/\%3E/g,">").replace(/\\n/g,"\n"));
+        setColors(queries['colors'].replace(/\%3E/g,">").replace(/\%5C/g,"\\").replace(/\%20/g,"\ ").replace(/\\n/g,"\n"));
     }
   };
 }
