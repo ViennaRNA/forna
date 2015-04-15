@@ -337,13 +337,13 @@ function ShareViewModel() {
     $('#shareView').modal('show');
     var data_string = rnaView.fornac.toJSON();
 
-    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string }), 10000).success( function(data) {
+    ajax(serverURL + '/store_graph', 'POST', JSON.stringify( {graph: data_string }), 80000).success( function(data) {
         //console.log(data);
         if (!location.origin)
              location.origin = location.protocol + "//" + location.host;
         self.url(location.origin + location.pathname + '?id=share/' + data);
     }).error( function(jqXHR) {
-        newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
+        self.newInputError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
     });
   };
 
