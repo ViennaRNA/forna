@@ -124,10 +124,59 @@ This way it's also possible to embed forna on a website with a preloaded molecul
 seamless='seamless' frameBorder="0" AllowFullScreen></iframe>
 ```
 
+#### Using Forna as a Javascript Visualization Container ####
+
+In many situations, the user interaction is superfluous and the desired goal
+is to simply display a secondary structure on a web page. This is a common
+scenario in, for example, servers that predict a secondary structure. The
+output, a dot-bracket string can simply be added to a FornaContainer
+object to display.
+
+While the specifics are detailed in the [href="https://github.com/pkerpedjiev/fornac](online documentation), 
+the general pattern for use is shown in the example web page below: <br />
+
+```html
+&lt;!DOCTYPE html&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;link rel="stylesheet" type="text/css" href="fornac.css" media="screen" /&gt;
+
+This is an RNA container.
+&lt;div id='rna_ss'&gt; &lt;/div&gt;
+This is after the RNA container.
+
+    &lt;script type='text/javascript' src='jquery.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='d3.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='fornac.js'&gt;&lt;/script&gt;
+
+    &lt;script type='text/javascript'&gt;
+        var container = new FornaContainer("#rna_ss", {'applyForce': false});
+
+        var options = {'structure': '((..((....)).(((....))).))',
+                       'sequence':             'CGCUUCAUAUAAUCCUAAUGACCUAU'};
+
+        container.addRNA(options.structure, options);
+    &lt;/script&gt;
+```
+
+The two key features are the creation of a div to contain the
+forna container and the javascript at the bottom which populates it with
+an RNA sequence, secondary structure and some optional parameters.
+The resulting web page can be seen in the screenshot below
+where a visualization of the RNA secondary structure appears without
+the need to first create a static image or call a java library.
+
+
+   <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/master/htdocs/img/forna-container-screenshot.png" alt="fornac example" title="fornac example" width="400" />
+
+
 #### Contact ####
 
 Questions and/or comments can be sent to <forna@tbi.univie.ac.at>
 
 #### Acknowledgement ####
 
-This project is, among others, supported by the European Commission under the Environment Theme of the 7th Framework Program for Research and Technological Development (Grant agreement no: 323987).
+This work was funded by the Austrian DK RNA program
+FG748004, by the Austrian FWF, project "SFB F43 RNA regulation
+of the transcriptome," and the European Commission under the
+Environment Theme of the 7th Framework Program for Research
+and Technological Development (Grant agreement no: 323987).
