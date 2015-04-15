@@ -1,11 +1,10 @@
-RNA Secondary Structure Visualization Using a Force Directed Graph Layout
-=========================================================================
+## RNA Secondary Structure Visualization Using a Force Directed Graph Layout ##
 
 <div style="float: right;">
     <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/master/htdocs/img/favicon-192x192.png" alt="forna logo" title="forna logo" width="150" align="right" />
 </div>
 
-#### Overview ####
+### Overview ###
 
 The ``forna`` package provides a web interface for displaying RNA secondary
 structures using the [force-directed graph
@@ -20,67 +19,7 @@ using the python [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) RNA
 structure manipulation library and the provided ``forna.py`` script. We heavily
 depend on the python bindings of the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package.
 
-#### Usage ####
-
-Click on ``Add Molecule`` to draw a new secondary structure. The input should
-contain a sequence and a secondary structure in dot-bracket notation:
-
-```
-GCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG
-((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))
-```
-
-You can also use the **FASTA** format to add multiple molecule at once. If you do
-not enter a structure, it will calculate the MFE structure at 37°C for you.
-
-In the FASTA header you can specify a name and optionally also the number of the first or last nucleotide:
-
-```
->name|start=5|end=60
-```
-
-**Zooming** can be accomplished using the mouse wheel.
-Dragging the canvas leads to **panning**.
-
-##### Circular RNA #####
-
-Circular RNA molecules can be specified by adding an asterisk(*) to the end
-of the structure. This simply adds a link between the first and last nucleotides.
-Example:
-
-```
->x
-ACCCAAACAAAAAAAAAAAAAA
-...((...))..((..))...*
-```
-
-##### Colors #####
-
-###### Position ######
-
-Color the nucleotides according to their position in the molecule. Lower numbered
-nucleotides are closer to the 5' end and are colored green. Nucleotides in the middle
-are colored yellow whereas nucleotides near the 3' end are colored red.
-
-###### Structure ######
-
-Color the nucleotides according to the type of structure that they are in:
-
-**Green**: Stems (canonical helices)
-**Red**: Multiloops (junctions)
-**Yellow**: Interior Loops
-**Blue**: Hairpin loops
-**Orange**: 5' unpaired region
-**Light Blue**: 3' unpaired region
-
-###### Sequence ######
-
-Color according to the nucleotide types: 
-
-**Yellow**: Adenine
-**Green**: Cytosine
-**Blue**: Uridine
-**Red**: Guanine
+### Developer Documentation ###
 
 #### Runing Locally ####
 
@@ -168,11 +107,11 @@ the need to first create a static image or call a java library.
 <img src="https://raw.githubusercontent.com/pkerpedjiev/forna/master/htdocs/img/forna-container-screenshot.png" alt="fornac example" title="fornac example"/>
 
 
-#### Contact ####
+### Contact ###
 
 Questions and/or comments can be sent to <forna@tbi.univie.ac.at>
 
-#### Acknowledgement ####
+### Acknowledgement ###
 
 This work was funded by the Austrian DK RNA program
 FG748004, by the Austrian FWF, project "SFB F43 RNA regulation
