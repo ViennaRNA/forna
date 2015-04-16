@@ -122,7 +122,7 @@ function RNA(sequence, structure, header , start, newError) {
 
   self.structure = ko.onDemandObservable( function() {
         if (self.sequence() !== '') {
-          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence()} ), 10000).success( function(data) {
+          ajax(serverURL + '/mfe_struct', 'POST', JSON.stringify( {seq: self.sequence().toUpperCase()} ), 10000).success( function(data) {
             self.structure(data);
             self.json.refresh();
             self.json();
@@ -277,7 +277,7 @@ function RNAManager( done, newError ) {
             }
             rna = new tmpRNA();
             rna.header = line.substring(1);
-          } else if (/^[ACGTUWSMKRYBDHV-]+$/.test(line.toUpperCase())) {
+          } else if (/^[ACGTUWSMKRYBDHVN-]+$/.test(line.toUpperCase())) {
             // this is a sequence
             if (rna === undefined) {
               rna = new tmpRNA();
