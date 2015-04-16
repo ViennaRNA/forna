@@ -71,7 +71,7 @@ scenario in, for example, servers that predict a secondary structure. The
 output, a dot-bracket string can simply be added to a FornaContainer
 object to display.
 
-While the specifics are detailed in the [href="https://github.com/pkerpedjiev/fornac](online documentation), 
+While the specifics are detailed in the [online documentation](https://github.com/pkerpedjiev/fornac), 
 the general pattern for use is shown in the example web page below: <br />
 
 ```html
