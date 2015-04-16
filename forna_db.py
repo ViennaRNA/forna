@@ -9,14 +9,10 @@ __version__ = "0.1"
 __maintainer__ = "Stefan Hammer"
 __email__ = "jango@tbi.univie.ac.at"
 
-import json
-import math
 import uuid
 import sqlite3
 import threading
 import time
-import sys
-import datetime
 
 database = 'forna.db'
 
@@ -27,7 +23,7 @@ def init():
     conn = sqlite3.connect(database)
     c = conn.cursor()
     c.execute('''CREATE TABLE if not exists share
-                (date timestamp, uuid text, json text)''')
+                (date timestamp, uuid text, json text, static integer)''')
     conn.commit()
     conn.close()
 
@@ -40,7 +36,7 @@ def cleanup():
     while(True):
         conn = sqlite3.connect(database)
         c = conn.cursor()
-        c.execute('''DELETE FROM share WHERE date > DATE('now','-50 days')''')
+        c.execute('''DELETE FROM share WHERE date < DATE('now','-50 days') AND static == 0''')
         conn.commit()
         conn.close()
         print " * Cleaning up database"
@@ -54,7 +50,7 @@ def put(json):
     identifier =  uuid.uuid4().hex
     conn = sqlite3.connect(database)
     c = conn.cursor()
-    c.execute('''INSERT INTO share VALUES (DATE('now'),?,?)''', (identifier, json,))
+    c.execute('''INSERT INTO share VALUES (DATE('now'),?,?,?)''', (identifier, json, 0,))
     
     conn.commit()
     conn.close()
@@ -75,3 +71,15 @@ def get(identifier):
         raise NameError("This identifier is not available (any more)!")
     return result[0]
 
+def set_static(identifier):
+    """
+    set to static by its uuid:
+
+    @param uuid: The unique identifier
+    """
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    c.execute('UPDATE share SET static=1 WHERE uuid=(?)', (identifier,))
+    conn.commit()
+    conn.close()
+    return "done";
