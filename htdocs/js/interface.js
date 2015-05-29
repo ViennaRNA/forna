@@ -148,9 +148,10 @@ function RNA(sequence, structure, header , start, newError) {
 
   self.json = ko.onDemandObservable( function() {
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} ), 10000).success( function(data) {
-        try {
-            r = new RNAGraph(self.sequence(), self.structure(), self.header())
-            .elementsToJson()
+            r = new RNAGraph(self.sequence(), self.structure(), self.header());
+            r.circularizeExternal = true;
+
+            r.elementsToJson()
             .addPositions('nucleotide', data)
             .addLabels(parseInt(start))
             .reinforceStems()
@@ -158,9 +159,6 @@ function RNA(sequence, structure, header , start, newError) {
             .connectFakeNodes();
             self.json(r);
             self.done(true);
-        } catch (err) {
-            newError(self.header() + ": ERROR: " + err );
-        }
       }).error( function(jqXHR) {
         newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
       });
@@ -928,7 +926,7 @@ function AddViewModel() {
 
   self.input = ko.observable(
       '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
-((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
+...(((((((..((((((.........))))))......).((((((.......))))))..))))))...'
 
    /*
    '>\nAAAA\n.(.)*'
