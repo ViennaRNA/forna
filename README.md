@@ -23,7 +23,7 @@ depend on the python bindings of the [ViennaRNA](http://www.tbi.univie.ac.at/RNA
 
 #### Runing Locally ####
 
-The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled. 
+The server can be run locally on your machine. It depends on the [forgi](http://www.tbi.univie.ac.at/~pkerp/forgi/) library and needs the [ViennaRNA](http://www.tbi.univie.ac.at/RNA/) package installed with python bindings enabled (`./configure --with-python`). 
 Further, you need to downlaod the [MC-Annotate](http://major.iric.ca/MajorLabEn/MC-Tools.html) program
 and make it executeable by the server script.
 To run it use the following command:
