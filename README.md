@@ -54,7 +54,7 @@ structure is optional. If it's not provided, RNAfold will calculate and display 
 
 For any platform it is also optionally possible to append a colors query using the custom color format:
 ``forna-domain``/?id=fasta&file=``fasta-file``&colors=``custom-color-format``
-eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\)&colors=>header\nrange%3Dwhite:red\n0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\n0.7\n0.8\n0.9\n1](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\\nAACGUUAGUU\\n\(\(\(....\)\)\)&colors=>header\\n\\range%3Dwhite:red\\n0\\n0.1\\n0.2\\n0.3\\n0.4\\n0.5\\n0.6\\n0.7\\n0.8\\n0.9\\n1)
+eg: [http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\nAACGUUAGUU\n\(\(\(....\)\)\)&colors=>header\nrange%3Dwhite:red\n0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\n0.7\n0.8\n0.9\n1](http://nibiru.tbi.univie.ac.at/forna/forna.html?id=fasta&file=>header\\nAACGUUAGUU\\n\(\(\(....\)\)\)&colors=>header\\n\\range\%3Dwhite:red\\n0\\n0.1\\n0.2\\n0.3\\n0.4\\n0.5\\n0.6\\n0.7\\n0.8\\n0.9\\n1)
 
 Notice that the `range` part of the color parameter uses %3D to denote the '='. This is to prevent
 it from being interpreted as its own argument.
