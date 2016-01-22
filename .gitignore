@@ -1,0 +1,6 @@
+**/*.un~
+**/*.swp
+**/.DS_Store
+**/*.pyc
+server.log
+forna.db
