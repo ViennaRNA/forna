@@ -277,13 +277,13 @@ function RNAManager( done, newError ) {
             }
             rna = new tmpRNA();
             rna.header = line.substring(1);
-          } else if (/^[ACGTUWSMKRYBDHVN-]+$/.test(line.toUpperCase())) {
+          } else if (/^[&ACGTUWSMKRYBDHVN-]+$/.test(line.toUpperCase())) {
             // this is a sequence
             if (rna === undefined) {
               rna = new tmpRNA();
             }
             rna.sequence = rna.sequence.concat(line);
-          } else if (/^[\(\)\.\{\}\[\]\<\>\*]+$/.test(line)) {
+          } else if (/^[&\(\)\.\{\}\[\]\<\>\*]+$/.test(line)) {
             // this is a structure
             if (rna === undefined) {
               rna = new tmpRNA();
