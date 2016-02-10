@@ -60,18 +60,28 @@ def remove_pseudoknots(bg):
 
     return dissolved_bp
 
-def fasta_to_positions(fasta_text):
-    bg = fgb.BulgeGraph()
-    bg.from_fasta(fasta_text)
-    bp_string = bg.to_dotbracket_string()
+def dbstring_to_positions(bp_string):
+    '''
+    Use the ViennaRNA interface to get an initial layout
+    for this RNA structure.
 
-    print >>sys.stderr, 'bp_string', bp_string;
+    :dbstring: A dot-bracket string '..((..))..'
+    :return: An array of (x,y) pairs
+    '''
     RNA.cvar.rna_plot_type = 1
     coords = RNA.get_xy_coordinates(bp_string)
     xs = np.array([coords.get(i).X for i in range(len(bp_string))])
     ys = np.array([coords.get(i).Y for i in range(len(bp_string))])
 
     return zip(xs,ys)
+
+def fasta_to_positions(fasta_text):
+    bg = fgb.BulgeGraph()
+    bg.from_fasta(fasta_text)
+    bp_string = bg.to_dotbracket_string()
+
+    print >>sys.stderr, 'bp_string', bp_string;
+    return dbstring_to_positions(bp_string)
 
 def bg_to_json(bg, circular=False, xs = None, ys = None, uids=None):
     """
