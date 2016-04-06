@@ -106,23 +106,28 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
             s = json.dumps(res)
             fud.pv('s')
 
+    """
     def test_multi_strand(self):
         '''
         Test an multi-stranded input where each strand is 
         separated by a '&' character.
         '''
         seq = 'AAA&AAA'
-        sct = '((.&)))'
+        sct = '((.&)).'
 
-        fasta = ">x\n{}\n{}".format(seq, sct)
+        fasta_text = ">x\n{}\n{}".format(seq, sct)
 
         forna.fasta_to_positions(fasta_text)
-        '''
-        with open('test/data/3UZT.pdb', 'r') as f:
-            text = f.read()
+    """
 
-            forna.pdb_to_json(text, '4G0A')
-        '''
+
+
+    '''
+    with open('test/data/3UZT.pdb', 'r') as f:
+        text = f.read()
+
+        forna.pdb_to_json(text, '4G0A')
+    '''
 
     """
         with open('test/data/4GV9.pdb') as f:

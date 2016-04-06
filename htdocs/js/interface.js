@@ -154,26 +154,6 @@ function RNA(sequence, structure, header , start, newError) {
       self.json(rnaView.fornac.addRNA(options.structure, options));
       self.done(true);
 
-      /*
-      ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} ), 10000).success( function(data) {
-        try {
-            console.log('fornac.RNAGraph', fornac.RNAGraph);
-            r = new fornac.RNAGraph(self.sequence(), self.structure(), self.header())
-            .elementsToJson()
-            .addPositions('nucleotide', data)
-            .addLabels(parseInt(start))
-            .reinforceStems()
-            .reinforceLoops()
-            .connectFakeNodes();
-            self.json(r);
-            self.done(true);
-        } catch (err) {
-            newError(self.header() + ": ERROR: " + err );
-        }
-      }).error( function(jqXHR) {
-        newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
-      });
-      */
     }, self
   );
 
@@ -937,8 +917,9 @@ function AddViewModel() {
   var self = this;
 
   self.input = ko.observable(
-      '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
-((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
+      '>molecule_name\nAAA&AAA\n((.&)).'
+      //'>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+//((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
 
    /*
    '>\nAAAA\n.(.)*'
