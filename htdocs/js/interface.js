@@ -147,9 +147,18 @@ function RNA(sequence, structure, header , start, newError) {
   );
 
   self.json = ko.onDemandObservable( function() {
+        let options = {'structure': self.structure(),
+            'sequence': self.sequence()
+        };
+
+      self.json(rnaView.fornac.addRNA(options.structure, options));
+      self.done(true);
+
+      /*
       ajax(serverURL + '/struct_positions', 'POST', JSON.stringify( {header: self.header(), seq: self.sequence(), struct: self.structure()} ), 10000).success( function(data) {
         try {
-            r = new RNAGraph(self.sequence(), self.structure(), self.header())
+            console.log('fornac.RNAGraph', fornac.RNAGraph);
+            r = new fornac.RNAGraph(self.sequence(), self.structure(), self.header())
             .elementsToJson()
             .addPositions('nucleotide', data)
             .addLabels(parseInt(start))
@@ -164,6 +173,7 @@ function RNA(sequence, structure, header , start, newError) {
       }).error( function(jqXHR) {
         newError(self.header() + ": ERROR (" + jqXHR.status + ") - " + jqXHR.responseText );
       });
+      */
     }, self
   );
 
@@ -1024,7 +1034,7 @@ function AddViewModel() {
 function RNAViewModel() {
   var self = this;
 
-  self.fornac = new FornaContainer("#chart", {'initialSize': [$("#chart").width(),$(window).height()-2]});
+  self.fornac = new fornac.FornaContainer("#chart", {'initialSize': [$("#chart").width(),$(window).height()-2], 'layout': 'naview'});
   setPlottingArea();
   self.molecules = ko.observableArray([]);
 
