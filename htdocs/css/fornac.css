@@ -16,6 +16,7 @@ circle.node.label {
     stroke: transparent;
     stroke-width: 0;
     fill: white;
+    display: inline;
 }
 
 circle.outline_node {

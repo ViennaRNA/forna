@@ -69,10 +69,12 @@ def create_app(static):
         if 'seq' not in request.json and 'struct' not in request.json:
             abort(400, "Missing seq and struct in the json file")
 
-        if re.match("^[ACGTUWSMKRYBDHVN\-]+$", request.json['seq'].upper()) is None:
+        print >>sys.stderr, "seq:", request.json['seq']
+        if re.match("^[&ACGTUWSMKRYBDHVNO\-]+$", request.json['seq'].upper()) is None:
             abort(400, "Invalid sequence: {}".format(request.json['seq']))
 
-        if re.match("^[\(\)\.\[\]\{\}]+[\*]?$", request.json['struct']) is None:
+        print >>sys.stderr, "struct:", request.json['struct']
+        if re.match("^[&\(\)\.o\[\]\{\}]+[\*]?$", request.json['struct']) is None:
             abort(400, "Invalid structure: {}".format(request.json['struct']))
 
         if request.json['struct'][-1] == '*':
@@ -124,6 +126,9 @@ def create_app(static):
 
         if re.match("^[\(\)\.]+$", request.json['struct']) is None:
             abort(400, "Invalid structure for inverse fold: {}".format(request.json['struct']))
+
+        if len(request.json['struct']) > 200:
+            abort(400, "Structure is too long to inverse fold, please either enter a sequence,<br> e.g: <pre>>hi\nA\n(((..)))</pre><br> or shorten the structure")
         
         try:
             pt = fus.dotbracket_to_pairtable(str(request.json['struct'])) 
@@ -155,7 +160,7 @@ def create_app(static):
     @app.route('/pdb_to_graph', methods=['POST'])
     def pdb_to_graph():
         from werkzeug import secure_filename
-
+        
         try:
             result = forna.pdb_to_json(request.json['pdb'], request.json['name'],
                                        parser=bpdb.PDBParser())
@@ -242,6 +247,10 @@ def create_app(static):
         def static_img(path):
             return app.send_static_file(os.path.join('img', path)) 
 
+        @app.route('/json/<path:path>')
+        # pylint: disable=W0612
+        def static_json(path):
+            return app.send_static_file(os.path.join('json', path)) 
         # end serving static files
 
     return app
