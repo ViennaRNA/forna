@@ -1,0 +1,1 @@
+cp ~/projects/fornac/dist/scripts/fornac.js htdocs/js/fornac.js

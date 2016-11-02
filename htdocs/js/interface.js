@@ -150,8 +150,10 @@ function RNA(sequence, structure, header , start, newError) {
         let options = {'structure': self.structure(),
             'sequence': self.sequence()
         };
-        self.json(rnaView.fornac.addRNA(options.structure, options));
-        self.done(true);
+
+      self.json(rnaView.fornac.addRNA(options.structure, options));
+      self.done(true);
+
     }, self
   );
 
@@ -219,7 +221,7 @@ function RNAManager( done, newError ) {
         if ("end" in headerhash) { start =  headerhash["end"] - sequence.length + 1;}
         if ("start" in headerhash) { start = headerhash["start"]; }
         header = headerarray[0];
-
+        
         self.newMolecules.push(new RNA(sequence, structure, header, start, reportError));
     };
 
@@ -595,8 +597,8 @@ function AddMMCIFViewModel() {
       }
       */
 
-      if (self.inputFile().size > 2000000) {
-        self.newInputError("ERROR: Selected file is too large (The limit is 2MB)");
+      if (self.inputFile().size > 50000000) {
+        self.newInputError("ERROR: Selected file is too large");
         return;
       }
 
@@ -672,7 +674,7 @@ function AddPDBViewModel() {
   self.inputFile = ko.observable(null);
   self.compounds = ko.observableArray([]);
   self.conect = "";
-
+  
   self.newInputError = function(message) {
     if (self.inputError() === '') {
       self.inputError(message);
@@ -702,7 +704,7 @@ function AddPDBViewModel() {
     rnaView.fornac.deaf = false;
     $("#chart").focus();
   };
-
+  
   function Compound(id) {
       var self = this;
       self.id = id;
@@ -713,17 +715,17 @@ function AddPDBViewModel() {
       self.selected = ko.observable(true);
       self.data = "";
   }
-
+  
   self.selectItem = function(item) {
     item.selected(!item.selected());
   };
 
   self.selectAll = function(value) {
     ko.utils.arrayForEach(self.compounds(), function(compound) {
-       compound.selected(value);
+       compound.selected(value); 
     });
   };
-
+  
   self.parsePDB = function() {
       // reset all global stuff
       self.compounds([]);
@@ -778,7 +780,7 @@ function AddPDBViewModel() {
               });
           });
       };
-
+      
       if (self.inputFile() !== null) {
         var r = new FileReader();
         r.onload = function(e) {
@@ -809,7 +811,7 @@ function AddPDBViewModel() {
         self.newInputError("ERROR: Selected file is too large");
         return;
       }
-
+      
       var pdb_string = "";
       ko.utils.arrayForEach(self.compounds(), function(compound) {
         if(compound.selected()) {
@@ -820,14 +822,14 @@ function AddPDBViewModel() {
       pdb_string += "\nEND";
       pdb_string.replace(/\n\n/, "\n");
       //console.log(pdb_string);
-
+      
       ajax(serverURL + '/pdb_to_graph', 'POST', JSON.stringify( {pdb: pdb_string, name: self.inputFile().name} ), 80000).success( function(data) {
         try {
           data = JSON.parse(data);
         } catch (err) {
           self.newInputError("ERROR" + err);
         }
-
+        
         mols_json = molecules_to_json(data);
 
         for (var i = 0; i < mols_json.graphs.length; i++)
@@ -915,9 +917,9 @@ function AddViewModel() {
   var self = this;
 
   self.input = ko.observable(
-      //'>molecule_name\nAAA&AAA\n((.&)).'
-      '>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
-((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
+      '>molecule_name\nAAA&AAA\n((.&)).'
+      //'>molecule_name\nCGCUUCAUAUAAUCCUAAUGAUAUGGUUUGGGAGUUUCUACCAAGAGCCUUAAACUCUUGAUUAUGAAGUG\n\
+//((((((((((..((((((.........))))))......).((((((.......))))))..)))))))))'
 
    /*
    '>\nAAAA\n.(.)*'

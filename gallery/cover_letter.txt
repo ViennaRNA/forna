@@ -1,0 +1,19 @@
+Dear Editor,
+
+Working with RNA secondary structure on a daily basis has led us to rely greatly on its visualization for interpretation and collaboration. While the existing tools have served and continue to serve us well, there are two niches which remain unfilled in the ecosystem of available visualization tools. 
+
+1. Effortless drawing allows researchers to paste a sequence (with or without a structure) and receive a high quality visual representation of the secondary structure without having to install external programs or verify java binaries for online use. This representation can be easily edited and rearranged to create the desired depiction.
+
+2. The exploration of secondary structure as obtained from tertiary structure, including inter-chain and protein-chain interactions gives researchers an abstract view of a complex data set. While there is some precedent for this approach, we feel that our application makes it even easier for researchers to interactively explore the secondary structures inherent in all-atom represenations and to prepare them for presentation and publication.
+
+In addition to (hopefully) filling these two niches, we provide a few select features not present in any other software package which have been useful both within our department as well as to collaborating researchers. 
+
+Sincerely,
+
+Peter Kerpedjiev
+
+PS: We understand that manuscript is limited to 2 pages and acknowledge that we are a few lines over the limit. Nevertheless, we hope that this inconsistency can easily be rectified by appropriate typesetting, should our submission be accepted.
+
+
+
+
