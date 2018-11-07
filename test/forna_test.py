@@ -33,8 +33,7 @@ class FornaTest(unittest.TestCase):
     def test_remove_pseudoknots(self):
         pk_fasta = '>hi\nAAAAAAAAAAAAAAAA\n((..[[[..))..]]]'
 
-        bg = fgb.BulgeGraph()
-        bg.from_fasta(pk_fasta)
+        bg = fgb.from_fasta_text(pk_fasta)
 
         dissolved_bp = forna.remove_pseudoknots(bg)
         self.assertTrue(dissolved_bp is not None)
@@ -57,8 +56,7 @@ UGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUAACAGUUAGCCUAACGCAAGGG
     def test_parse_colors(self):
         pk_fasta = '>hi\nAAAAAAAAAAAAAAAA\n((..[[[..))..]]]'
 
-        bg = fgb.BulgeGraph()
-        bg.from_fasta(pk_fasta)
+        bg = fgb.from_fasta_text(pk_fasta)
 
         colors_text = """
 4 orange hi
