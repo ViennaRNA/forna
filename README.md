@@ -31,7 +31,7 @@ To run it use the following command:
 ```shell
 python forna_server.py -s -d
 ```
-Access local forna server using the following link
+Then access local forna server using the following link:
 
 ```
 http://127.0.0.1:8008
