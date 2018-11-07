@@ -61,8 +61,7 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 def fasta_to_positions(fasta_text):
-    bg = fgb.BulgeGraph()
-    bg.from_fasta(fasta_text)
+    fgb.from_fasta_text(fasta_text)
     bp_string = bg.to_dotbracket_string()
 
     print >>sys.stderr, 'bp_string', bp_string;
@@ -343,8 +342,7 @@ def fasta_to_json(fasta_text, circular=False):
 
     @param fasta_text: The fasta string.
     """
-    bg = fgb.BulgeGraph()
-    bg.from_fasta(fasta_text)
+    bg = fgb.from_fasta_text(fasta_text)
     return bg_to_json(bg, circular=circular)
 
 
@@ -458,8 +456,7 @@ def json_to_json(rna_json_str):
 
     coords_to_index = dict()
     for fasta_text, xs, ys, uids in zip(all_fastas, all_xs, all_ys, all_uids):
-        bg = fgb.BulgeGraph()
-        bg.from_fasta(fasta_text)
+        bg = fgb.from_fasta_text(fasta_text)
         new_json = bg_to_json(bg, xs=xs, ys=ys, uids=uids)
         
         for l in new_json['links']:
