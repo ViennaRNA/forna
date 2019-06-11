@@ -32,6 +32,7 @@ To run it use the following command:
 python forna_server.py -s -d
 ```
 
+You can access the forna server api here: http://127.0.0.1:8008
 Documentation about the available options is provided using the ``-h`` option.
 
 #### APIs ####
