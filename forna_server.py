@@ -20,7 +20,7 @@ import sys
 import os
 import RNA
 from optparse import OptionParser
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import forgi.utilities.debug as fud
 import forgi.utilities.stuff as fus
