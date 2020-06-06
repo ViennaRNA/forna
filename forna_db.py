@@ -39,7 +39,7 @@ def cleanup():
         c.execute('''DELETE FROM share WHERE date < DATE('now','-50 days') AND static == 0''')
         conn.commit()
         conn.close()
-        print " * Cleaning up database"
+        print(" * Cleaning up database")
         time.sleep(60*60*24)
 
 def put(json):
