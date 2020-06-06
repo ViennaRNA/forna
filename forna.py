@@ -61,17 +61,21 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 def fasta_to_positions(fasta_text):
-    bg = fgb.BulgeGraph()
-    bg.from_fasta(fasta_text)
+    bgs = fgb.BulgeGraph.from_fasta_text(fasta_text)
+
+    if len(bgs) < 1:
+        raise Exception('Cannot parse fasta sequence')
+
+    bg = bgs[0]
     bp_string = bg.to_dotbracket_string()
 
-    print >>sys.stderr, 'bp_string', bp_string;
+    print('bp_string', bp_string, file=sys.stderr);
     RNA.cvar.rna_plot_type = 1
     coords = RNA.get_xy_coordinates(bp_string)
     xs = np.array([coords.get(i).X for i in range(len(bp_string))])
     ys = np.array([coords.get(i).Y for i in range(len(bp_string))])
 
-    return zip(xs,ys)
+    return list(zip(xs,ys))
 
 def bg_to_json(bg, circular=False, xs = None, ys = None, uids=None):
     """
@@ -153,10 +157,10 @@ def bg_to_json(bg, circular=False, xs = None, ys = None, uids=None):
             if len(xs) <= bg.seq_length:
                 x = xs[i]
                 y = ys[i]
-                print >>sys.stderr, "here1"
+                print("here1", file=sys.stderr)
             else:
                 # xs and ys have been passed in because the molecule is being updated
-                print >>sys.stderr, "here", node_id
+                print("here", node_id, file=sys.stderr)
                 x = xs[node_id]
                 y = ys[node_id]
 
@@ -370,7 +374,7 @@ def parse_ranges(range_text):
                 raise Exception('Invalid range')
 
             try:
-                (f,t) = map(int, single_range.split('-'))
+                (f,t) = list(map(int, single_range.split('-')))
             except ValueError:
                 raise Exception('Range components need to be integers')
         else:
@@ -575,7 +579,7 @@ def json_to_fasta(rna_json_str):
             pair_list[frozenset(nodes_to_trees[from_node])] += [(int(to_node['id']),
                                                      int(from_node['id']))]
         else:
-            print >>sys.stderr, "Different trees"
+            print("Different trees", file=sys.stderr)
             different_tree_links += [((from_node['x'], from_node['y']),
                                       (to_node['x'], to_node['y']))]
 
@@ -585,7 +589,7 @@ def json_to_fasta(rna_json_str):
             node_list[frozenset(nodes_to_trees[node])] += [(node['id'], node['name'], node['x'], node['y'], node['struct_name'], node['uid'])]
 
         if node['node_type'] == 'label':
-            print >>sys.stderr, "adding label"
+            print("adding label", file=sys.stderr)
             label_list[frozenset(nodes_to_trees[node])] += [(node['x'], node['y'])]
 
     all_fastas = []
@@ -593,7 +597,7 @@ def json_to_fasta(rna_json_str):
     all_ys = []
     all_uids = []
 
-    for key in node_list.keys():
+    for key in list(node_list.keys()):
         pair_table = fus.tuples_to_pairtable(pair_list[key], len(node_list[key]))
         dotbracket = fus.pairtable_to_dotbracket(pair_table)
 
@@ -663,11 +667,11 @@ def main():
     else:
         fname, fext = op.splitext(args[0])
         if fext == '.cg' or fext == '.bg':
-            print >> sys.stderr, "Detected BulgeGraph"
+            print("Detected BulgeGraph", file=sys.stderr)
             bg = fgb.BulgeGraph(args[0])
             struct = bg_to_json(bg)
         else:
-            print >> sys.stderr, "Detected fasta"
+            print("Detected fasta", file=sys.stderr)
             with open(args[0], 'r') as f:
                 text = f.read()
 
@@ -678,7 +682,7 @@ def main():
             colors = json.loads(f)
             struct = add_colors_to_graph(struct, colors)
 
-    print json.dumps(struct, sort_keys=True, indent=4, separators=(',', ': '))
+    print(json.dumps(struct, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 def pdb_to_json(text, name, parser=None):
@@ -713,7 +717,7 @@ def pdb_to_json(text, name, parser=None):
         for chain in chains:
             # create a graph json for each structure in the pdb file
             if ftup.is_protein(chain):
-                print >>sys.stderr, "protein", chain
+                print("protein", chain, file=sys.stderr)
                 proteins.add(chain.id)
                 # process protein
                 molecules += [{"type": "protein",
@@ -725,7 +729,7 @@ def pdb_to_json(text, name, parser=None):
 
                 pass
             elif ftup.is_rna(chain):
-                print >>sys.stderr, "rna", chain
+                print("rna", chain, file=sys.stderr)
                 rnas.add(chain.id)
                 # process RNA molecules (hopefully)
                 cg = ftmc.from_pdb(fname, chain_id=chain.id, 

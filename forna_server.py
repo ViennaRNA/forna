@@ -20,7 +20,7 @@ import sys
 import os
 import RNA
 from optparse import OptionParser
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import forgi.utilities.debug as fud
 import forgi.utilities.stuff as fus
@@ -210,7 +210,7 @@ def create_app(static):
         return "callback(" + json.dumps(graph) + ");", 201
 
     if static:
-        print >> sys.stderr, " * Starting static"
+        print(" * Starting static", file=sys.stderr)
         # serving static files for developmental purpose
         @app.route('/')
         # pylint: disable=W0612
