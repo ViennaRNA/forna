@@ -61,8 +61,12 @@ def remove_pseudoknots(bg):
     return dissolved_bp
 
 def fasta_to_positions(fasta_text):
-    bg = fgb.BulgeGraph()
-    bg.from_fasta(fasta_text)
+    bgs = fgb.BulgeGraph.from_fasta_text(fasta_text)
+
+    if len(bgs) < 1:
+        raise Exception('Cannot parse fasta sequence')
+
+    bg = bgs[0]
     bp_string = bg.to_dotbracket_string()
 
     print('bp_string', bp_string, file=sys.stderr);
