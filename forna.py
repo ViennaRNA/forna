@@ -30,6 +30,50 @@ import sys
 from optparse import OptionParser
 
 
+def _normalize_fasta_lines(fasta_text):
+    """Split FASTA text into header, sequence, structure components."""
+    lines = [line.strip() for line in fasta_text.splitlines() if line.strip()]
+    if not lines or lines[0][0] != '>':
+        raise ValueError('Invalid FASTA: missing header line')
+    if len(lines) < 3:
+        raise ValueError('Invalid FASTA: expected header, sequence and structure lines')
+
+    header = lines[0][1:]
+    seq = ''.join(lines[1:-1])
+    struct = lines[-1]
+
+    if len(seq) != len(struct):
+        raise ValueError('Sequence and structure length mismatch ({} vs {})'.format(len(seq), len(struct)))
+
+    return header, seq, struct
+
+
+if not hasattr(fgb.BulgeGraph, 'from_fasta'):
+    def _bg_from_fasta(self, fasta_text):
+        """Minimal backport of BulgeGraph.from_fasta for legacy forgi releases."""
+        name, seq, struct = _normalize_fasta_lines(fasta_text)
+
+        if hasattr(self, 'from_dotbracket'):
+            # Most forgi versions support constructing from dotbracket + sequence
+            res = self.from_dotbracket(struct, seq)
+        else:
+            pair_table = fus.dotbracket_to_pairtable(struct)
+            if hasattr(self, 'from_pair_table'):
+                res = self.from_pair_table(pair_table, seq)
+            elif hasattr(self, 'from_pairtable'):
+                res = self.from_pairtable(pair_table, seq)
+            else:
+                raise AttributeError('BulgeGraph is missing from_fasta and compatible fallback constructors')
+        if not getattr(self, 'name', None):
+            try:
+                self.name = name
+            except AttributeError:
+                pass
+        return res
+
+    fgb.BulgeGraph.from_fasta = _bg_from_fasta
+
+
 def remove_pseudoknots(bg):
     """
     Remove all pseudoknots from the structure and return a list
@@ -800,4 +844,3 @@ def pdb_to_json(text, name, parser=None):
 
 if __name__ == '__main__':
     main()
-
